@@ -6,5 +6,5 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AuthView(authViewModel: AuthViewModel = viewModel()) {
-    val authState = authViewModel.authState.collectAsState()
+    //val authState = authViewModel.authState.collectAsState()
 }
