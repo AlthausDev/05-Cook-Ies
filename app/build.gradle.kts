@@ -77,4 +77,16 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+
+    implementation ("com.firebaseui:firebase-ui-database:8.0.2")
+
+    // FirebaseUI for Cloud Firestore
+    implementation ("com.firebaseui:firebase-ui-firestore:8.0.2")
+
+    // FirebaseUI for Firebase Auth
+    implementation ("com.firebaseui:firebase-ui-auth:8.0.2")
+
+    // FirebaseUI for Cloud Storage
+    implementation ("com.firebaseui:firebase-ui-storage:8.0.2")
+
 }
