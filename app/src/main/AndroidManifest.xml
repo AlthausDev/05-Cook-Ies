@@ -13,7 +13,7 @@
         android:theme="@style/Theme.CookIes"
         tools:targetApi="31">
         <activity
-            android:name=".ui.auth.AuthActivity"
+            android:name=".ui.login.LoginActivity"
             android:exported="false"
             android:label="@string/title_activity_auth"
             android:theme="@style/Theme.CookIes" />

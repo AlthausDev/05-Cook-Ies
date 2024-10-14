@@ -1,11 +1,11 @@
-package com.althaus.dev.cookIes.ui.auth
+package com.althaus.dev.cookIes.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
+class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private var failedLoginAttempts = 0
     private var isTimeoutActive = false

@@ -4,6 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.althaus.dev.cookIes.ui.home.HomeView
+import com.althaus.dev.cookIes.ui.login.LoginView
+import com.althaus.dev.cookIes.ui.profile.ProfileView
+import com.althaus.dev.cookIes.ui.signup.SignUpView
+import com.althaus.dev.cookIes.ui.startup.StartUpView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -14,18 +19,21 @@ fun NavigationWrapper(
 ) {
 
 //    NavHost(navController = navHostController, startDestination = "home") {
-//        composable("initial") {
-//            InitialScreen(navigateToLogin = { navHostController.navigate("logIn") },
+//        composable("startUp") {
+//            StartUpView(navigateToLogin = { navHostController.navigate("logIn") },
 //                navigateToSignUp = { navHostController.navigate("signUp") })
 //        }
 //        composable("logIn") {
-//            LoginScreen(auth){ navHostController.navigate("home") }
+//            LoginView(auth){ navHostController.navigate("home") }
 //        }
 //        composable("signUp") {
-//            SignUpScreen(auth)
+//            SignUpView(auth)
 //        }
 //        composable("home"){
-//            HomeScreen()
+//            HomeView()
+//        }
+//        composable("profile"){
+//            ProfileView()
 //        }
 //    }
 }

@@ -40,7 +40,7 @@ firebase-config = {module = "com.google.firebase:firebase-config-ktx"}
 
 coil = {module = "io.coil-kt:coil-compose", version.ref = "coil"}
 
-androidx-navigation-compose = {module = "androidx.navigation:navigation-compose" , version.ref = "navigationCompose"}
+androidx-navigation-compose = {module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose"}
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 
 [plugins]

@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes.ui.auth
+package com.althaus.dev.cookIes.ui.login
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,13 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.althaus.dev.cookIes.ui.auth.ui.theme.CookIesTheme
+import com.althaus.dev.cookIes.ui.theme.CookIesTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 
-class AuthActivity : ComponentActivity() {
+class LoginActivity : ComponentActivity() {
     private var email by mutableStateOf("")
     private var password by mutableStateOf("")
 
