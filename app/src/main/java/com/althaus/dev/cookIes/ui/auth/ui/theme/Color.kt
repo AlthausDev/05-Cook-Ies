@@ -1,4 +1,4 @@
-package com.althaus.dev.project05_recetario.ui.auth.ui.theme
+package com.althaus.dev.cookIes.ui.auth.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

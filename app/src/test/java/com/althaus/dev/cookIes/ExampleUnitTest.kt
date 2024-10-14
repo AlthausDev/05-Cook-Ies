@@ -1,4 +1,4 @@
-package com.althaus.dev.project05_recetario
+package com.althaus.dev.cookIes
 
 import org.junit.Test
 

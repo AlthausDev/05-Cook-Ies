@@ -1,4 +1,4 @@
-package com.althaus.dev.project05_recetario.repository
+package com.althaus.dev.cookIes.repository
 
 class AuthRepository {
     suspend fun signIn(email: String, password: String) {

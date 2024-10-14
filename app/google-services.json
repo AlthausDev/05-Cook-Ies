@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "935720145677",
+    "project_id": "recetario-277e2",
+    "storage_bucket": "recetario-277e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935720145677:android:fcc9711de8e6dcb6b19644",
+        "android_client_info": {
+          "package_name": "com.althaus.dev.cookIes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiJC7oLunBjgQ3Czcuxzd8IYOBI5-HxQw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

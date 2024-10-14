@@ -1,4 +1,4 @@
-package com.althaus.dev.project05_recetario.ui.auth
+package com.althaus.dev.cookIes.ui.auth
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,8 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.althaus.dev.project05_recetario.ui.auth.ui.theme.Project05RecetarioTheme
+import com.althaus.dev.cookIes.ui.auth.ui.theme.Project05RecetarioTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

@@ -1,9 +1,8 @@
-package com.althaus.dev.project05_recetario.ui.auth
+package com.althaus.dev.cookIes.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.althaus.dev.project05_recetario.repository.AuthRepository
-import com.althaus.dev.project05_recetario.repository.RecipeRepository
+import com.althaus.dev.cookIes.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {

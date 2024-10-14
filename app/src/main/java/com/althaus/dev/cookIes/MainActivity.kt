@@ -1,4 +1,4 @@
-package com.althaus.dev.project05_recetario
+package com.althaus.dev.cookIes
 
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
@@ -9,7 +9,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
-import com.althaus.dev.project05_recetario.databinding.ActivityMainBinding
+import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

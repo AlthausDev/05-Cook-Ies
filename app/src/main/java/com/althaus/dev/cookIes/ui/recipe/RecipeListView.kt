@@ -1,7 +1,6 @@
-package com.althaus.dev.project05_recetario.ui.recipe
+package com.althaus.dev.cookIes.ui.recipe
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable

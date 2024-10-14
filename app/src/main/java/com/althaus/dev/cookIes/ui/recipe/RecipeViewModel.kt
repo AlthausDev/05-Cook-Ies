@@ -1,8 +1,8 @@
-package com.althaus.dev.project05_recetario.ui.recipe
+package com.althaus.dev.cookIes.ui.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.althaus.dev.project05_recetario.repository.RecipeRepository
+import com.althaus.dev.cookIes.repository.RecipeRepository
 import kotlinx.coroutines.launch
 
 class RecipeViewModel(private val repository: RecipeRepository) : ViewModel() {
