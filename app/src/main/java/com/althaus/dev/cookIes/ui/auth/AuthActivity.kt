@@ -8,10 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.althaus.dev.cookIes.ui.auth.ui.theme.Project05RecetarioTheme
+import com.althaus.dev.cookIes.ui.auth.ui.theme.CookIesTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
 
 class AuthActivity : ComponentActivity() {
     private var email by mutableStateOf("")
@@ -20,7 +21,7 @@ class AuthActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Project05RecetarioTheme {
+            CookIesTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     AuthScreen()
                 }
@@ -28,6 +29,7 @@ class AuthActivity : ComponentActivity() {
         }
     }
 
+    @Preview
     @Composable
     fun AuthScreen() {
         Column(

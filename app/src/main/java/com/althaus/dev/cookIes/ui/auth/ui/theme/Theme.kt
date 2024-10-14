@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.althaus.dev.cookIes.CookIes
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -38,7 +39,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun Project05RecetarioTheme(
+fun CookIesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
