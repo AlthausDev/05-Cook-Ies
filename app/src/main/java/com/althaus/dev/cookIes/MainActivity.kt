@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         auth.currentUser?.let {
             Log.i("user", "Bienvenido")
-            // auth.signOut()
+            auth.signOut()
         }
     }
 }

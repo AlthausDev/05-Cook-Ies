@@ -27,13 +27,13 @@ fun NavigationWrapper(
     // Redirige al usuario automáticamente si ya está autenticado
     val startDestination = if (auth.currentUser != null) Screen.Home.route else Screen.StartUp.route
 
-//    NavHost(navController = navHostController, startDestination = startDestination) {
-//        composable(Screen.StartUp.route) {
-//            StartUpView(
-//                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
-//                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) }
-//            )
-//        }
+    NavHost(navController = navHostController, startDestination = startDestination) {
+        composable(Screen.StartUp.route) {
+            StartUpView(
+                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
+                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) }
+            )
+        }
 //        composable(Screen.Login.route) {
 //            LoginView(auth) { navHostController.navigate(Screen.Home.route) }
 //        }
@@ -45,8 +45,8 @@ fun NavigationWrapper(
 //                navigateToProfile = { navHostController.navigate(Screen.Profile.route) }
 //            )
 //        }
-//        composable(Screen.Profile.route) {
-//            ProfileView()
-//        }
-//    }
+        composable(Screen.Profile.route) {
+            ProfileView()
+        }
+    }
 }
