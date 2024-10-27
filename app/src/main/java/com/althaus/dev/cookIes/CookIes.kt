@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 
