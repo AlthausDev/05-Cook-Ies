@@ -49,7 +49,7 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
                 .size(130.dp)
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(0.5f))
 
         // Texto principal
         Text(
@@ -69,25 +69,8 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(0.5f))
 
-        // Botón de registro
-        Button(
-            onClick = navigateToSignUp,
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = TextBrown),
-            shape = CircleShape
-        ) {
-            Text(
-                text = "Registrate",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
-        }
 
         // Botón de inicio de sesión
         Button(
@@ -99,7 +82,7 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             shape = CircleShape
         ) {
             Text(
-                text = "Log In",
+                text = "Iniciar Sesión",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
@@ -111,7 +94,15 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
         CustomButton(
             Modifier.fillMaxWidth(0.8f),
             painterResource(id = R.drawable.google),
-            "Continue with Google"
+            "Iniciar con Google"
+        )
+
+        Text(
+            text = "¿No tienes cuenta? Regístrate",
+            color = TextBrown,
+            modifier = Modifier.clickable { navigateToSignUp() },
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp
         )
 
         Spacer(modifier = Modifier.weight(1f))
