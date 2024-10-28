@@ -30,23 +30,48 @@ fun NavigationWrapper(
     NavHost(navController = navHostController, startDestination = startDestination) {
         composable(Screen.StartUp.route) {
             StartUpView(
-                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
-                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) }
+                navigateToLogin = {
+                    navHostController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.StartUp.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                navigateToSignUp = {
+                    navHostController.navigate(Screen.SignUp.route) {
+                        popUpTo(Screen.StartUp.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 //        composable(Screen.Login.route) {
-//            LoginView(auth) { navHostController.navigate(Screen.Home.route) }
+//            LoginView(auth) {
+//                navHostController.navigate(Screen.Home.route) {
+//                    popUpTo(Screen.Login.route) { inclusive = true }
+//                    launchSingleTop = true
+//                }
+//            }
 //        }
 //        composable(Screen.SignUp.route) {
-//            SignUpView(auth) { navHostController.navigate(Screen.Home.route) }
+//            SignUpView(auth) {
+//                navHostController.navigate(Screen.Home.route) {
+//                    popUpTo(Screen.SignUp.route) { inclusive = true }
+//                    launchSingleTop = true
+//                }
+//            }
 //        }
 //        composable(Screen.Home.route) {
 //            HomeView(
-//                navigateToProfile = { navHostController.navigate(Screen.Profile.route) }
+//                navigateToProfile = {
+//                    navHostController.navigate(Screen.Profile.route) {
+//                        popUpTo(Screen.Home.route) { inclusive = false }
+//                        launchSingleTop = true
+//                    }
+//                }
 //            )
 //        }
-        composable(Screen.Profile.route) {
-            ProfileView()
-        }
+//        composable(Screen.Profile.route) {
+//            ProfileView()
+//        }
     }
 }
