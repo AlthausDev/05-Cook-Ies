@@ -44,22 +44,22 @@ fun NavigationWrapper(
                 }
             )
         }
-//        composable(Screen.Login.route) {
-//            LoginView(auth) {
-//                navHostController.navigate(Screen.Home.route) {
-//                    popUpTo(Screen.Login.route) { inclusive = true }
-//                    launchSingleTop = true
-//                }
-//            }
-//        }
-//        composable(Screen.SignUp.route) {
-//            SignUpView(auth) {
-//                navHostController.navigate(Screen.Home.route) {
-//                    popUpTo(Screen.SignUp.route) { inclusive = true }
-//                    launchSingleTop = true
-//                }
-//            }
-//        }
+        composable(Screen.Login.route) {
+            LoginView() {
+                navHostController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+        composable(Screen.SignUp.route) {
+            SignUpView() {
+                navHostController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.SignUp.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
 //        composable(Screen.Home.route) {
 //            HomeView(
 //                navigateToProfile = {
@@ -70,8 +70,8 @@ fun NavigationWrapper(
 //                }
 //            )
 //        }
-//        composable(Screen.Profile.route) {
-//            ProfileView()
-//        }
+        composable(Screen.Profile.route) {
+            ProfileView()
+        }
     }
 }

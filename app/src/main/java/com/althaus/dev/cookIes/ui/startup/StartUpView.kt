@@ -46,10 +46,10 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             painter = painterResource(id = R.drawable.logo),
             contentDescription = null,
             modifier = Modifier
-                .size(130.dp)
+                .size(400.dp)
         )
 
-        Spacer(modifier = Modifier.weight(0.5f))
+        //Spacer(modifier = Modifier.weight(0.1f))
 
         // Texto principal
         Text(
@@ -69,7 +69,7 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.weight(0.5f))
+        Spacer(modifier = Modifier.weight(1f))
 
 
         // Botón de inicio de sesión
