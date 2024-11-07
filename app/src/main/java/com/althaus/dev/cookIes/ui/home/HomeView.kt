@@ -25,7 +25,7 @@ import com.althaus.dev.cookIes.ui.startup.TextBrown
 
 @Preview
 @Composable
-fun HomeView() {
+fun HomeView(navigateToProfile: () -> Unit = {}) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
