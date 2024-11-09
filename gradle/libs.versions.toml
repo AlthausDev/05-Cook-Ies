@@ -48,4 +48,5 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "services"}
 crashlytics = {id= "com.google.firebase.crashlytics", version.ref = "crashlytics"}
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+daggerHiltAndroid = { id = "com.google.dagger.hilt.android", version = "2.44" }
 

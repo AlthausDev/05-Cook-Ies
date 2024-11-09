@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes
+package com.althaus.dev.cookIes.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

@@ -2,7 +2,7 @@ package com.althaus.dev.cookIes.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.althaus.dev.cookIes.repository.AuthRepository
+import com.althaus.dev.cookIes.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {

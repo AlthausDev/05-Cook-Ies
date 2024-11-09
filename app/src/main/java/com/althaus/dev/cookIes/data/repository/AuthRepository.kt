@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes.repository
+package com.althaus.dev.cookIes.data.repository
 
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
