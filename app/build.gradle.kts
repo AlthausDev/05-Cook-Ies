@@ -3,8 +3,9 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.googleServices)
     alias(libs.plugins.crashlytics)
-    alias(libs.plugins.daggerHiltAndroid)
     id("kotlin-kapt")
+    kotlin("kapt")
+    alias(libs.plugins.daggerHiltAndroid)
 }
 
 android {
@@ -63,10 +64,13 @@ dependencies {
     implementation(libs.firebase.realtime)
     implementation(libs.firebase.config)
 
+    implementation(libs.googlePlayServicesAuth)
+
+
     implementation(libs.coil)
 
-    implementation ("com.google.dagger:hilt-android:2.45")
-    kapt("com.google.dagger:hilt-compiler:2.44")
+    implementation("com.google.dagger:hilt-android:2.51")
+    kapt("com.google.dagger:hilt-compiler:2.51")
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
