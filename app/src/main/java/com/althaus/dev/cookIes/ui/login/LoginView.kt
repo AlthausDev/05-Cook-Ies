@@ -27,6 +27,7 @@ import com.althaus.dev.cookIes.ui.startup.CustomButton
 import com.althaus.dev.cookIes.ui.startup.ParchmentLight
 import com.althaus.dev.cookIes.ui.startup.ParchmentDark
 import com.althaus.dev.cookIes.ui.startup.TextBrown
+import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
 @Preview
 @Composable

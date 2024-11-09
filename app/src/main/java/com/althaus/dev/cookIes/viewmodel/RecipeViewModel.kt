@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes.ui.recipe
+package com.althaus.dev.cookIes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
