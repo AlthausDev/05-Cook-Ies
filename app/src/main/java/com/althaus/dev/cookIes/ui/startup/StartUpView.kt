@@ -8,13 +8,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.flow.MutableStateFlow
 
 // Colores para el esquema papiro
 val ParchmentLight = Color(0xFFF5F0DC)
@@ -31,7 +34,21 @@ val TextBrown = Color(0xFF6D4C41)
 
 @Preview
 @Composable
-fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit = {}) {
+fun StartUpView(
+    navigateToLogin: () -> Unit = {},
+    navigateToSignUp: () -> Unit = {},
+    authViewModel: AuthViewModel,
+    onLoginSuccess: () -> Unit
+) {
+    val user by authViewModel.user.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val errorMessage by authViewModel.errorMessage.collectAsState()
+
+    // Si el usuario está autenticado, navega al HomeView
+    LaunchedEffect(user) {
+        if (user != null) onLoginSuccess()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -46,10 +63,8 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             painter = painterResource(id = R.drawable.logo),
             contentDescription = null,
             modifier = Modifier
-                .size(400.dp)
+                .size(200.dp)
         )
-
-        //Spacer(modifier = Modifier.weight(0.1f))
 
         // Texto principal
         Text(
@@ -71,7 +86,6 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
 
         Spacer(modifier = Modifier.weight(1f))
 
-
         // Botón de inicio de sesión
         Button(
             onClick = navigateToLogin,
@@ -92,9 +106,10 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
 
         // Botón de Google
         CustomButton(
-            Modifier.fillMaxWidth(0.8f),
-            painterResource(id = R.drawable.google),
-            "Iniciar con Google"
+            modifier = Modifier.fillMaxWidth(0.8f),
+            painter = painterResource(id = R.drawable.google),
+            title = "Iniciar con Google",
+            onClick = { authViewModel.loginWithGoogle("ID_TOKEN_PLACEHOLDER") } // Aquí se debe proveer el token real
         )
 
         Text(
@@ -105,19 +120,40 @@ fun StartUpView(navigateToLogin: () -> Unit = {}, navigateToSignUp: () -> Unit =
             fontSize = 14.sp
         )
 
+        // Indicador de carga
+        if (isLoading) {
+            CircularProgressIndicator(color = TextBrown)
+        }
+
+        // Mensaje de error
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
     }
 }
 
 // Botón personalizado con ícono y texto
 @Composable
-fun CustomButton(modifier: Modifier, painter: Painter, title: String) {
+fun CustomButton(
+    modifier: Modifier,
+    painter: Painter,
+    title: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = modifier
             .height(48.dp)
             .background(Color.White, CircleShape)
             .border(1.dp, TextBrown, CircleShape)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
