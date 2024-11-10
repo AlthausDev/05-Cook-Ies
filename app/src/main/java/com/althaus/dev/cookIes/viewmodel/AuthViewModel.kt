@@ -32,8 +32,6 @@ class AuthViewModel @Inject constructor(
         return authRepository.getGoogleSignInClient()
     }
 
-
-
     fun login(email: String, password: String) {
         _isLoading.value = true
         viewModelScope.launch {

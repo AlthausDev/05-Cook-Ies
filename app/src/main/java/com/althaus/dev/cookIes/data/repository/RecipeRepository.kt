@@ -1,3 +1,4 @@
+// data/repository/RecipeRepository.kt
 package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Recipe
@@ -13,7 +14,7 @@ class RecipeRepository @Inject constructor(
 
     private val recipesCollection = firestore.collection("recipes")
 
-    // Obtener todas las recetas
+    // Obtener todas las recetas como Flow
     suspend fun getRecipes(): Flow<List<Recipe>> = flow {
         try {
             val snapshot = recipesCollection.get().await()
@@ -21,7 +22,19 @@ class RecipeRepository @Inject constructor(
             emit(recipes)
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(emptyList()) // Emitir lista vacía en caso de error
+            emit(emptyList())
+        }
+    }
+
+    // Obtener recetas de un usuario específico
+    suspend fun getUserRecipes(userId: String): Flow<List<Recipe>> = flow {
+        try {
+            val snapshot = recipesCollection.whereEqualTo("userId", userId).get().await()
+            val recipes = snapshot.documents.mapNotNull { it.toObject(Recipe::class.java) }
+            emit(recipes)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(emptyList())
         }
     }
 
@@ -29,11 +42,10 @@ class RecipeRepository @Inject constructor(
     suspend fun getRecipeById(recipeId: String): Flow<Recipe?> = flow {
         try {
             val snapshot = recipesCollection.document(recipeId).get().await()
-            val recipe = snapshot.toObject(Recipe::class.java)
-            emit(recipe)
+            emit(snapshot.toObject(Recipe::class.java))
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(null) // Emitir null en caso de error
+            emit(null)
         }
     }
 

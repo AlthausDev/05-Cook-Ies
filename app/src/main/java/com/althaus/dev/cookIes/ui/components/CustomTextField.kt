@@ -16,14 +16,14 @@ import androidx.compose.material3.Text
 
 @Composable
 fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
     placeholder: String,
     isPassword: Boolean = false
 ) {
-    var text by remember { mutableStateOf("") }
-
     BasicTextField(
-        value = text,
-        onValueChange = { newText -> text = newText },
+        value = value,
+        onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth(0.8f)
             .background(Color.White, CircleShape)
@@ -35,7 +35,7 @@ fun CustomTextField(
                 contentAlignment = Alignment.CenterStart,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (text.isEmpty()) {
+                if (value.isEmpty()) {
                     Text(text = placeholder, color = TextBrown.copy(alpha = 0.6f))
                 }
                 innerTextField()
@@ -43,3 +43,4 @@ fun CustomTextField(
         }
     )
 }
+
