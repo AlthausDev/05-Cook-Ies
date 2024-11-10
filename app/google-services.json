@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "935720145677",
     "project_id": "recetario-277e2",
-    "storage_bucket": "recetario-277e2.appspot.com"
+    "storage_bucket": "recetario-277e2.firebasestorage.app"
   },
   "client": [
     {
@@ -12,7 +12,20 @@
           "package_name": "com.althaus.dev.cookIes"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "935720145677-uj8cb5eg080ekeg4v5v5mcijqgkjl23d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.althaus.dev.cookIes",
+            "certificate_hash": "b0bc3c89e8543df3659c9f99df8521d65ed1321a"
+          }
+        },
+        {
+          "client_id": "935720145677-gsj0i50h8shkqp93khotsdfjul79a1qk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCiJC7oLunBjgQ3Czcuxzd8IYOBI5-HxQw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935720145677-gsj0i50h8shkqp93khotsdfjul79a1qk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

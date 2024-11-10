@@ -7,3 +7,8 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.daggerHiltAndroid) apply false
 }
+buildscript {
+    dependencies {
+        classpath (libs.google.services)
+    }
+}

@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Project.05-Recetario"
 include(":app")
- 

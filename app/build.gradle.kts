@@ -65,8 +65,6 @@ dependencies {
     implementation(libs.firebase.config)
 
     implementation(libs.googlePlayServicesAuth)
-
-
     implementation(libs.coil)
 
     implementation("com.google.dagger:hilt-android:2.51")
