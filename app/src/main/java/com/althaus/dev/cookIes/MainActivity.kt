@@ -1,6 +1,8 @@
 package com.althaus.dev.cookIes
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +16,7 @@ import com.althaus.dev.cookIes.ui.theme.CookIesTheme
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
+import com.google.android.gms.security.ProviderInstaller
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,6 +28,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Inicializar ProviderInstaller para asegurar actualizaciones SSL
+        ProviderInstaller.installIfNeeded(applicationContext)
+
         setContent {
             val navController = rememberNavController()
             CookIesTheme {
@@ -42,5 +49,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PROVIDER_INSTALL_REQUEST_CODE) {
+            // Si el proveedor fue instalado correctamente o falló, puedes manejar el resultado aquí
+            Log.d("ProviderInstaller", "Resultado de ProviderInstaller recibido con código: $resultCode")
+        }
+    }
+
+    companion object {
+        private const val PROVIDER_INSTALL_REQUEST_CODE = 1
     }
 }

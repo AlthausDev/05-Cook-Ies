@@ -141,13 +141,6 @@ fun SignUpView(
             )
         }
 
-        // Botón de Google
-        CustomButton(
-            modifier = Modifier.fillMaxWidth(0.8f),
-            painter = painterResource(id = R.drawable.google),
-            title = "Registrarse con Google",
-            onClick = { authViewModel.loginWithGoogle("ID_TOKEN_PLACEHOLDER") }
-        )
 
         // Redirección a la pantalla de inicio de sesión
         Text(

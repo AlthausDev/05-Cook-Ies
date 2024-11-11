@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes.ui.startup
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.viewmodel.AuthResultContract
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +34,7 @@ val ParchmentLight = Color(0xFFF5F0DC)
 val ParchmentDark = Color(0xFFD7C6A0)
 val TextBrown = Color(0xFF6D4C41)
 
-@Preview
+
 @Composable
 fun StartUpView(
     navigateToLogin: () -> Unit = {},
@@ -44,7 +46,13 @@ fun StartUpView(
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
 
-    // Si el usuario está autenticado, navega al HomeView
+    // Launcher para Google Sign-In
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = AuthResultContract(authViewModel.getGoogleSignInClient())
+    ) { task ->
+        task?.let { authViewModel.handleGoogleSignInResult(it) }
+    }
+
     LaunchedEffect(user) {
         if (user != null) onLoginSuccess()
     }
@@ -58,15 +66,12 @@ fun StartUpView(
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        // Logo de la app
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = null,
-            modifier = Modifier
-                .size(200.dp)
+            modifier = Modifier.size(200.dp)
         )
 
-        // Texto principal
         Text(
             text = "Inspírate y Cocina",
             color = TextBrown,
@@ -75,7 +80,6 @@ fun StartUpView(
             textAlign = TextAlign.Center
         )
 
-        // Subtítulo descriptivo
         Text(
             text = "Descubre y Comparte Recetas",
             color = TextBrown,
@@ -86,7 +90,6 @@ fun StartUpView(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Botón de inicio de sesión
         Button(
             onClick = navigateToLogin,
             modifier = Modifier
@@ -104,12 +107,11 @@ fun StartUpView(
             )
         }
 
-        // Botón de Google
         CustomButton(
             modifier = Modifier.fillMaxWidth(0.8f),
             painter = painterResource(id = R.drawable.google),
             title = "Iniciar con Google",
-            onClick = { authViewModel.loginWithGoogle("ID_TOKEN_PLACEHOLDER") } // Aquí se debe proveer el token real
+            onClick = { authViewModel.launchGoogleSignIn(googleSignInLauncher) }
         )
 
         Text(
@@ -120,12 +122,10 @@ fun StartUpView(
             fontSize = 14.sp
         )
 
-        // Indicador de carga
         if (isLoading) {
             CircularProgressIndicator(color = TextBrown)
         }
 
-        // Mensaje de error
         errorMessage?.let {
             Text(
                 text = it,
