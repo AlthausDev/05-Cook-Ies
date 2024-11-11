@@ -1,11 +1,18 @@
 package com.althaus.dev.cookIes.viewmodel
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.repository.AuthRepository
 import com.althaus.dev.cookIes.data.repository.AuthResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,11 +33,6 @@ class AuthViewModel @Inject constructor(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
-
-    // Obtener el cliente de Google Sign-In
-    fun getGoogleSignInClient(): GoogleSignInClient {
-        return authRepository.getGoogleSignInClient()
-    }
 
     fun login(email: String, password: String) {
         _isLoading.value = true
@@ -79,17 +81,60 @@ class AuthViewModel @Inject constructor(
     }
 
 
-        fun logout() {
+    fun logout() {
         authRepository.logout()
         _user.value = null
     }
 
-    // Iniciar sesión con Google usando el idToken
+
+    // Método para obtener GoogleSignInClient
+    fun getGoogleSignInClient(): GoogleSignInClient {
+        return authRepository.getGoogleSignInClient()
+    }
+
+    // Método para lanzar el flujo de inicio de sesión con Google
+    fun launchGoogleSignIn(launcher: ActivityResultLauncher<Int>) {
+        launcher.launch(0)
+    }
+
+    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val account = task.getResult(Exception::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    val result = authRepository.signInWithGoogle(idToken)
+                    when (result) {
+                        is AuthResult.Success -> {
+                            _user.value = result.user
+                            _errorMessage.value = null
+
+                        }
+                        is AuthResult.Failure -> {
+                            _user.value = null
+                            _errorMessage.value = "Error: ${result.exception.message}"
+                        }
+                        AuthResult.UserNotFound -> {
+                            _user.value = null
+                            _errorMessage.value = "Usuario no encontrado"
+                        }
+                    }
+                } else {
+                    _errorMessage.value = "Error al obtener el ID Token de Google"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun loginWithGoogle(idToken: String) {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                // Llamamos a `signInWithGoogle` y manejamos el resultado `AuthResult`
                 when (val result = authRepository.signInWithGoogle(idToken)) {
                     is AuthResult.Success -> {
                         _user.value = result.user
@@ -113,6 +158,25 @@ class AuthViewModel @Inject constructor(
     }
 
 
+
+
     val isAuthenticated: Boolean
         get() = _user.value != null
+}
+
+
+
+// Contrato de resultado para la autenticación con Google
+class AuthResultContract(private val googleSignInClient: GoogleSignInClient) :
+    ActivityResultContract<Int, Task<GoogleSignInAccount>?>() {
+    override fun parseResult(resultCode: Int, intent: Intent?): Task<GoogleSignInAccount>? {
+        return when (resultCode) {
+            Activity.RESULT_OK -> GoogleSignIn.getSignedInAccountFromIntent(intent)
+            else -> null
+        }
+    }
+
+    override fun createIntent(context: Context, input: Int): Intent {
+        return googleSignInClient.signInIntent.putExtra("input", input)
+    }
 }

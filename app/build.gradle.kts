@@ -18,6 +18,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -56,6 +58,9 @@ android {
 }
 
 dependencies {
+
+    implementation ("com.android.support:multidex:1.0.3")
+
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
