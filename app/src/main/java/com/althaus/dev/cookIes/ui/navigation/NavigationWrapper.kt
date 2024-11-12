@@ -45,29 +45,50 @@ fun NavigationWrapper(
     NavHost(navController = navHostController, startDestination = startDestination) {
         composable(Screen.StartUp.route) {
             StartUpView(
-                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
-                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) },
+                navigateToLogin = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Login.route)
+                },
+                navigateToSignUp = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.SignUp.route)
+                },
                 authViewModel = authViewModel,
-                onLoginSuccess = { navHostController.navigate(Screen.Home.route) }
+                onLoginSuccess = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Home.route)
+                }
             )
         }
 
         composable(Screen.Login.route) {
             LoginView(
-                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) },
-                navigateToStartUp = { navHostController.navigate(Screen.StartUp.route) },
-                onLoginSuccess = { navHostController.navigate(Screen.Home.route) },
+                navigateToSignUp = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.SignUp.route)
+                },
+                onLoginSuccess = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Home.route)
+                },
                 authViewModel = authViewModel
             )
         }
 
         composable(Screen.SignUp.route) {
             SignUpView(
-                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
-                onSignUpSuccess = { navHostController.navigate(Screen.Home.route) },
+                navigateToLogin = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Login.route)
+                },
+                onSignUpSuccess = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Home.route)
+                },
                 authViewModel = authViewModel
             )
         }
+
 
         composable(Screen.Home.route) {
             HomeView(

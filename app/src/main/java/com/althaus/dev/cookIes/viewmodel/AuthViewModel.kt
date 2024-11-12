@@ -157,8 +157,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-
-
+    fun resetError() {
+        _errorMessage.value = null
+    }
 
     val isAuthenticated: Boolean
         get() = _user.value != null

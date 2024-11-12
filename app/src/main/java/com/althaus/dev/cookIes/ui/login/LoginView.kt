@@ -38,7 +38,6 @@ import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 @Composable
 fun LoginView(
     navigateToSignUp: () -> Unit = {},
-    navigateToStartUp: () -> Unit = {},
     onLoginSuccess: () -> Unit = {},
     authViewModel: AuthViewModel
 ) {
@@ -49,8 +48,9 @@ fun LoginView(
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
 
-
-//    BackHandler(true) { navigateToStartUp() }
+//
+//    BackHandler(true) { authViewModel.resetError()
+//    }
 
 
     LaunchedEffect(user) {

@@ -54,6 +54,10 @@ fun StartUpView(
         if (user != null) onLoginSuccess()
     }
 
+    LaunchedEffect(Unit) {
+        authViewModel.resetError()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
