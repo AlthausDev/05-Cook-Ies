@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import com.althaus.dev.cookIes.ui.home.HomeView
 import com.althaus.dev.cookIes.ui.login.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
@@ -44,26 +45,30 @@ fun NavigationWrapper(
     NavHost(navController = navHostController, startDestination = startDestination) {
         composable(Screen.StartUp.route) {
             StartUpView(
-                navigateToLogin = { navigateWithClearBackStack(navHostController, Screen.Login.route) },
-                navigateToSignUp = { navigateWithClearBackStack(navHostController, Screen.SignUp.route) },
+                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
+                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) },
                 authViewModel = authViewModel,
-                onLoginSuccess = { navigateWithClearBackStack(navHostController, Screen.Home.route) }
+                onLoginSuccess = { navHostController.navigate(Screen.Home.route) }
             )
         }
+
         composable(Screen.Login.route) {
             LoginView(
-                navigateToSignUp = { navigateWithClearBackStack(navHostController, Screen.SignUp.route) },
-                onLoginSuccess = { navigateWithClearBackStack(navHostController, Screen.Home.route) },
+                navigateToSignUp = { navHostController.navigate(Screen.SignUp.route) },
+                navigateToStartUp = { navHostController.navigate(Screen.StartUp.route) },
+                onLoginSuccess = { navHostController.navigate(Screen.Home.route) },
                 authViewModel = authViewModel
             )
         }
+
         composable(Screen.SignUp.route) {
             SignUpView(
-                navigateToLogin = { navigateWithClearBackStack(navHostController, Screen.Login.route) },
-                onSignUpSuccess = { navigateWithClearBackStack(navHostController, Screen.Home.route) },
+                navigateToLogin = { navHostController.navigate(Screen.Login.route) },
+                onSignUpSuccess = { navHostController.navigate(Screen.Home.route) },
                 authViewModel = authViewModel
             )
         }
+
         composable(Screen.Home.route) {
             HomeView(
                 navigateToProfile = { navHostController.navigate(Screen.Profile.route) },

@@ -24,12 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.ui.home.RecipeCard
-import com.althaus.dev.cookIes.ui.startup.ParchmentLight
-import com.althaus.dev.cookIes.ui.startup.ParchmentDark
-import com.althaus.dev.cookIes.ui.startup.TextBrown
+
+import com.althaus.dev.cookIes.ui.theme.*
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
-@Preview
+
 @Composable
 fun ProfileView(
     profileViewModel: ProfileViewModel,

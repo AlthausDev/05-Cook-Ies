@@ -24,16 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.ui.theme.ParchmentDark
+import com.althaus.dev.cookIes.ui.theme.ParchmentLight
+import com.althaus.dev.cookIes.ui.theme.TextBrown
 import com.althaus.dev.cookIes.viewmodel.AuthResultContract
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
-
-// Colores para el esquema papiro
-val ParchmentLight = Color(0xFFF5F0DC)
-val ParchmentDark = Color(0xFFD7C6A0)
-val TextBrown = Color(0xFF6D4C41)
-
 
 @Composable
 fun StartUpView(
@@ -72,6 +69,7 @@ fun StartUpView(
             modifier = Modifier.size(200.dp)
         )
 
+        // Cambia color a marrón oscuro
         Text(
             text = "Inspírate y Cocina",
             color = TextBrown,
@@ -80,6 +78,7 @@ fun StartUpView(
             textAlign = TextAlign.Center
         )
 
+        // Cambia color a marrón oscuro
         Text(
             text = "Descubre y Comparte Recetas",
             color = TextBrown,
@@ -114,12 +113,14 @@ fun StartUpView(
             onClick = { authViewModel.launchGoogleSignIn(googleSignInLauncher) }
         )
 
+        // Cambia color a marrón oscuro
         Text(
             text = "¿No tienes cuenta? Regístrate",
             color = TextBrown,
             modifier = Modifier.clickable { navigateToSignUp() },
             fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
         )
 
         if (isLoading) {
