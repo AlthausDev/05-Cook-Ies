@@ -3,6 +3,7 @@ package com.althaus.dev.cookIes.viewmodel
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.ViewModel
@@ -34,128 +35,76 @@ class AuthViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+
     fun login(email: String, password: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            when (val result = authRepository.login(email, password)) {
-                is AuthResult.Success -> {
-                    _user.value = result.user
-                    _errorMessage.value = null
-                }
-                is AuthResult.Failure -> {
-                    _user.value = null
-                    _errorMessage.value = "Error: ${result.exception.message}"
-                }
-                AuthResult.UserNotFound -> {
-                    _user.value = null
-                    _errorMessage.value = "Inicio de sesión fallido"
-                }
-            }
-            _isLoading.value = false
+            handleAuthResult(authRepository.login(email, password))
         }
     }
 
     fun register(email: String, password: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            when (val result = authRepository.register(email, password)) {
-                is AuthResult.Success -> {
-                    _user.value = result.user
-                    _errorMessage.value = null
-                }
-                is AuthResult.Failure -> {
-                    _user.value = null
-                    _errorMessage.value = "Error: ${result.exception.message}"
-                }
-                AuthResult.UserNotFound -> {
-                    _user.value = null
-                    _errorMessage.value = "Registro fallido"
-                }
-            }
-            _isLoading.value = false
+            handleAuthResult(authRepository.register(email, password))
         }
+    }
+
+
+    // Método consolidado para manejar el resultado de autenticación
+    private fun handleAuthResult(result: AuthResult) {
+        when (result) {
+            is AuthResult.Success -> {
+                _user.value = result.user
+                _errorMessage.value = null
+            }
+            is AuthResult.Failure -> setErrorMessage("Error: ${result.exception.message}")
+            AuthResult.UserNotFound -> setErrorMessage("Usuario no encontrado")
+        }
+        _isLoading.value = false
     }
 
     fun setErrorMessage(message: String) {
         _errorMessage.value = message
     }
 
-
     fun logout() {
         authRepository.logout()
         _user.value = null
     }
-
 
     // Método para obtener GoogleSignInClient
     fun getGoogleSignInClient(): GoogleSignInClient {
         return authRepository.getGoogleSignInClient()
     }
 
-    // Método para lanzar el flujo de inicio de sesión con Google
     fun launchGoogleSignIn(launcher: ActivityResultLauncher<Int>) {
         launcher.launch(0)
     }
 
-    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val account = task.getResult(Exception::class.java)
-                val idToken = account?.idToken
-                if (idToken != null) {
-                    val result = authRepository.signInWithGoogle(idToken)
-                    when (result) {
-                        is AuthResult.Success -> {
-                            _user.value = result.user
-                            _errorMessage.value = null
-
-                        }
-                        is AuthResult.Failure -> {
-                            _user.value = null
-                            _errorMessage.value = "Error: ${result.exception.message}"
-                        }
-                        AuthResult.UserNotFound -> {
-                            _user.value = null
-                            _errorMessage.value = "Usuario no encontrado"
-                        }
-                    }
-                } else {
-                    _errorMessage.value = "Error al obtener el ID Token de Google"
-                }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
+    // Método para manejar el inicio de sesión con Google ID Token
+    fun handleGoogleSignInResult(idToken: String?) {
+        if (idToken == null) {
+            setErrorMessage("Error: ID Token es nulo")
+            return
         }
-    }
 
-    fun loginWithGoogle(idToken: String) {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                when (val result = authRepository.signInWithGoogle(idToken)) {
-                    is AuthResult.Success -> {
-                        _user.value = result.user
-                        _errorMessage.value = null
-                    }
-                    is AuthResult.Failure -> {
-                        _user.value = null
-                        _errorMessage.value = "Error: ${result.exception.message}"
-                    }
-                    AuthResult.UserNotFound -> {
-                        _user.value = null
-                        _errorMessage.value = "Usuario no encontrado"
-                    }
-                }
+                // Autenticación en Firebase usando el ID Token
+                val result = authRepository.signInWithGoogle(idToken)
+                handleAuthResult(result)
             } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.message}"
+                Log.e("Auth", "Error en Google Sign-In: ${e.message}")
+                setErrorMessage("Error en Google Sign-In: ${e.message}")
             } finally {
                 _isLoading.value = false
             }
         }
     }
+
+
 
     fun resetError() {
         _errorMessage.value = null
@@ -166,18 +115,22 @@ class AuthViewModel @Inject constructor(
 }
 
 
-
-// Contrato de resultado para la autenticación con Google
 class AuthResultContract(private val googleSignInClient: GoogleSignInClient) :
-    ActivityResultContract<Int, Task<GoogleSignInAccount>?>() {
-    override fun parseResult(resultCode: Int, intent: Intent?): Task<GoogleSignInAccount>? {
-        return when (resultCode) {
-            Activity.RESULT_OK -> GoogleSignIn.getSignedInAccountFromIntent(intent)
-            else -> null
-        }
+    ActivityResultContract<Int, String?>() {
+
+    // Crea el Intent para iniciar la autenticación de Google
+    override fun createIntent(context: Context, input: Int): Intent {
+        return googleSignInClient.signInIntent
     }
 
-    override fun createIntent(context: Context, input: Int): Intent {
-        return googleSignInClient.signInIntent.putExtra("input", input)
+    // Procesa el resultado de la autenticación de Google para obtener el ID Token
+    override fun parseResult(resultCode: Int, intent: Intent?): String? {
+        return if (resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+            val account = task.result
+            Log.d("AuthResultContract", "GoogleSignInAccount: ${account?.email}, ID Token: ${account?.idToken}")
+            account?.idToken // Obtiene el `idToken` de la cuenta seleccionada
+        } else null
     }
+
 }

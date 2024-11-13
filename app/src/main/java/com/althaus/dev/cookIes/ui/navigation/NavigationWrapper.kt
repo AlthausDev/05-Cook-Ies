@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import com.althaus.dev.cookIes.ui.home.HomeView
 import com.althaus.dev.cookIes.ui.login.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
@@ -15,6 +14,7 @@ import com.althaus.dev.cookIes.ui.startup.StartUpView
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
+
 
 sealed class Screen(val route: String) {
     object StartUp : Screen("startUp")
@@ -31,6 +31,7 @@ fun NavigationWrapper(
     profileViewModel: ProfileViewModel,
     recipeViewModel: RecipeViewModel
 ) {
+
     val currentUser = authViewModel.user.collectAsState().value
 
     // Definir la pantalla de inicio basada en el estado de autenticación

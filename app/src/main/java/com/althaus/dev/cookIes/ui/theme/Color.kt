@@ -2,6 +2,9 @@ package com.althaus.dev.cookIes.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val ParchmentLight = Color(0xFFEEE6C0)
+val ParchmentDark = Color(0xFFD7C6A0)
+val TextBrown = Color(0xFF6D4C41)
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)

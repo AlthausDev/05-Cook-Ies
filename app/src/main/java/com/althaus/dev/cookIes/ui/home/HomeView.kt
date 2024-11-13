@@ -52,6 +52,7 @@ import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 //    )
 //}
 
+@Preview
 @Composable
 fun HomeView(
     recipeViewModel: RecipeViewModel,

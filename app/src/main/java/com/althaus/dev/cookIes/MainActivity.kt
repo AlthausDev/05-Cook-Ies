@@ -19,6 +19,7 @@ import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 import com.google.android.gms.security.ProviderInstaller
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
     private val recipeViewModel: RecipeViewModel by viewModels()
+    private lateinit var auth: FirebaseAuth
     private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,21 +40,10 @@ class MainActivity : AppCompatActivity() {
         // Inicializar el navController antes de setContent
         navController = NavHostController(this)
 
-        // Manejar el evento de presionar el botón de atrás para navegar correctamente
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (!navController.popBackStack()) {
-                    finish() // Si no hay más pantallas en el stack, cerrar la aplicación
-                }
-            }
-        })
-
-        setContent {
+              setContent {
             navController = rememberNavController() // Inicializa el navController en el contexto de Compose
             CookIesTheme {
                 Surface(
-                    //modifier = Modifier.fillMaxSize(),
-                    //color = MaterialTheme.colorScheme.background
                 ) {
                     // Pasamos todos los ViewModels necesarios a NavigationWrapper
                     NavigationWrapper(

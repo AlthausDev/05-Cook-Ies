@@ -28,7 +28,7 @@ import com.althaus.dev.cookIes.ui.theme.*
 
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
-
+@Preview
 @Composable
 fun EditProfileView(
     profileViewModel: ProfileViewModel,

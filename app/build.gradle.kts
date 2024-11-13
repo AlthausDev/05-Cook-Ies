@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.firebase.realtime)
     implementation(libs.firebase.config)
 
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     implementation(libs.googlePlayServicesAuth)
     implementation(libs.coil)
 

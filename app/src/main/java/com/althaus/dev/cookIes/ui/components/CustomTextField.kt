@@ -11,8 +11,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.althaus.dev.cookIes.ui.startup.TextBrown
 import androidx.compose.material3.Text
+import com.althaus.dev.cookIes.ui.theme.ParchmentLight
+import com.althaus.dev.cookIes.ui.theme.TextBrown
 
 @Composable
 fun CustomTextField(
@@ -26,7 +27,7 @@ fun CustomTextField(
         onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth(0.8f)
-            .background(Color.White, CircleShape)
+            .background(ParchmentLight, CircleShape)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         singleLine = true,
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,

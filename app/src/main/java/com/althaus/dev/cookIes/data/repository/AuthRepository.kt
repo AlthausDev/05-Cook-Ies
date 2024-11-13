@@ -9,11 +9,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.*
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Resultado de autenticación
 sealed class AuthResult {
     data class Success(val user: FirebaseUser) : AuthResult()
     data class Failure(val exception: Exception) : AuthResult()
@@ -28,100 +28,80 @@ class AuthRepository @Inject constructor(
     val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    // Inicio de sesión con credencial
-    private suspend fun signInWithCredential(credential: AuthCredential): AuthResult {
+    // Singleton de GoogleSignInClient
+    private val googleSignInClientInstance: GoogleSignInClient by lazy {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    // Obtener GoogleSignInClient
+    fun getGoogleSignInClient(): GoogleSignInClient = googleSignInClientInstance
+
+    // Método auxiliar para manejar errores de autenticación de manera segura
+    private suspend fun safeAuthCall(authCall: suspend () -> FirebaseUser?): AuthResult {
         return try {
-            firebaseAuth.signInWithCredential(credential).await()?.let {
-                AuthResult.Success(it.user!!)
-            } ?: AuthResult.UserNotFound
+            authCall()?.let { AuthResult.Success(it) } ?: AuthResult.UserNotFound
         } catch (e: Exception) {
             AuthResult.Failure(e)
         }
     }
 
-    // Obtener cliente de Google
-    fun getGoogleSignInClient(): GoogleSignInClient {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        return GoogleSignIn.getClient(context, gso)
-    }
-
-    // Iniciar sesión con Google
+    // Iniciar sesión con Google usando el ID Token
     suspend fun signInWithGoogle(idToken: String): AuthResult {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return signInWithCredential(credential)
     }
 
+    // Iniciar sesión con credencial de autenticación (usado en varios métodos)
+    private suspend fun signInWithCredential(credential: AuthCredential): AuthResult {
+        return safeAuthCall {
+            firebaseAuth.signInWithCredential(credential).await()?.user
+        }
+    }
+
     // Iniciar sesión con email y contraseña
     suspend fun login(email: String, password: String): AuthResult {
-        return try {
-            firebaseAuth.signInWithEmailAndPassword(email, password).await()?.let {
-                AuthResult.Success(it.user!!)
-            } ?: AuthResult.UserNotFound
-        } catch (e: Exception) {
-            AuthResult.Failure(e)
+        return safeAuthCall {
+            firebaseAuth.signInWithEmailAndPassword(email, password).await()?.user
         }
     }
 
-    // Registro con email y contraseña
+    // Registrar usuario con email y contraseña
     suspend fun register(email: String, password: String): AuthResult {
-        return try {
-            firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.let {
-                AuthResult.Success(it.user!!)
-            } ?: AuthResult.UserNotFound
-        } catch (e: Exception) {
-            AuthResult.Failure(e)
+        return safeAuthCall {
+            firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.user
         }
     }
 
-    // Iniciar sesión anónima
-    suspend fun loginAnonymously(): AuthResult {
-        return try {
-            firebaseAuth.signInAnonymously().await()?.let {
-                AuthResult.Success(it.user!!)
-            } ?: AuthResult.UserNotFound
-        } catch (e: Exception) {
-            AuthResult.Failure(e)
-        }
-    }
-
-    // Actualizar perfil de usuario
+    // Actualizar el perfil de usuario con nombre y foto
     suspend fun updateUserProfile(userProfile: UserProfile): AuthResult {
         val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
-        return try {
+        return safeAuthCall {
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(userProfile.name)
                 .setPhotoUri(userProfile.profileImage?.let { Uri.parse(it) })
                 .build()
             currentUser.updateProfile(profileUpdates).await()
 
+            // Si el email ha cambiado, actualiza también el email del usuario
             if (userProfile.email != null && userProfile.email != currentUser.email) {
                 currentUser.updateEmail(userProfile.email).await()
             }
-            AuthResult.Success(currentUser)
-        } catch (e: Exception) {
-            AuthResult.Failure(e)
+            currentUser
         }
     }
 
     // Registro con proveedor externo (OAuth)
     suspend fun initRegisterWithProvider(activity: Activity, provider: OAuthProvider): AuthResult {
-        return try {
-            // Inicia la actividad de inicio de sesión con el proveedor dado y espera el resultado
-            val authResult = firebaseAuth.startActivityForSignInWithProvider(activity, provider).await()
-            val user = authResult.user // Aquí obtenemos al usuario directamente del resultado de autenticación
-            user?.let { AuthResult.Success(it) } ?: AuthResult.UserNotFound
-        } catch (e: Exception) {
-            AuthResult.Failure(e)
+        return safeAuthCall {
+            firebaseAuth.startActivityForSignInWithProvider(activity, provider).await()?.user
         }
     }
 
-    // Verificar si hay usuario autenticado
-    fun isUserLogged(): Boolean = currentUser != null
-
-    // Cerrar sesión
+    // Cerrar sesión del usuario
     fun logout() {
         firebaseAuth.signOut()
     }
