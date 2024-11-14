@@ -69,13 +69,13 @@ dependencies {
     implementation(libs.firebase.realtime)
     implementation(libs.firebase.config)
 
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(libs.play.services.location)
 
     implementation(libs.googlePlayServicesAuth)
     implementation(libs.coil)
 
-    implementation("com.google.dagger:hilt-android:2.51")
-    kapt("com.google.dagger:hilt-compiler:2.51")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
