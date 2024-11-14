@@ -1,6 +1,5 @@
-package com.althaus.dev.cookIes.ui.login
+package com.althaus.dev.cookIes.ui.authentication
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.ui.components.CustomTextField
-import com.althaus.dev.cookIes.ui.theme.ParchmentDark
-import com.althaus.dev.cookIes.ui.theme.ParchmentLight
-import com.althaus.dev.cookIes.ui.theme.TextBrown
+import com.althaus.dev.cookIes.theme.ParchmentDark
+import com.althaus.dev.cookIes.theme.ParchmentLight
+import com.althaus.dev.cookIes.theme.TextBrown
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
 @Composable

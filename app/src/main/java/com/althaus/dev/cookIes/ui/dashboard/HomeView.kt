@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes.ui.home
+package com.althaus.dev.cookIes.ui.dashboard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.model.Recipe
-import com.althaus.dev.cookIes.ui.theme.ParchmentDark
-import com.althaus.dev.cookIes.ui.theme.ParchmentLight
-import com.althaus.dev.cookIes.ui.theme.TextBrown
+import com.althaus.dev.cookIes.theme.ParchmentDark
+import com.althaus.dev.cookIes.theme.ParchmentLight
+import com.althaus.dev.cookIes.theme.TextBrown
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 //@Preview(showBackground = true)
@@ -52,7 +52,7 @@ import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 //    )
 //}
 
-@Preview
+
 @Composable
 fun HomeView(
     recipeViewModel: RecipeViewModel,

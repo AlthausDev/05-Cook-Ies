@@ -22,13 +22,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.theme.ParchmentDark
+import com.althaus.dev.cookIes.theme.ParchmentLight
+import com.althaus.dev.cookIes.theme.TextBrown
 import com.althaus.dev.cookIes.ui.components.CustomTextField
 
-import com.althaus.dev.cookIes.ui.theme.*
+
 
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
-@Preview
+
 @Composable
 fun EditProfileView(
     profileViewModel: ProfileViewModel,

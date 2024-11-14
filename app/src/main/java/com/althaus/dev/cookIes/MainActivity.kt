@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,8 +14,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavHostController
-import com.althaus.dev.cookIes.ui.navigation.NavigationWrapper
-import com.althaus.dev.cookIes.ui.theme.CookIesTheme
+import com.althaus.dev.cookIes.navigation.NavigationWrapper
+import com.althaus.dev.cookIes.theme.CookIesTheme
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var navController: NavHostController
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

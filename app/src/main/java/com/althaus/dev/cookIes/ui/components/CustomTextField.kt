@@ -12,8 +12,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
-import com.althaus.dev.cookIes.ui.theme.ParchmentLight
-import com.althaus.dev.cookIes.ui.theme.TextBrown
+import com.althaus.dev.cookIes.theme.ParchmentLight
+import com.althaus.dev.cookIes.theme.TextBrown
 
 @Composable
 fun CustomTextField(

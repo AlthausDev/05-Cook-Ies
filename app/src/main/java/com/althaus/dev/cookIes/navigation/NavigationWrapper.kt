@@ -1,4 +1,4 @@
-package com.althaus.dev.cookIes.ui.navigation
+package com.althaus.dev.cookIes.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -6,10 +6,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.althaus.dev.cookIes.ui.home.HomeView
-import com.althaus.dev.cookIes.ui.login.LoginView
+import com.althaus.dev.cookIes.ui.dashboard.HomeView
+import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
-import com.althaus.dev.cookIes.ui.signup.SignUpView
+import com.althaus.dev.cookIes.ui.authentication.SignUpView
 import com.althaus.dev.cookIes.ui.startup.StartUpView
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
