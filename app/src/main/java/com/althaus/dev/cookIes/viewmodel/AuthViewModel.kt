@@ -1,6 +1,5 @@
 package com.althaus.dev.cookIes.viewmodel
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -11,9 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.repository.AuthRepository
 import com.althaus.dev.cookIes.data.repository.AuthResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +23,8 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
+    // ---- Gestión de Estados ----
+
     private val _user = MutableStateFlow<FirebaseUser?>(authRepository.currentUser)
     val user: StateFlow<FirebaseUser?> = _user
 
@@ -35,37 +34,21 @@ class AuthViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    val isAuthenticated: Boolean
+        get() = _user.value != null
 
-    fun login(email: String, password: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            handleAuthResult(authRepository.login(email, password))
-        }
+    fun resetError() {
+        _errorMessage.value = null
     }
 
-    fun register(email: String, password: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            handleAuthResult(authRepository.register(email, password))
-        }
+    // ---- Funciones de Autenticación ----
+
+    fun login(email: String, password: String) = executeAuth {
+        handleAuthResult(authRepository.login(email, password))
     }
 
-
-    // Método consolidado para manejar el resultado de autenticación
-    private fun handleAuthResult(result: AuthResult) {
-        when (result) {
-            is AuthResult.Success -> {
-                _user.value = result.user
-                _errorMessage.value = null
-            }
-            is AuthResult.Failure -> setErrorMessage("Error: ${result.exception.message}")
-            AuthResult.UserNotFound -> setErrorMessage("Usuario no encontrado")
-        }
-        _isLoading.value = false
-    }
-
-    fun setErrorMessage(message: String) {
-        _errorMessage.value = message
+    fun register(email: String, password: String) = executeAuth {
+        handleAuthResult(authRepository.register(email, password))
     }
 
     fun logout() {
@@ -73,7 +56,35 @@ class AuthViewModel @Inject constructor(
         _user.value = null
     }
 
-    // Método para obtener GoogleSignInClient
+    fun handleGoogleSignInResult(idToken: String?) {
+        if (idToken.isNullOrEmpty()) {
+            showError("Error: ID Token es nulo")
+            return
+        }
+        executeAuth {
+            handleAuthResult(authRepository.signInWithGoogle(idToken))
+        }
+    }
+
+    private fun handleAuthResult(result: AuthResult) {
+        when (result) {
+            is AuthResult.Success -> {
+                _user.value = result.user
+                _errorMessage.value = null
+            }
+            is AuthResult.Failure -> showError("Error: ${result.exception.message}")
+            AuthResult.UserNotFound -> showError("Usuario no encontrado")
+        }
+    }
+
+
+    fun showError(message: String) {
+        _errorMessage.value = message
+        _isLoading.value = false
+    }
+
+    // ---- Integración con Google Sign-In ----
+
     fun getGoogleSignInClient(): GoogleSignInClient {
         return authRepository.getGoogleSignInClient()
     }
@@ -82,55 +93,41 @@ class AuthViewModel @Inject constructor(
         launcher.launch(0)
     }
 
-    // Método para manejar el inicio de sesión con Google ID Token
-    fun handleGoogleSignInResult(idToken: String?) {
-        if (idToken == null) {
-            setErrorMessage("Error: ID Token es nulo")
-            return
-        }
+    // ---- Utilidades ----
 
+    private fun executeAuth(authOperation: suspend () -> Unit) {
         _isLoading.value = true
         viewModelScope.launch {
-            try {
-                // Autenticación en Firebase usando el ID Token
-                val result = authRepository.signInWithGoogle(idToken)
-                handleAuthResult(result)
-            } catch (e: Exception) {
-                Log.e("Auth", "Error en Google Sign-In: ${e.message}")
-                setErrorMessage("Error en Google Sign-In: ${e.message}")
-            } finally {
-                _isLoading.value = false
-            }
+            authOperation()
+            _isLoading.value = false
         }
     }
 
-
-
-    fun resetError() {
-        _errorMessage.value = null
+    fun validatePasswords(password: String, confirmPassword: String): Boolean {
+        return if (password == confirmPassword) {
+            true
+        } else {
+            showError("Las contraseñas no coinciden")
+            false
+        }
     }
-
-    val isAuthenticated: Boolean
-        get() = _user.value != null
 }
 
+// ---- Clase de Contrato para Google Sign-In ----
 
 class AuthResultContract(private val googleSignInClient: GoogleSignInClient) :
     ActivityResultContract<Int, String?>() {
 
-    // Crea el Intent para iniciar la autenticación de Google
     override fun createIntent(context: Context, input: Int): Intent {
         return googleSignInClient.signInIntent
     }
 
-    // Procesa el resultado de la autenticación de Google para obtener el ID Token
     override fun parseResult(resultCode: Int, intent: Intent?): String? {
-        return if (resultCode == Activity.RESULT_OK) {
+        return if (resultCode == android.app.Activity.RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
-            val account = task.result
-            Log.d("AuthResultContract", "GoogleSignInAccount: ${account?.email}, ID Token: ${account?.idToken}")
-            account?.idToken // Obtiene el `idToken` de la cuenta seleccionada
+            task.result?.idToken.also {
+                Log.d("AuthResultContract", "ID Token: $it")
+            }
         } else null
     }
-
 }

@@ -3,7 +3,9 @@ package com.althaus.dev.cookIes.di
 import android.content.Context
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.repository.AuthRepository
+import com.althaus.dev.cookIes.data.repository.NotificationRepository
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
+import com.althaus.dev.cookIes.data.repository.UserRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -32,8 +34,9 @@ object AppModule {
     @Provides
     fun provideAuthRepository(
         firebaseAuth: FirebaseAuth,
+        googleSignInClient: GoogleSignInClient,
         @ApplicationContext context: Context
-    ): AuthRepository = AuthRepository(firebaseAuth, context)
+    ): AuthRepository = AuthRepository(firebaseAuth, googleSignInClient, context)
 
     @Provides
     @Singleton
@@ -53,4 +56,19 @@ object AppModule {
             .build()
         return GoogleSignIn.getClient(context, gso)
     }
+
+    // Provisión de UserRepository
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        firebaseAuth: FirebaseAuth,
+        firestore: FirebaseFirestore
+    ): UserRepository = UserRepository(firebaseAuth, firestore)
+
+    // Provisión de NotificationRepository
+    @Provides
+    @Singleton
+    fun provideNotificationRepository(
+        firestore: FirebaseFirestore
+    ): NotificationRepository = NotificationRepository(firestore)
 }

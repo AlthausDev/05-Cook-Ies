@@ -1,10 +1,10 @@
-// RecipeViewModel.kt
 package com.althaus.dev.cookIes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
+import com.althaus.dev.cookIes.data.repository.RecipeResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,58 +22,68 @@ class RecipeViewModel @Inject constructor(
     private val repository: RecipeRepository
 ) : ViewModel() {
 
-    // Estado de la UI usando RecipeUiState
     private val _uiState = MutableStateFlow(RecipeUiState())
     val uiState: StateFlow<RecipeUiState> = _uiState.asStateFlow()
 
-    // Flujo para errores, sin almacenar el último valor
     private val _errorMessages = MutableSharedFlow<String>()
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
 
     init {
-        loadRecipes()
+        refreshRecipes()
     }
 
-    // Cargar recetas desde el repositorio
-    fun loadRecipes() {
-        _uiState.update { it.copy(isLoading = true) }
+    // Refrescar las recetas (cargar o recargar)
+    fun refreshRecipes() = handleLoading {
+        repository.getRecipes().collect { result ->
+            when (result) {
+                is RecipeResult.Success -> updateRecipes(result.data)
+                is RecipeResult.Failure -> showError("Error al cargar recetas: ${result.exception.localizedMessage}")
+            }
+        }
+    }
+
+    // Agregar receta
+    fun addRecipe(recipe: Recipe) = handleLoading {
+        when (val result = repository.addRecipe(recipe)) {
+            is RecipeResult.Success -> refreshRecipes()
+            is RecipeResult.Failure -> showError("Error al agregar receta: ${result.exception.localizedMessage}")
+        }
+    }
+
+    // Eliminar receta
+    fun deleteRecipe(recipeId: String) = handleLoading {
+        when (val result = repository.deleteRecipe(recipeId)) {
+            is RecipeResult.Success -> refreshRecipes()
+            is RecipeResult.Failure -> showError("Error al eliminar receta: ${result.exception.localizedMessage}")
+        }
+    }
+
+    // ---- Métodos Privados ----
+
+    // Manejar operaciones de carga y estado
+    private fun handleLoading(operation: suspend () -> Unit) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             try {
-                repository.getRecipes().collect { recipeList ->
-                    _uiState.update { it.copy(recipes = recipeList, isLoading = false, errorMessage = null) }
-                }
+                operation()
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Error al cargar recetas") }
-                _errorMessages.emit("Error al cargar recetas: ${e.message}")
+                showError("Error inesperado: ${e.localizedMessage}")
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
-    // Agregar receta y actualizar estado
-    fun addRecipe(recipe: Recipe) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val success = repository.addRecipe(recipe)
-            if (success) {
-                loadRecipes()
-            } else {
-                _errorMessages.emit("Error al agregar receta")
-            }
-            _uiState.update { it.copy(isLoading = false) }
-        }
+    // Actualizar la lista de recetas
+    private fun updateRecipes(recipes: List<Recipe>) {
+        _uiState.update { it.copy(recipes = recipes, errorMessage = null) }
     }
 
-    // Eliminar receta y actualizar estado
-    fun deleteRecipe(recipeId: String) {
+    // Mostrar error en el flujo de mensajes y en el estado de UI
+    private fun showError(message: String) {
+        _uiState.update { it.copy(errorMessage = message) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val success = repository.deleteRecipe(recipeId)
-            if (success) {
-                loadRecipes()
-            } else {
-                _errorMessages.emit("Error al eliminar receta")
-            }
-            _uiState.update { it.copy(isLoading = false) }
+            _errorMessages.emit(message)
         }
     }
 }

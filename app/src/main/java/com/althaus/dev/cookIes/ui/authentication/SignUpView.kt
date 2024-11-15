@@ -1,37 +1,18 @@
 package com.althaus.dev.cookIes.ui.authentication
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.althaus.dev.cookIes.ui.components.CustomTextField
-import com.althaus.dev.cookIes.theme.ParchmentDark
-import com.althaus.dev.cookIes.theme.ParchmentLight
-import com.althaus.dev.cookIes.theme.TextBrown
+import com.althaus.dev.cookIes.theme.GradientBackground
+import com.althaus.dev.cookIes.theme.PrimaryButton
+import com.althaus.dev.cookIes.ui.components.*
+import com.althaus.dev.cookIes.theme.TextPrimary
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
 @Composable
@@ -56,108 +37,87 @@ fun SignUpView(
         if (user != null) onSignUpSuccess()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(ParchmentLight, ParchmentDark))),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Título de la pantalla
-        Text(
-            text = "Crear Cuenta",
-            color = TextBrown,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.weight(0.5f))
-
-
-        // Campo de nombre
-        CustomTextField(
-            value = fullName,
-            onValueChange = { fullName = it },
-            placeholder = "Nombre Completo"
-        )
-
-        // Campo de correo electrónico
-        CustomTextField(
-            value = email,
-            onValueChange = { email = it },
-            placeholder = "Correo Electrónico"
-        )
-
-        // Campo de contraseña
-        CustomTextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = "Contraseña",
-            isPassword = true
-        )
-
-        // Campo de confirmación de contraseña
-        CustomTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            placeholder = "Repetir Contraseña",
-            isPassword = true
-        )
-
-        Spacer(modifier = Modifier.weight(0.25f))
-
-        // Botón de registro
-        Button(
-            onClick = {
-                if (password == confirmPassword) {
-                    authViewModel.register(email, password)
-                } else {
-                    authViewModel.setErrorMessage("Las contraseñas no coinciden")
-                }
-            },
+    GradientBackground {
+        Column(
             modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = TextBrown),
-            shape = CircleShape
+                .fillMaxSize()
+                .padding(vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
         ) {
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Título de la pantalla
             Text(
-                text = "Registrarse",
-                color = Color.White,
+                text = "Crear Cuenta",
+                color = TextPrimary,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
-        }
 
-        // Indicador de carga
-        if (isLoading) {
-            CircularProgressIndicator(color = TextBrown)
-        }
+            Spacer(modifier = Modifier.weight(0.5f))
 
-        // Mensaje de error
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = Color.Red,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
+            // Campo de nombre
+            CustomTextField(
+                value = fullName,
+                onValueChange = { fullName = it },
+                placeholder = "Nombre Completo"
             )
+
+            // Campo de correo electrónico
+            CustomTextField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = "Correo Electrónico"
+            )
+
+            // Campo de contraseña
+            CustomTextField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = "Contraseña",
+                isPassword = true
+            )
+
+            // Campo de confirmación de contraseña
+            CustomTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                placeholder = "Repetir Contraseña",
+                isPassword = true
+            )
+
+            Spacer(modifier = Modifier.weight(0.25f))
+
+            // Botón de registro
+            PrimaryButton(
+                text = "Registrarse",
+                onClick = {
+                    if (authViewModel.validatePasswords(password, confirmPassword)) {
+                        authViewModel.register(email, password)
+                    }
+                }
+            )
+
+
+            // Indicador de carga
+            if (isLoading) {
+                LoadingIndicator()
+            }
+
+            // Mensaje de error
+            errorMessage?.let {
+                ErrorText(message = it)
+            }
+
+            // Redirección a la pantalla de inicio de sesión
+            ClickableText(
+                text = "¿Ya tienes cuenta? Inicia Sesión",
+                onClick = navigateToLogin
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
         }
-
-
-        // Redirección a la pantalla de inicio de sesión
-        Text(
-            text = "¿Ya tienes cuenta? Inicia Sesión",
-            color = TextBrown,
-            modifier = Modifier.clickable { navigateToLogin() },
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
     }
 }

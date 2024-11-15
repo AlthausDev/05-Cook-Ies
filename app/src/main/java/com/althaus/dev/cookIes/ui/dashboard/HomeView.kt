@@ -36,10 +36,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.Recipe
-import com.althaus.dev.cookIes.theme.ParchmentDark
-import com.althaus.dev.cookIes.theme.ParchmentLight
-import com.althaus.dev.cookIes.theme.TextBrown
+import com.althaus.dev.cookIes.theme.PrimaryDark
+import com.althaus.dev.cookIes.theme.PrimaryLight
+import com.althaus.dev.cookIes.theme.TextPrimary
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 //@Preview(showBackground = true)
@@ -57,6 +58,8 @@ import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 fun HomeView(
     recipeViewModel: RecipeViewModel,
     navigateToProfile: () -> Unit,
+    navigateToNotifications: () -> Unit,
+    navigateToFavorites: () -> Unit,
     onRecipeClick: (Recipe) -> Unit
 ) {
     val recipesState = remember { recipeViewModel.uiState }.collectAsState()
@@ -65,7 +68,7 @@ fun HomeView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(ParchmentLight, ParchmentDark))),
+            .background(Brush.verticalGradient(listOf(PrimaryLight, PrimaryDark))),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Encabezado
@@ -74,7 +77,7 @@ fun HomeView(
         // Indicador de carga y mensajes de error
         when {
             uiState.isLoading -> {
-                CircularProgressIndicator(color = TextBrown, modifier = Modifier.padding(16.dp))
+                CircularProgressIndicator(color = TextPrimary, modifier = Modifier.padding(16.dp))
             }
             uiState.errorMessage != null -> {
                 Text(
@@ -118,7 +121,7 @@ fun HeaderSection(navigateToProfile: () -> Unit) {
     ) {
         Text(
             text = "Recetario",
-            color = TextBrown,
+            color = TextPrimary,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold
         )
@@ -126,7 +129,7 @@ fun HeaderSection(navigateToProfile: () -> Unit) {
             Icon(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Perfil",
-                tint = TextBrown
+                tint = TextPrimary
             )
         }
     }
@@ -166,19 +169,19 @@ fun RecipeCard(recipe: Recipe, onRecipeClick: (Recipe) -> Unit) {
             ) {
                 Text(
                     text = recipe.name ?: "Receta desconocida",
-                    color = TextBrown,
+                    color = TextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = recipe.description ?: "Descripción no disponible",
-                    color = TextBrown.copy(alpha = 0.7f),
+                    color = TextPrimary.copy(alpha = 0.7f),
                     fontSize = 14.sp,
                     maxLines = 2
                 )
                 Text(
                     text = "Dificultad: ${recipe.difficultyLevel}",
-                    color = TextBrown,
+                    color = TextPrimary,
                     fontSize = 12.sp
                 )
             }

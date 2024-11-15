@@ -10,18 +10,30 @@ import com.althaus.dev.cookIes.ui.dashboard.HomeView
 import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
 import com.althaus.dev.cookIes.ui.authentication.SignUpView
-import com.althaus.dev.cookIes.ui.startup.StartUpView
+import com.althaus.dev.cookIes.ui.authentication.StartUpView
+//import com.althaus.dev.cookIes.ui.recipe.RecipeDetailView
+//import com.althaus.dev.cookIes.ui.recipe.RecipeListView
+import com.althaus.dev.cookIes.ui.notifications.NotificationsView
+import com.althaus.dev.cookIes.ui.settings.SettingsView
+import com.althaus.dev.cookIes.ui.favorites.FavoritesView
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
-
 
 sealed class Screen(val route: String) {
     object StartUp : Screen("startUp")
     object Login : Screen("logIn")
     object SignUp : Screen("signUp")
     object Home : Screen("home")
+    object Dashboard : Screen("dashboard")
     object Profile : Screen("profile")
+    object RecipeList : Screen("recipeList")
+    object RecipeDetail : Screen("recipeDetail/{recipeId}") {
+        fun createRoute(recipeId: String) = "recipeDetail/$recipeId"
+    }
+    object Notifications : Screen("notifications")
+    object Settings : Screen("settings")
+    object Favorites : Screen("favorites")
 }
 
 @Composable
@@ -31,13 +43,9 @@ fun NavigationWrapper(
     profileViewModel: ProfileViewModel,
     recipeViewModel: RecipeViewModel
 ) {
-
     val currentUser = authViewModel.user.collectAsState().value
-
-    // Definir la pantalla de inicio basada en el estado de autenticación
     val startDestination = if (currentUser != null) Screen.Home.route else Screen.StartUp.route
 
-    // Lanzar efecto para redirigir cuando el estado de autenticación cambie
     LaunchedEffect(currentUser) {
         val destination = if (currentUser != null) Screen.Home.route else Screen.StartUp.route
         navigateWithClearBackStack(navHostController, destination)
@@ -57,7 +65,7 @@ fun NavigationWrapper(
                 authViewModel = authViewModel,
                 onLoginSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Home.route)
+                    navHostController.navigate(Screen.Dashboard.route)
                 }
             )
         }
@@ -70,7 +78,7 @@ fun NavigationWrapper(
                 },
                 onLoginSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Home.route)
+                    navHostController.navigate(Screen.Dashboard.route)
                 },
                 authViewModel = authViewModel
             )
@@ -84,42 +92,110 @@ fun NavigationWrapper(
                 },
                 onSignUpSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Home.route)
+                    navHostController.navigate(Screen.Dashboard.route)
                 },
                 authViewModel = authViewModel
             )
         }
 
-
-        composable(Screen.Home.route) {
+        composable(Screen.Dashboard.route) {
+            authViewModel.resetError()
             HomeView(
-                navigateToProfile = { navHostController.navigate(Screen.Profile.route) },
+                navigateToProfile = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Profile.route)
+                },
                 onRecipeClick = { recipeId ->
-                    // Aquí puedes navegar a una pantalla de detalles de la receta
-                    // Por ejemplo:
-                    // navHostController.navigate("recipeDetail/$recipeId")
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId.toString()))
+                },
+                navigateToNotifications = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Notifications.route)
+                },
+                navigateToFavorites = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Favorites.route)
                 },
                 recipeViewModel = recipeViewModel
             )
         }
+
         composable(Screen.Profile.route) {
+            authViewModel.resetError()
             ProfileView(
-                onEditProfile = { /* Aquí puedes manejar la navegación o acción de editar perfil */ },
+                onEditProfile = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Settings.route)
+                },
                 onLogout = {
+                    authViewModel.resetError()
                     authViewModel.logout()
                     navigateWithClearBackStack(navHostController, Screen.StartUp.route)
                 },
                 profileViewModel = profileViewModel,
                 onRecipeClick = { recipeId ->
-                    // Acción al hacer clic en una receta desde el perfil
-                    // navHostController.navigate("recipeDetail/$recipeId")
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
                 }
             )
         }
+
+//        composable(Screen.RecipeList.route) {
+//            authViewModel.resetError()
+//            RecipeListView(
+//                onRecipeClick = { recipeId ->
+//                    authViewModel.resetError()
+//                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
+//                },
+//                recipeViewModel = recipeViewModel
+//            )
+//        }
+
+//        composable(Screen.RecipeDetail.route) { backStackEntry ->
+//            authViewModel.resetError()
+//            val recipeId = backStackEntry.arguments?.getString("recipeId")
+//            RecipeDetailView(
+//                recipeId = recipeId,
+//                recipeViewModel = recipeViewModel
+//            )
+//        }
+//
+//        composable(Screen.Notifications.route) {
+//            authViewModel.resetError()
+//            NotificationsView(
+//                onBack = {
+//                    authViewModel.resetError()
+//                    navHostController.popBackStack()
+//                }
+//            )
+//        }
+//
+//        composable(Screen.Settings.route) {
+//            authViewModel.resetError()
+//            SettingsView(
+//                onBack = {
+//                    authViewModel.resetError()
+//                    navHostController.popBackStack()
+//                }
+//            )
+//        }
+//
+//        composable(Screen.Favorites.route) {
+//            authViewModel.resetError()
+//            FavoritesView(
+//                onRecipeClick = { recipeId ->
+//                    authViewModel.resetError()
+//                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
+//                },
+//                recipeViewModel = recipeViewModel
+//            )
+//        }
     }
 }
 
-// Función para navegación con limpieza de backstack
+
+
 private fun navigateWithClearBackStack(navController: NavHostController, destination: String) {
     navController.navigate(destination) {
         popUpTo(navController.graph.startDestinationId) { inclusive = true }
