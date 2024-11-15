@@ -18,32 +18,34 @@ class NotificationRepository @Inject constructor(
 
     private val notificationsCollection = firestore.collection("notifications")
 
-    // Obtener todas las notificaciones para un usuario específico
-    suspend fun getUserNotifications(userId: String): Flow<NotificationResult<List<Notification>>> = flow {
-        emit(safeNotificationCall {
-            val snapshot = notificationsCollection.whereEqualTo("userId", userId).get().await()
-            snapshot.documents.mapNotNull { it.toObject(Notification::class.java) }
-        })
-    }
-
-    // Marcar una notificación como leída
-    suspend fun markNotificationAsRead(notificationId: String): NotificationResult<Boolean> = safeNotificationCall {
-        notificationsCollection.document(notificationId).update("isRead", true).await()
-        true
-    }
-
-    // Agregar una nueva notificación
-    suspend fun addNotification(notification: Notification): NotificationResult<Boolean> = safeNotificationCall {
-        notificationsCollection.add(notification).await()
-        true
-    }
-
-    // Método auxiliar para manejar errores en operaciones con Firestore
-    private suspend fun <T> safeNotificationCall(call: suspend () -> T): NotificationResult<T> {
-        return try {
-            NotificationResult.Success(call())
+    // Obtener notificaciones como Flow
+    suspend fun getNotifications(): Flow<NotificationResult<List<Notification>>> = flow {
+        try {
+            val snapshot = notificationsCollection.get().await()
+            val notifications = snapshot.documents.mapNotNull { it.toObject(Notification::class.java) }
+            emit(NotificationResult.Success(notifications))
         } catch (e: Exception) {
-            NotificationResult.Failure(e)
+            emit(NotificationResult.Failure(e))
+        }
+    }
+
+    // Marcar notificación como leída
+    suspend fun markAsRead(notificationId: String): Boolean {
+        return try {
+            notificationsCollection.document(notificationId).update("isRead", true).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    // Eliminar notificación
+    suspend fun deleteNotification(notificationId: String): Boolean {
+        return try {
+            notificationsCollection.document(notificationId).delete().await()
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 }
