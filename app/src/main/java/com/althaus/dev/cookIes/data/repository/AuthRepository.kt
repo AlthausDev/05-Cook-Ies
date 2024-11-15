@@ -22,6 +22,7 @@ sealed class AuthResult {
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
+    googleSignInClient: GoogleSignInClient,
     @ApplicationContext private val context: Context
 ) {
 
@@ -30,11 +31,10 @@ class AuthRepository @Inject constructor(
 
     // Singleton de GoogleSignInClient
     private val googleSignInClientInstance: GoogleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
+            .build())
     }
 
     // Obtener GoogleSignInClient
@@ -55,7 +55,7 @@ class AuthRepository @Inject constructor(
         return signInWithCredential(credential)
     }
 
-    // Iniciar sesión con credencial de autenticación (usado en varios métodos)
+    // Iniciar sesión con credencial de autenticación
     private suspend fun signInWithCredential(credential: AuthCredential): AuthResult {
         return safeAuthCall {
             firebaseAuth.signInWithCredential(credential).await()?.user
@@ -63,17 +63,13 @@ class AuthRepository @Inject constructor(
     }
 
     // Iniciar sesión con email y contraseña
-    suspend fun login(email: String, password: String): AuthResult {
-        return safeAuthCall {
-            firebaseAuth.signInWithEmailAndPassword(email, password).await()?.user
-        }
+    suspend fun login(email: String, password: String): AuthResult = safeAuthCall {
+        firebaseAuth.signInWithEmailAndPassword(email, password).await()?.user
     }
 
     // Registrar usuario con email y contraseña
-    suspend fun register(email: String, password: String): AuthResult {
-        return safeAuthCall {
-            firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.user
-        }
+    suspend fun register(email: String, password: String): AuthResult = safeAuthCall {
+        firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.user
     }
 
     // Actualizar el perfil de usuario con nombre y foto
@@ -82,7 +78,7 @@ class AuthRepository @Inject constructor(
         return safeAuthCall {
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(userProfile.name)
-                .setPhotoUri(userProfile.profileImage?.let { Uri.parse(it) })
+                .setPhotoUri(userProfile.profileImage?.let { Uri.parse(it.toString()) })
                 .build()
             currentUser.updateProfile(profileUpdates).await()
 
