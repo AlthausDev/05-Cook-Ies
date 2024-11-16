@@ -6,13 +6,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.althaus.dev.cookIes.ui.dashboard.HomeView
+import com.althaus.dev.cookIes.ui.dashboard.DashboardView
 import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
 import com.althaus.dev.cookIes.ui.authentication.SignUpView
 import com.althaus.dev.cookIes.ui.authentication.StartUpView
-//import com.althaus.dev.cookIes.ui.recipe.RecipeDetailView
-//import com.althaus.dev.cookIes.ui.recipe.RecipeListView
 import com.althaus.dev.cookIes.ui.notifications.NotificationsView
 import com.althaus.dev.cookIes.ui.settings.SettingsView
 import com.althaus.dev.cookIes.ui.favorites.FavoritesView
@@ -24,13 +22,8 @@ sealed class Screen(val route: String) {
     object StartUp : Screen("startUp")
     object Login : Screen("logIn")
     object SignUp : Screen("signUp")
-    object Home : Screen("home")
     object Dashboard : Screen("dashboard")
     object Profile : Screen("profile")
-    object RecipeList : Screen("recipeList")
-    object RecipeDetail : Screen("recipeDetail/{recipeId}") {
-        fun createRoute(recipeId: String) = "recipeDetail/$recipeId"
-    }
     object Notifications : Screen("notifications")
     object Settings : Screen("settings")
     object Favorites : Screen("favorites")
@@ -44,10 +37,10 @@ fun NavigationWrapper(
     recipeViewModel: RecipeViewModel
 ) {
     val currentUser = authViewModel.user.collectAsState().value
-    val startDestination = if (currentUser != null) Screen.Home.route else Screen.StartUp.route
+    val startDestination = if (currentUser != null) Screen.Dashboard.route else Screen.StartUp.route
 
     LaunchedEffect(currentUser) {
-        val destination = if (currentUser != null) Screen.Home.route else Screen.StartUp.route
+        val destination = if (currentUser != null) Screen.Dashboard.route else Screen.StartUp.route
         navigateWithClearBackStack(navHostController, destination)
     }
 
@@ -65,7 +58,7 @@ fun NavigationWrapper(
                 authViewModel = authViewModel,
                 onLoginSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Dashboard.route)
+                    navigateWithClearBackStack(navHostController, Screen.Dashboard.route)
                 }
             )
         }
@@ -78,7 +71,7 @@ fun NavigationWrapper(
                 },
                 onLoginSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Dashboard.route)
+                    navigateWithClearBackStack(navHostController, Screen.Dashboard.route)
                 },
                 authViewModel = authViewModel
             )
@@ -92,7 +85,7 @@ fun NavigationWrapper(
                 },
                 onSignUpSuccess = {
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.Dashboard.route)
+                    navigateWithClearBackStack(navHostController, Screen.Dashboard.route)
                 },
                 authViewModel = authViewModel
             )
@@ -100,24 +93,24 @@ fun NavigationWrapper(
 
         composable(Screen.Dashboard.route) {
             authViewModel.resetError()
-            HomeView(
+            DashboardView(
+                recipeViewModel = recipeViewModel,
+                navigateToRecipeDetail = { recipeId ->
+                    authViewModel.resetError()
+                    navHostController.navigate("recipeDetail/$recipeId")
+                },
                 navigateToProfile = {
                     authViewModel.resetError()
                     navHostController.navigate(Screen.Profile.route)
                 },
-                onRecipeClick = { recipeId ->
-                    authViewModel.resetError()
-                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId.toString()))
-                },
                 navigateToNotifications = {
                     authViewModel.resetError()
                     navHostController.navigate(Screen.Notifications.route)
-                },
-                navigateToFavorites = {
-                    authViewModel.resetError()
-                    navHostController.navigate(Screen.Favorites.route)
-                },
-                recipeViewModel = recipeViewModel
+                }
+//                onRecipeClick = { recipe ->
+//                    authViewModel.resetError()
+//                    navHostController.navigate("recipeDetail/${recipe.id}")
+//                }
             )
         }
 
@@ -136,65 +129,43 @@ fun NavigationWrapper(
                 profileViewModel = profileViewModel,
                 onRecipeClick = { recipeId ->
                     authViewModel.resetError()
-                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
+                    navHostController.navigate("recipeDetail/$recipeId")
                 }
             )
         }
 
-//        composable(Screen.RecipeList.route) {
-//            authViewModel.resetError()
-//            RecipeListView(
-//                onRecipeClick = { recipeId ->
-//                    authViewModel.resetError()
-//                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
-//                },
-//                recipeViewModel = recipeViewModel
-//            )
-//        }
+        composable(Screen.Notifications.route) {
+            authViewModel.resetError()
+            NotificationsView(
+                onBack = {
+                    authViewModel.resetError()
+                    navHostController.popBackStack()
+                }
+            )
+        }
 
-//        composable(Screen.RecipeDetail.route) { backStackEntry ->
-//            authViewModel.resetError()
-//            val recipeId = backStackEntry.arguments?.getString("recipeId")
-//            RecipeDetailView(
-//                recipeId = recipeId,
-//                recipeViewModel = recipeViewModel
-//            )
-//        }
-//
-//        composable(Screen.Notifications.route) {
-//            authViewModel.resetError()
-//            NotificationsView(
-//                onBack = {
-//                    authViewModel.resetError()
-//                    navHostController.popBackStack()
-//                }
-//            )
-//        }
-//
-//        composable(Screen.Settings.route) {
-//            authViewModel.resetError()
-//            SettingsView(
-//                onBack = {
-//                    authViewModel.resetError()
-//                    navHostController.popBackStack()
-//                }
-//            )
-//        }
-//
+        composable(Screen.Settings.route) {
+            authViewModel.resetError()
+            SettingsView(
+                onBack = {
+                    authViewModel.resetError()
+                    navHostController.popBackStack()
+                }
+            )
+        }
+
 //        composable(Screen.Favorites.route) {
 //            authViewModel.resetError()
 //            FavoritesView(
 //                onRecipeClick = { recipeId ->
 //                    authViewModel.resetError()
-//                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
+//                    navHostController.navigate("recipeDetail/$recipeId")
 //                },
 //                recipeViewModel = recipeViewModel
 //            )
 //        }
     }
 }
-
-
 
 private fun navigateWithClearBackStack(navController: NavHostController, destination: String) {
     navController.navigate(destination) {
