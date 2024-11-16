@@ -13,9 +13,48 @@ data class Notification(
     val isRead: Boolean = false,              // Indicador de si el usuario ya leyó la notificación
     val recipientId: String,                  // ID del usuario que recibe la notificación
     val relatedRecipeId: String? = null       // ID de una receta relacionada, si aplica
-)
+) {
+    init {
+        if (type == NotificationType.NEW_RECIPE || type == NotificationType.FAVORITE) {
+            require(!relatedRecipeId.isNullOrEmpty()) {
+                "relatedRecipeId es obligatorio para notificaciones de tipo $type."
+            }
+        }
+    }
 
-// Enum para representar los tipos de notificación
+    fun markAsRead(): Notification {
+        return this.copy(isRead = true)
+    }
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "title" to title,
+            "message" to message,
+            "type" to type.name,
+            "timestamp" to timestamp,
+            "isRead" to isRead,
+            "recipientId" to recipientId,
+            "relatedRecipeId" to relatedRecipeId
+        )
+    }
+
+    companion object {
+        fun fromMap(map: Map<String, Any?>): Notification {
+            return Notification(
+                id = map["id"] as? String ?: "",
+                title = map["title"] as? String ?: "",
+                message = map["message"] as? String ?: "",
+                type = NotificationType.valueOf(map["type"] as? String ?: "GENERAL"),
+                timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis(),
+                isRead = map["isRead"] as? Boolean ?: false,
+                recipientId = map["recipientId"] as? String ?: "",
+                relatedRecipeId = map["relatedRecipeId"] as? String
+            )
+        }
+    }
+}
+
 enum class NotificationType {
     NEW_RECIPE,      // Notificación de nueva receta
     COMMENT,         // Notificación de comentario
