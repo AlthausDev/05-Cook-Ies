@@ -13,7 +13,7 @@ import com.althaus.dev.cookIes.ui.authentication.SignUpView
 import com.althaus.dev.cookIes.ui.authentication.StartUpView
 import com.althaus.dev.cookIes.ui.notifications.NotificationsView
 import com.althaus.dev.cookIes.ui.settings.SettingsView
-import com.althaus.dev.cookIes.ui.favorites.FavoritesView
+
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
@@ -117,19 +117,16 @@ fun NavigationWrapper(
         composable(Screen.Profile.route) {
             authViewModel.resetError()
             ProfileView(
-                onEditProfile = {
+                onSettings = {
                     authViewModel.resetError()
                     navHostController.navigate(Screen.Settings.route)
-                },
-                onLogout = {
-                    authViewModel.resetError()
-                    authViewModel.logout()
-                    navigateWithClearBackStack(navHostController, Screen.StartUp.route)
                 },
                 profileViewModel = profileViewModel,
                 onRecipeClick = { recipeId ->
                     authViewModel.resetError()
                     navHostController.navigate("recipeDetail/$recipeId")
+                },
+                onFavorites = {
                 }
             )
         }
@@ -145,11 +142,17 @@ fun NavigationWrapper(
         }
 
         composable(Screen.Settings.route) {
-            authViewModel.resetError()
             SettingsView(
-                onBack = {
-                    authViewModel.resetError()
-                    navHostController.popBackStack()
+                profileViewModel = profileViewModel,
+                onSave = {
+                    navHostController.popBackStack() // Regresa al perfil después de guardar cambios
+                },
+                onCancel = {
+                    navHostController.popBackStack() // Regresa al perfil sin guardar cambios
+                },
+                onLogout = {
+                    authViewModel.logout()
+                    navigateWithClearBackStack(navHostController, Screen.StartUp.route)
                 }
             )
         }

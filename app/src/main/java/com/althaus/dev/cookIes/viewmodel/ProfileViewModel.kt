@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.model.UserProfile
 import com.althaus.dev.cookIes.data.repository.AuthRepository
+import com.althaus.dev.cookIes.data.repository.AuthResult
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
 import com.althaus.dev.cookIes.data.repository.RecipeResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,12 +25,6 @@ class ProfileViewModel @Inject constructor(
     private val _userProfile = MutableStateFlow<UserProfile?>(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile
 
-    private val _userRecipes = MutableStateFlow<List<Recipe>>(emptyList())
-    val userRecipes: StateFlow<List<Recipe>> = _userRecipes
-
-    private val _profileStats = MutableStateFlow<Map<String, Any>>(emptyMap())
-    val profileStats: StateFlow<Map<String, Any>> = _profileStats
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -38,8 +33,6 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadUserProfile()
-        loadUserRecipes()
-        calculateProfileStats()
     }
 
     // ---- Gestión del Perfil ----
@@ -63,57 +56,39 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateProfile(name: String, email: String, profileImage: Any?) {
+    // ---- Actualización Individual ----
+
+    // Actualizar Nombre
+    fun updateName(newName: String) {
         executeWithLoading {
             try {
-                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
-                val updatedProfile = UserProfile(
-                    id = userId,
-                    name = name,
-                    email = email,
-                    profileImage = profileImage?.toString()
-                )
-                authRepository.updateUserProfile(updatedProfile)
-                _userProfile.value = updatedProfile
+                val currentUser = authRepository.currentUser
+                    ?: throw Exception("Usuario no autenticado")
+                authRepository.updateUserName(newName)
+                _userProfile.value = _userProfile.value?.copy(name = newName)
             } catch (e: Exception) {
-                showError("Error al actualizar el perfil: ${e.localizedMessage}")
+                showError("Error al actualizar el nombre: ${e.localizedMessage}")
             }
         }
     }
 
-    // ---- Gestión de Recetas ----
-    private fun loadUserRecipes() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            try {
-                val userId = authRepository.currentUser?.uid ?: return@launch
-                recipeRepository.getUserRecipes(userId).collect { result ->
-                    when (result) {
-                        is RecipeResult.Success -> _userRecipes.value = result.data
-                        is RecipeResult.Failure -> _errorMessage.value = "Error al cargar las recetas: ${result.exception.localizedMessage}"
-                    }
-                }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error inesperado: ${e.localizedMessage}"
-            } finally {
-                _isLoading.value = false
+    // Actualizar Correo
+    fun updateUserEmail(newEmail: String, currentPassword: String) {
+        executeWithLoading {
+            val result = authRepository.updateUserEmail(newEmail, currentPassword)
+            if (result is AuthResult.Success) {
+                loadUserProfile() // Refrescar perfil después del cambio
+            } else if (result is AuthResult.Failure) {
+                showError("Error al actualizar el correo: ${result.exception.localizedMessage}")
             }
         }
     }
 
-
-    // ---- Estadísticas del Perfil ----
-    private fun calculateProfileStats() {
+    fun updateUserPassword(newPassword: String, currentPassword: String) {
         executeWithLoading {
-            try {
-                val recipeCount = _userRecipes.value.size
-                _profileStats.value = mapOf(
-                    "recipeCount" to recipeCount,
-                    "lastUpdated" to System.currentTimeMillis()
-                )
-            } catch (e: Exception) {
-                showError("Error al calcular estadísticas del perfil: ${e.localizedMessage}")
+            val result = authRepository.updateUserPassword(newPassword, currentPassword)
+            if (result is AuthResult.Failure) {
+                showError("Error al actualizar la contraseña: ${result.exception.localizedMessage}")
             }
         }
     }
