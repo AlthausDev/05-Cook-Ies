@@ -22,9 +22,10 @@ sealed class AuthResult {
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    googleSignInClient: GoogleSignInClient,
+    private val firestoreRepository: FirestoreRepository,
+    private val googleSignInClient: GoogleSignInClient,
     @ApplicationContext private val context: Context
-) {
+){
 
     val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
@@ -64,7 +65,7 @@ class AuthRepository @Inject constructor(
     }
 
     // Re-autenticar al usuario antes de realizar cambios sensibles
-    private suspend fun reAuthenticate(password: String): AuthResult {
+    suspend fun reAuthenticate(password: String): AuthResult {
         val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
         val email = currentUser.email ?: return AuthResult.Failure(Exception("El usuario no tiene un correo asociado."))
         val credential = EmailAuthProvider.getCredential(email, password)
@@ -75,16 +76,14 @@ class AuthRepository @Inject constructor(
     }
 
     // Actualizar Correo Electrónico (con re-autenticación)
-    suspend fun updateUserEmail(newEmail: String, currentPassword: String): AuthResult {
-        val reAuthResult = reAuthenticate(currentPassword)
-        if (reAuthResult is AuthResult.Failure) return reAuthResult
-
+    suspend fun updateUserEmail(newEmail: String): AuthResult {
         val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
         return safeAuthCall {
-            currentUser.updateEmail(newEmail).await()
+            currentUser.updateEmail(newEmail).await() // Cambia directamente el correo
             currentUser
         }
     }
+
 
     // Actualizar Contraseña (con re-autenticación)
     suspend fun updateUserPassword(newPassword: String, currentPassword: String): AuthResult {
@@ -119,22 +118,23 @@ class AuthRepository @Inject constructor(
         firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.user
     }
 
-    // Actualizar Perfil General
-    suspend fun updateUserProfile(userProfile: UserProfile): AuthResult {
-        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
+    suspend fun register(email: String, password: String, name: String): AuthResult {
         return safeAuthCall {
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(userProfile.name)
-                .setPhotoUri(userProfile.profileImage?.let { Uri.parse(it.toString()) })
-                .build()
-            currentUser.updateProfile(profileUpdates).await()
-
-            if (userProfile.email != null && userProfile.email != currentUser.email) {
-                currentUser.updateEmail(userProfile.email).await()
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = result?.user
+            user?.let {
+                val userProfile = UserProfile(
+                    id = it.uid,
+                    name = name,
+                    email = email,
+                    profileImage = null
+                )
+                firestoreRepository.saveUser(it.uid, name, email, null)
             }
-            currentUser
+            user
         }
     }
+
 
     // Registro con proveedor externo
     suspend fun initRegisterWithProvider(activity: Activity, provider: OAuthProvider): AuthResult {

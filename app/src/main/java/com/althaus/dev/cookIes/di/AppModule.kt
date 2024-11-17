@@ -3,6 +3,7 @@ package com.althaus.dev.cookIes.di
 import android.content.Context
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.repository.AuthRepository
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.data.repository.NotificationRepository
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
 import com.althaus.dev.cookIes.data.repository.UserRepository
@@ -28,21 +29,23 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirestoreInstance(): FirebaseFirestore = FirebaseFirestore.getInstance()
-
+    fun provideFirestoreInstance(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
     @Singleton
     @Provides
     fun provideAuthRepository(
         firebaseAuth: FirebaseAuth,
         googleSignInClient: GoogleSignInClient,
+        firestoreRepository: FirestoreRepository,
         @ApplicationContext context: Context
-    ): AuthRepository = AuthRepository(firebaseAuth, googleSignInClient, context)
+    ): AuthRepository = AuthRepository(firebaseAuth, firestoreRepository, googleSignInClient, context)
 
     @Provides
     @Singleton
-    fun provideRecipeRepository(
-        firestore: FirebaseFirestore
-    ): RecipeRepository = RecipeRepository(firestore)
+    fun provideFirestoreRepository(firestore: FirebaseFirestore): FirestoreRepository {
+        return FirestoreRepository(firestore)
+    }
 
     // Provisión del GoogleSignInClient para autenticación con Google
     @Singleton
