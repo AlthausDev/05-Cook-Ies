@@ -14,6 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavHostController
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.navigation.NavigationWrapper
 import com.althaus.dev.cookIes.theme.CookIesTheme
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
@@ -22,6 +23,7 @@ import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 import com.google.android.gms.security.ProviderInstaller
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -29,30 +31,29 @@ class MainActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
     private val recipeViewModel: RecipeViewModel by viewModels()
-    private lateinit var auth: FirebaseAuth
+
+    @Inject
+    lateinit var firestoreRepository: FirestoreRepository // Inyección de FirestoreRepository
+
     private lateinit var navController: NavHostController
 
-    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Inicializar ProviderInstaller para asegurar actualizaciones SSL
         ProviderInstaller.installIfNeeded(applicationContext)
 
-        // Inicializar el navController antes de setContent
-        navController = NavHostController(this)
-
-              setContent {
+        setContent {
             navController = rememberNavController() // Inicializa el navController en el contexto de Compose
             CookIesTheme {
-                Surface(
-                ) {
+                Surface {
                     // Pasamos todos los ViewModels necesarios a NavigationWrapper
                     NavigationWrapper(
                         navHostController = navController,
                         authViewModel = authViewModel,
                         profileViewModel = profileViewModel,
-                        recipeViewModel = recipeViewModel
+                        recipeViewModel = recipeViewModel,
+                        firestoreRepository = firestoreRepository // Pasamos el repositorio aquí
                     )
                 }
             }

@@ -6,12 +6,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.ui.dashboard.DashboardView
 import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
 import com.althaus.dev.cookIes.ui.authentication.SignUpView
 import com.althaus.dev.cookIes.ui.authentication.StartUpView
 import com.althaus.dev.cookIes.ui.notifications.NotificationsView
+import com.althaus.dev.cookIes.ui.recipe.RecipeWizardView
 import com.althaus.dev.cookIes.ui.settings.SettingsView
 
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
@@ -26,6 +28,7 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     object Notifications : Screen("notifications")
     object Settings : Screen("settings")
+    object Wizard : Screen("Wizard")
     object Favorites : Screen("favorites")
 }
 
@@ -34,7 +37,8 @@ fun NavigationWrapper(
     navHostController: NavHostController,
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
-    recipeViewModel: RecipeViewModel
+    recipeViewModel: RecipeViewModel,
+    firestoreRepository: FirestoreRepository
 ) {
     val currentUser = authViewModel.user.collectAsState().value
     val startDestination = if (currentUser != null) Screen.Dashboard.route else Screen.StartUp.route
@@ -106,11 +110,11 @@ fun NavigationWrapper(
                 navigateToNotifications = {
                     authViewModel.resetError()
                     navHostController.navigate(Screen.Notifications.route)
+                },
+                navigateToRecipeWizard = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Wizard.route)
                 }
-//                onRecipeClick = { recipe ->
-//                    authViewModel.resetError()
-//                    navHostController.navigate("recipeDetail/${recipe.id}")
-//                }
             )
         }
 
@@ -156,6 +160,23 @@ fun NavigationWrapper(
                 }
             )
         }
+
+        composable(Screen.Wizard.route) {
+            RecipeWizardView(
+                firestoreRepository = firestoreRepository,
+                navHostController = navHostController, // Pasa el controlador aquí
+                onComplete = { recipe ->
+                    navHostController.navigate(Screen.Dashboard.route) {
+                        popUpTo(0) { inclusive = true } // Limpia completamente el backstack
+                    }
+                },
+                onCancel = {
+                    navHostController.popBackStack() // Regresa al Dashboard si cancela
+                }
+            )
+        }
+
+
 
 //        composable(Screen.Favorites.route) {
 //            authViewModel.resetError()

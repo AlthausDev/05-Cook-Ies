@@ -28,7 +28,8 @@ fun DashboardView(
     recipeViewModel: RecipeViewModel,
     navigateToRecipeDetail: (String) -> Unit,
     navigateToProfile: () -> Unit,
-    navigateToNotifications: () -> Unit
+    navigateToNotifications: () -> Unit,
+    navigateToRecipeWizard: () -> Unit
 ) {
     val uiState by recipeViewModel.uiState.collectAsState()
 
@@ -88,7 +89,7 @@ fun DashboardView(
 
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Acción para agregar recetas */ },
+                onClick = navigateToRecipeWizard,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
