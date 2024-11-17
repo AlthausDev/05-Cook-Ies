@@ -6,16 +6,16 @@ import com.google.firebase.Timestamp
 
 @IgnoreExtraProperties
 data class UserProfile(
-    @DocumentId val id: String = "",
-    val name: String = "",
-    val email: String = "",
-    val profileImage: String? = null,
-    val favorites: List<String> = emptyList(),
-    val bio: String = "",
-    val creationDate: Timestamp = Timestamp.now(),
-    val isVerified: Boolean = false
+    @DocumentId val id: String = "",               // ID único del usuario en Firestore
+    val name: String = "",                         // Nombre del usuario
+    val email: String = "",                        // Correo electrónico del usuario
+    val profileImage: String? = null,              // URL de la imagen de perfil (opcional)
+    val favorites: List<String> = emptyList(),     // IDs de recetas favoritas
+    val bio: String = "",                          // Biografía del usuario
+    val creationDate: Timestamp = Timestamp.now(), // Fecha de creación
+    val isVerified: Boolean = false                // Si la cuenta está verificada
 ) {
-    // Conversión a Map
+    // Conversión a Map para Firestore
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "name" to name,
@@ -29,7 +29,7 @@ data class UserProfile(
     }
 
     companion object {
-        // Conversión desde Map
+        // Conversión desde Map de Firestore
         fun fromMap(map: Map<String, Any?>): UserProfile {
             return UserProfile(
                 id = map["id"] as? String ?: "",
@@ -42,5 +42,22 @@ data class UserProfile(
                 isVerified = map["isVerified"] as? Boolean ?: false
             )
         }
+    }
+
+    // Métodos adicionales para facilitar el manejo
+    fun addFavorite(recipeId: String): UserProfile {
+        if (recipeId.isNotBlank() && !favorites.contains(recipeId)) {
+            val updatedFavorites = favorites + recipeId
+            return this.copy(favorites = updatedFavorites)
+        }
+        return this
+    }
+
+    fun removeFavorite(recipeId: String): UserProfile {
+        if (favorites.contains(recipeId)) {
+            val updatedFavorites = favorites - recipeId
+            return this.copy(favorites = updatedFavorites)
+        }
+        return this
     }
 }

@@ -1,20 +1,24 @@
 package com.althaus.dev.cookIes.data.model
 
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 data class Notification(
-    @DocumentId val id: String = "",          // ID único de la notificación en Firestore
-    val title: String,                        // Título de la notificación
-    val message: String,                      // Mensaje de la notificación con detalles adicionales
-    val type: NotificationType = NotificationType.GENERAL, // Tipo de notificación
-    val timestamp: Long = System.currentTimeMillis(), // Marca de tiempo de la notificación
-    val isRead: Boolean = false,              // Indicador de si el usuario ya leyó la notificación
-    val recipientId: String,                  // ID del usuario que recibe la notificación
-    val relatedRecipeId: String? = null       // ID de una receta relacionada, si aplica
+    @DocumentId val id: String = "",
+    val title: String,
+    val message: String,
+    val type: NotificationType = NotificationType.GENERAL,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false,
+    val recipientId: String,
+    val relatedRecipeId: String? = null
 ) {
     init {
+        require(title.isNotBlank()) { "El título de la notificación no puede estar vacío." }
+        require(recipientId.isNotBlank()) { "El ID del destinatario no puede estar vacío." }
+
         if (type == NotificationType.NEW_RECIPE || type == NotificationType.FAVORITE) {
             require(!relatedRecipeId.isNullOrEmpty()) {
                 "relatedRecipeId es obligatorio para notificaciones de tipo $type."
@@ -26,17 +30,38 @@ data class Notification(
         return this.copy(isRead = true)
     }
 
-    fun toMap(): Map<String, Any?> {
-        return mapOf(
+    fun toMap(): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
             "id" to id,
             "title" to title,
             "message" to message,
             "type" to type.name,
             "timestamp" to timestamp,
             "isRead" to isRead,
-            "recipientId" to recipientId,
-            "relatedRecipeId" to relatedRecipeId
+            "recipientId" to recipientId
         )
+        relatedRecipeId?.let {
+            map["relatedRecipeId"] = it
+        }
+        return map
+    }
+
+    suspend fun saveToFirestore(repository: FirestoreRepository) {
+        try {
+            val notificationId = if (id.isBlank()) repository.generateNewId("notifications") else id
+            repository.saveNotification(notificationId, toMap())
+        } catch (e: Exception) {
+            throw Exception("Error al guardar la notificación en Firestore: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
+        try {
+            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una notificación sin ID.")
+            repository.updateNotification(id, updates)
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar la notificación en Firestore: ${e.localizedMessage}")
+        }
     }
 
     companion object {
@@ -56,9 +81,9 @@ data class Notification(
 }
 
 enum class NotificationType {
-    NEW_RECIPE,      // Notificación de nueva receta
-    COMMENT,         // Notificación de comentario
-    FAVORITE,        // Notificación de receta marcada como favorita
-    REMINDER,        // Recordatorio para el usuario
-    GENERAL          // Tipo general para otras notificaciones
+    NEW_RECIPE,
+    COMMENT,
+    FAVORITE,
+    REMINDER,
+    GENERAL
 }

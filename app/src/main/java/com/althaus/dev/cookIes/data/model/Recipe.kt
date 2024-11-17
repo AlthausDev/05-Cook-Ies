@@ -1,7 +1,11 @@
 package com.althaus.dev.cookIes.data.model
 
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @IgnoreExtraProperties
 data class Recipe(
@@ -23,11 +27,11 @@ data class Recipe(
 ) {
     init {
         require(name.isNotBlank()) { "El nombre de la receta no puede estar vacío." }
-        require(difficultyLevel in 1..5) { "difficultyLevel debe estar entre 1 y 5." }
-        require(prepTimeMinutes >= 0) { "prepTimeMinutes no puede ser negativo." }
-        require(cookTimeMinutes >= 0) { "cookTimeMinutes no puede ser negativo." }
-        require(totalCalories >= 0) { "totalCalories no puede ser negativo." }
-        require(servings > 0) { "servings debe ser al menos 1." }
+        require(difficultyLevel in 1..5) { "El nivel de dificultad debe estar entre 1 y 5." }
+        require(prepTimeMinutes >= 0) { "El tiempo de preparación no puede ser negativo." }
+        require(cookTimeMinutes >= 0) { "El tiempo de cocción no puede ser negativo." }
+        require(totalCalories >= 0) { "Las calorías totales no pueden ser negativas." }
+        require(servings > 0) { "Las porciones deben ser al menos 1." }
     }
 
     val totalTimeMinutes: Int
@@ -36,7 +40,25 @@ data class Recipe(
     val caloriesPerServing: Int
         get() = if (servings > 0) totalCalories / servings else 0
 
-    fun toMap(): Map<String, Any?> {
+    suspend fun saveToFirestore(repository: FirestoreRepository) {
+        try {
+            val recipeId = if (id.isBlank()) repository.generateNewId("recipes") else id
+            repository.saveRecipe(recipeId, toMap())
+        } catch (e: Exception) {
+            throw Exception("Error al guardar la receta en Firestore: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
+        try {
+            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una receta sin ID.")
+            repository.updateRecipe(id, updates)
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar la receta en Firestore: ${e.localizedMessage}")
+        }
+    }
+
+    fun toMap(): Map<String, Any> {
         return mapOf(
             "id" to id,
             "name" to name,
@@ -53,8 +75,9 @@ data class Recipe(
             "videoUrl" to videoUrl,
             "tags" to tags,
             "authorId" to authorId
-        )
+        ).filterValues { it != null } as Map<String, Any> // Filtra nulos y asegura tipo
     }
+
 
     companion object {
         fun fromMap(map: Map<String, Any?>): Recipe {
@@ -78,3 +101,4 @@ data class Recipe(
         }
     }
 }
+
