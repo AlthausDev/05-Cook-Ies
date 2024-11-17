@@ -59,15 +59,28 @@ fun RecipeWizardView(
                     )
                     1 -> IngredientsStep(
                         ingredients = recipeIngredients,
-                        onAddIngredient = { recipeIngredients = recipeIngredients + it },
-                        onRemoveIngredient = { recipeIngredients = recipeIngredients - it }
+                        onAddIngredient = { ingredient ->
+                            // Agregar ingrediente a Firestore y luego actualizar el estado
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    val newId = firestoreRepository.generateNewId("ingredients")
+                                    val newIngredient = ingredient.copy(id = newId)
+                                    recipeIngredients = recipeIngredients + newIngredient
+                                } catch (e: Exception) {
+                                    errorMessage = "Error al guardar el ingrediente: ${e.localizedMessage}"
+                                }
+                            }
+                        },
+                        onRemoveIngredient = { recipeIngredients = recipeIngredients - it },
+                        firestoreRepository = firestoreRepository
                     )
                     2 -> InstructionsStep(
                         instructions = recipeInstructions,
                         onInstructionsChange = { recipeInstructions = it },
-                        onSave = { // Guarda en Firestore
+                        onSave = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
+                                    // Guardar receta
                                     val recipe = Recipe(
                                         name = recipeName,
                                         description = recipeDescription,
@@ -83,7 +96,7 @@ fun RecipeWizardView(
                         },
                         onNavigateToDashboard = {
                             navHostController.navigate(Screen.Dashboard.route) {
-                                popUpTo(0) { inclusive = true } // Limpia completamente el backstack
+                                popUpTo(Screen.Dashboard.route) { inclusive = true }
                             }
                         }
                     )
@@ -121,9 +134,8 @@ fun RecipeWizardView(
                                 recipe.saveToFirestore(firestoreRepository)
                                 onComplete(recipe)
                                 navHostController.navigate(Screen.Dashboard.route) {
-                                    popUpTo(0) { inclusive = true } // Limpia completamente el backstack
+                                    popUpTo(Screen.Dashboard.route) { inclusive = true }
                                 }
-
                             } catch (e: Exception) {
                                 errorMessage = "Error al guardar la receta: ${e.localizedMessage}"
                             }
@@ -135,6 +147,7 @@ fun RecipeWizardView(
         }
     )
 }
+
 
 
 
@@ -174,7 +187,8 @@ fun GeneralInfoStep(
 fun IngredientsStep(
     ingredients: List<Ingredient>,
     onAddIngredient: (Ingredient) -> Unit,
-    onRemoveIngredient: (Ingredient) -> Unit
+    onRemoveIngredient: (Ingredient) -> Unit,
+    firestoreRepository: FirestoreRepository
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -198,24 +212,28 @@ fun IngredientsStep(
 
         if (showDialog) {
             AddIngredientDialog(
-                onAdd = {
-                    onAddIngredient(it)
-                    showDialog = false
+                onAdd = { ingredient ->
+                    onAddIngredient(ingredient) // Agregar el ingrediente a la lista local
+                    showDialog = false // Cerrar el diálogo
                 },
-                onCancel = { showDialog = false }
+                onCancel = { showDialog = false },
+                firestoreRepository = firestoreRepository // Pasar el repositorio
             )
         }
     }
 }
 
+
 @Composable
 fun AddIngredientDialog(
     onAdd: (Ingredient) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    firestoreRepository: FirestoreRepository
 ) {
     var ingredientName by remember { mutableStateOf("") }
     var ingredientQuantity by remember { mutableStateOf("1.0") }
     var ingredientUnit by remember { mutableStateOf("unidad") }
+    var isSaving by remember { mutableStateOf(false) } // Estado para evitar múltiples clics
 
     AlertDialog(
         onDismissRequest = onCancel,
@@ -240,19 +258,47 @@ fun AddIngredientDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onAdd(Ingredient(name = ingredientName, quantity = ingredientQuantity.toDouble(), unit = ingredientUnit))
-            }) {
+            Button(
+                onClick = {
+                    if (!isSaving) { // Evitar clics múltiples mientras se guarda
+                        isSaving = true
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val newId = firestoreRepository.generateNewId("ingredients")
+                                val ingredient = Ingredient(
+                                    id = newId,
+                                    name = ingredientName,
+                                    quantity = ingredientQuantity.toDouble(),
+                                    unit = ingredientUnit
+                                )
+                                firestoreRepository.saveIngredient(newId, ingredient.toMap())
+                                onAdd(ingredient) // Pasar el ingrediente al callback solo una vez
+                            } catch (e: Exception) {
+
+                            } finally {
+                                isSaving = false // Permitir clics nuevamente
+                            }
+                        }
+                    }
+                },
+                enabled = !isSaving // Desactivar botón mientras se guarda
+            ) {
                 Text("Agregar")
             }
         },
         dismissButton = {
-            Button(onClick = onCancel) {
+            Button(
+                onClick = onCancel,
+                enabled = !isSaving // Desactivar cancelación mientras se guarda
+            ) {
                 Text("Cancelar")
             }
         }
     )
 }
+
+
+
 
 @Composable
 fun InstructionsStep(

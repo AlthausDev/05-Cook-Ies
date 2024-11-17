@@ -36,6 +36,7 @@ fun DashboardView(
     // Cargar o refrescar recetas cuando la vista se inicializa
     LaunchedEffect(Unit) {
         recipeViewModel.refreshRecipes()
+        println("Estado después de refreshRecipes: ${uiState.isLoading}")
     }
 
     Scaffold(
@@ -154,3 +155,5 @@ fun DashboardView(
         }
     )
 }
+
+

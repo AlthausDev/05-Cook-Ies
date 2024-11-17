@@ -9,21 +9,23 @@ import kotlinx.coroutines.launch
 
 @IgnoreExtraProperties
 data class Ingredient(
-    @DocumentId val id: String = "",
-    val name: String,
-    val quantity: Double = 1.0,
-    val unit: String = "unidad",
-    val description: String = "",
-    val isAllergen: Boolean = false,
-    val substitutes: List<String> = emptyList(),
-    val category: String = "",
-    val calories: Double? = null
+    @DocumentId val id: String = "", // ID del documento
+    val name: String = "", // Nombre del ingrediente
+    val quantity: Double = 1.0, // Cantidad
+    val unit: String = "unidad", // Unidad de medida (por ejemplo, gramos, litros)
+    val description: String = "", // Descripción opcional
+    val isAllergen: Boolean = false, // Indica si es un alérgeno
+    val substitutes: List<String> = emptyList(), // Lista de sustitutos
+    val category: String = "", // Categoría (por ejemplo, frutas, especias)
+    val calories: Double = 0.0 // Calorías (valor predeterminado de 0.0)
 ) {
     init {
+        // Validaciones para evitar datos inválidos
         require(name.isNotBlank()) { "El nombre del ingrediente no puede estar vacío." }
         require(quantity >= 0) { "La cantidad no puede ser negativa." }
     }
 
+    // Conversión del objeto a un Map para Firestore
     fun toMap(): Map<String, Any> {
         return mapOf(
             "id" to id,
@@ -34,10 +36,11 @@ data class Ingredient(
             "isAllergen" to isAllergen,
             "substitutes" to substitutes,
             "category" to category,
-            "calories" to (calories ?: 0.0) // Asegurar un valor predeterminado para evitar nulos
+            "calories" to calories
         )
     }
 
+    // Guardar ingrediente en Firestore
     suspend fun saveToFirestore(repository: FirestoreRepository) {
         try {
             val ingredientId = if (id.isBlank()) repository.generateNewId("ingredients") else id
@@ -47,6 +50,7 @@ data class Ingredient(
         }
     }
 
+    // Actualizar campos específicos en Firestore
     suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
         try {
             if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar un ingrediente sin ID.")
@@ -57,6 +61,7 @@ data class Ingredient(
     }
 
     companion object {
+        // Conversión de un Map a un objeto Ingredient
         fun fromMap(map: Map<String, Any?>): Ingredient {
             return Ingredient(
                 id = map["id"] as? String ?: "",
@@ -67,7 +72,7 @@ data class Ingredient(
                 isAllergen = map["isAllergen"] as? Boolean ?: false,
                 substitutes = (map["substitutes"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
                 category = map["category"] as? String ?: "",
-                calories = (map["calories"] as? Number)?.toDouble()
+                calories = (map["calories"] as? Number)?.toDouble() ?: 0.0
             )
         }
     }
