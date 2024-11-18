@@ -1,5 +1,7 @@
 package com.althaus.dev.cookIes.ui.authentication
 
+import AuthResultContract
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
@@ -24,13 +27,13 @@ import com.althaus.dev.cookIes.ui.components.CustomButton
 import com.althaus.dev.cookIes.ui.components.ErrorText
 import com.althaus.dev.cookIes.ui.components.LoadingIndicator
 import com.althaus.dev.cookIes.ui.components.TitleAndSubtitle
-import com.althaus.dev.cookIes.viewmodel.AuthResultContract
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
+import com.google.api.Context
 
 @Composable
 fun StartUpView(
-    navigateToLogin: () -> Unit = {},
-    navigateToSignUp: () -> Unit = {},
+    navigateToLogin: () -> Unit,
+    navigateToSignUp: () -> Unit,
     authViewModel: AuthViewModel,
     onLoginSuccess: () -> Unit
 ) {
@@ -38,18 +41,28 @@ fun StartUpView(
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
 
-    val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = AuthResultContract(authViewModel.getGoogleSignInClient())
-    ) { idToken ->
-        authViewModel.handleGoogleSignInResult(idToken)
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // Configuración del cliente de Google Sign-In
+    val googleSignInClient = activity?.let { authViewModel.getGoogleSignInClient(it) }
+
+    // Comprobar si `googleSignInClient` no es nulo antes de crear el contrato
+    val googleSignInLauncher = googleSignInClient?.let {
+        rememberLauncherForActivityResult(
+            contract = AuthResultContract(it)
+        ) { idToken ->
+            idToken?.let { authViewModel.handleGoogleSignInResult(it) }
+        }
     }
 
     LaunchedEffect(user) {
         if (user != null) onLoginSuccess()
     }
 
-    LaunchedEffect(Unit) {
-        authViewModel.resetError()
+    // Verificar si el usuario ya está autenticado y redirigir según corresponda
+    LaunchedEffect(user) {
+        if (user != null) onLoginSuccess()
     }
 
     GradientBackground {
@@ -64,6 +77,7 @@ fun StartUpView(
 
             AppLogo()
 
+            // Título y subtítulo
             TitleAndSubtitle(
                 title = "Inspírate y Cocina",
                 subtitle = "Descubre y Comparte Recetas"
@@ -76,24 +90,32 @@ fun StartUpView(
                 onClick = navigateToLogin
             )
 
+            // Botón para iniciar sesión con Google
             CustomButton(
                 modifier = Modifier.fillMaxWidth(0.8f),
                 painter = painterResource(id = R.drawable.google),
                 title = "Iniciar con Google",
-                onClick = { authViewModel.launchGoogleSignIn(googleSignInLauncher) }
+                onClick = {
+                    if (googleSignInLauncher != null) {
+                        authViewModel.launchGoogleSignIn(googleSignInLauncher)
+                    }
+                }
             )
 
+            // Enlace a registro
             ClickableText(
                 text = "¿No tienes cuenta? Regístrate",
                 onClick = navigateToSignUp
             )
 
+            // Indicador de carga
             if (isLoading) {
                 LoadingIndicator()
             }
 
-            errorMessage?.let {
-                ErrorText(message = it)
+            // Mensaje de error
+            errorMessage?.let { msg ->
+                ErrorText(message = msg)
             }
 
             Spacer(modifier = Modifier.weight(1f))

@@ -23,38 +23,41 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    // Provisión de FirebaseAuth
     @Singleton
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
+    // Provisión de Firestore
     @Provides
     @Singleton
-    fun provideFirestoreInstance(): FirebaseFirestore {
-        return FirebaseFirestore.getInstance()
-    }
+    fun provideFirestoreInstance(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    // Provisión de AuthRepository
     @Singleton
     @Provides
     fun provideAuthRepository(
         firebaseAuth: FirebaseAuth,
-        googleSignInClient: GoogleSignInClient,
         firestoreRepository: FirestoreRepository,
         @ApplicationContext context: Context
-    ): AuthRepository = AuthRepository(firebaseAuth, firestoreRepository, googleSignInClient, context)
+    ): AuthRepository = AuthRepository(firebaseAuth, firestoreRepository, context)
 
+
+    // Provisión de FirestoreRepository
     @Provides
     @Singleton
-    fun provideFirestoreRepository(firestore: FirebaseFirestore): FirestoreRepository {
-        return FirestoreRepository(firestore)
-    }
+    fun provideFirestoreRepository(firestore: FirebaseFirestore): FirestoreRepository =
+        FirestoreRepository(firestore)
 
-    // Provisión del GoogleSignInClient para autenticación con Google
+    // Configuración y provisión de GoogleSignInClient
     @Singleton
     @Provides
-    fun provideGoogleSignInClient(
-        @ApplicationContext context: Context
-    ): GoogleSignInClient {
+    fun provideGoogleSignInClient(@ApplicationContext context: Context): GoogleSignInClient {
+        val clientId = context.getString(R.string.default_web_client_id)
+        require(clientId.isNotBlank()) { "default_web_client_id no está configurado en strings.xml" }
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestIdToken(clientId)
             .requestEmail()
             .build()
         return GoogleSignIn.getClient(context, gso)
@@ -71,7 +74,6 @@ object AppModule {
     // Provisión de NotificationRepository
     @Provides
     @Singleton
-    fun provideNotificationRepository(
-        firestore: FirebaseFirestore
-    ): NotificationRepository = NotificationRepository(firestore)
+    fun provideNotificationRepository(firestore: FirebaseFirestore): NotificationRepository =
+        NotificationRepository(firestore)
 }

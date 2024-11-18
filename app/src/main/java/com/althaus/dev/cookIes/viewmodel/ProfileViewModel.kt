@@ -6,6 +6,7 @@ import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.model.UserProfile
 import com.althaus.dev.cookIes.data.repository.AuthRepository
 import com.althaus.dev.cookIes.data.repository.AuthResult
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
 import com.althaus.dev.cookIes.data.repository.RecipeResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,12 +19,16 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val firestoreRepository: FirestoreRepository
 ) : ViewModel() {
 
     // ---- Estados ----
     private val _userProfile = MutableStateFlow<UserProfile?>(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile
+
+    private val _userRecipes = MutableStateFlow<List<Recipe>>(emptyList()) // Estado para recetas del usuario
+    val userRecipes: StateFlow<List<Recipe>> = _userRecipes
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -33,32 +38,59 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadUserProfile()
+        loadUserRecipes() // Cargar recetas del usuario al iniciar
     }
 
-    // ---- Gestión del Perfil ----
-    private fun loadUserProfile() {
-        executeWithLoading {
+    fun loadUserProfile() {
+        viewModelScope.launch {
             try {
-                val user = authRepository.currentUser
-                if (user != null) {
-                    _userProfile.value = UserProfile(
-                        id = user.uid,
-                        name = user.displayName ?: "Usuario",
-                        email = user.email ?: "Sin correo",
-                        profileImage = user.photoUrl?.toString()
+                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+                val userData = firestoreRepository.getUser(userId)
+                _userProfile.value = userData?.let {
+                    UserProfile(
+                        id = userId,
+                        name = it["name"] as? String ?: "Usuario",
+                        email = it["email"] as? String ?: "Sin correo",
+                        profileImage = it["profileImage"] as? String
                     )
-                } else {
-                    throw Exception("No se pudo cargar el perfil del usuario.")
                 }
             } catch (e: Exception) {
-                showError("Error al cargar el perfil: ${e.localizedMessage}")
+                showError("Error al cargar el perfil del usuario: ${e.localizedMessage}")
             }
+        }
+    }
+    fun loadUserRecipes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+                recipeRepository.getRecipesByUser(userId).collect { result -> // Recoger el Flow
+                    when (result) {
+                        is RecipeResult.Success -> {
+                            _userRecipes.value = result.data
+                        }
+                        is RecipeResult.Failure -> {
+                            throw Exception(result.exception.localizedMessage)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                showError("Error al cargar las recetas: ${e.localizedMessage}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun saveUserProfile(name: String, email: String, profileImage: String?) {
+        viewModelScope.launch {
+            val userId = authRepository.currentUser?.uid ?: return@launch
+            firestoreRepository.saveUser(userId, name, email, profileImage)
         }
     }
 
     // ---- Actualización Individual ----
 
-    // Actualizar Nombre
     fun updateName(newName: String) {
         executeWithLoading {
             try {
@@ -72,14 +104,20 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Actualizar Correo
     fun updateUserEmail(newEmail: String, currentPassword: String) {
         executeWithLoading {
-            val result = authRepository.updateUserEmail(newEmail, currentPassword)
-            if (result is AuthResult.Success) {
-                loadUserProfile() // Refrescar perfil después del cambio
-            } else if (result is AuthResult.Failure) {
-                showError("Error al actualizar el correo: ${result.exception.localizedMessage}")
+            val reauthResult = authRepository.reAuthenticate(currentPassword)
+            if (reauthResult is AuthResult.Failure) {
+                showError("Error al reautenticar: ${reauthResult.exception.localizedMessage}")
+                return@executeWithLoading
+            }
+
+            val updateResult = authRepository.updateUserEmail(newEmail)
+            if (updateResult is AuthResult.Success) {
+                loadUserProfile() // Refrescar el perfil después del cambio
+                showError("Correo actualizado exitosamente.")
+            } else if (updateResult is AuthResult.Failure) {
+                showError("Error al actualizar el correo: ${updateResult.exception.localizedMessage}")
             }
         }
     }

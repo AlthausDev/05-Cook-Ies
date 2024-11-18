@@ -2,12 +2,12 @@ package com.althaus.dev.cookIes.data.repository
 
 import android.app.Activity
 import android.content.Context
-import android.net.Uri
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.model.UserProfile
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.firebase.auth.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
@@ -22,82 +22,53 @@ sealed class AuthResult {
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firestoreRepository: FirestoreRepository,
-    private val googleSignInClient: GoogleSignInClient,
+    val firestoreRepository: FirestoreRepository,
     @ApplicationContext private val context: Context
-){
+) {
 
     val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    private val googleSignInClientInstance: GoogleSignInClient by lazy {
-        GoogleSignIn.getClient(
-            context,
-            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(context.getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build()
-        )
+    // Google Sign-In Client configurado internamente
+    private val googleSignInClient: GoogleSignInClient by lazy {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
     }
 
-    fun getGoogleSignInClient(): GoogleSignInClient = googleSignInClientInstance
+    fun provideGoogleSignInClient(): GoogleSignInClient = googleSignInClient
 
+    // Llamada segura para autenticación
     private suspend fun safeAuthCall(authCall: suspend () -> FirebaseUser?): AuthResult {
         return try {
             authCall()?.let { AuthResult.Success(it) } ?: AuthResult.UserNotFound
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            AuthResult.Failure(Exception("Credenciales inválidas."))
+        } catch (e: FirebaseAuthInvalidUserException) {
+            AuthResult.Failure(Exception("Usuario no encontrado."))
         } catch (e: Exception) {
             AuthResult.Failure(e)
         }
     }
 
-    // ---- Métodos de Actualización Individual ----
-
-    // Actualizar Nombre
-    suspend fun updateUserName(newName: String): AuthResult {
-        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
-        return safeAuthCall {
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(newName)
-                .build()
-            currentUser.updateProfile(profileUpdates).await()
-            currentUser
-        }
+    // Métodos de Autenticación
+    suspend fun login(email: String, password: String): AuthResult = safeAuthCall {
+        firebaseAuth.signInWithEmailAndPassword(email, password).await()?.user
     }
 
-    // Re-autenticar al usuario antes de realizar cambios sensibles
-    suspend fun reAuthenticate(password: String): AuthResult {
-        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
-        val email = currentUser.email ?: return AuthResult.Failure(Exception("El usuario no tiene un correo asociado."))
-        val credential = EmailAuthProvider.getCredential(email, password)
+    suspend fun register(email: String, password: String, name: String? = null): AuthResult {
         return safeAuthCall {
-            currentUser.reauthenticate(credential).await()
-            currentUser
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = result?.user
+            user?.let {
+                val displayName = name ?: it.displayName ?: "Usuario"
+                firestoreRepository.saveUser(it.uid, displayName, email, null)
+            }
+            user
         }
     }
-
-    // Actualizar Correo Electrónico (con re-autenticación)
-    suspend fun updateUserEmail(newEmail: String): AuthResult {
-        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
-        return safeAuthCall {
-            currentUser.updateEmail(newEmail).await() // Cambia directamente el correo
-            currentUser
-        }
-    }
-
-
-    // Actualizar Contraseña (con re-autenticación)
-    suspend fun updateUserPassword(newPassword: String, currentPassword: String): AuthResult {
-        val reAuthResult = reAuthenticate(currentPassword)
-        if (reAuthResult is AuthResult.Failure) return reAuthResult
-
-        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
-        return safeAuthCall {
-            currentUser.updatePassword(newPassword).await()
-            currentUser
-        }
-    }
-
-    // ---- Métodos de Inicio de Sesión ----
 
     suspend fun signInWithGoogle(idToken: String): AuthResult {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -110,41 +81,50 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun login(email: String, password: String): AuthResult = safeAuthCall {
-        firebaseAuth.signInWithEmailAndPassword(email, password).await()?.user
-    }
-
-    suspend fun register(email: String, password: String): AuthResult = safeAuthCall {
-        firebaseAuth.createUserWithEmailAndPassword(email, password).await()?.user
-    }
-
-    suspend fun register(email: String, password: String, name: String): AuthResult {
+    // Métodos de Actualización
+    suspend fun updateUserName(newName: String): AuthResult {
+        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
         return safeAuthCall {
-            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            val user = result?.user
-            user?.let {
-                val userProfile = UserProfile(
-                    id = it.uid,
-                    name = name,
-                    email = email,
-                    profileImage = null
-                )
-                firestoreRepository.saveUser(it.uid, name, email, null)
-            }
-            user
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(newName)
+                .build()
+            currentUser.updateProfile(profileUpdates).await()
+            currentUser
         }
     }
 
-
-    // Registro con proveedor externo
-    suspend fun initRegisterWithProvider(activity: Activity, provider: OAuthProvider): AuthResult {
+    suspend fun updateUserEmail(newEmail: String): AuthResult {
+        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
         return safeAuthCall {
-            firebaseAuth.startActivityForSignInWithProvider(activity, provider).await()?.user
+            currentUser.updateEmail(newEmail).await()
+            currentUser
         }
     }
 
-    // Cerrar sesión del usuario
+    suspend fun updateUserPassword(newPassword: String, currentPassword: String): AuthResult {
+        val reAuthResult = reAuthenticate(currentPassword)
+        if (reAuthResult is AuthResult.Failure) return reAuthResult
+
+        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
+        return safeAuthCall {
+            currentUser.updatePassword(newPassword).await()
+            currentUser
+        }
+    }
+
+    suspend fun reAuthenticate(password: String): AuthResult {
+        val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound
+        val email = currentUser.email ?: return AuthResult.Failure(Exception("Correo no asociado."))
+        val credential = EmailAuthProvider.getCredential(email, password)
+        return safeAuthCall {
+            currentUser.reauthenticate(credential).await()
+            currentUser
+        }
+    }
+
+    // Cerrar sesión
     fun logout() {
         firebaseAuth.signOut()
+        googleSignInClient.signOut()
     }
 }

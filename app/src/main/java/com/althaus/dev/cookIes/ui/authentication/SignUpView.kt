@@ -95,7 +95,7 @@ fun SignUpView(
                 text = "Registrarse",
                 onClick = {
                     if (authViewModel.validatePasswords(password, confirmPassword)) {
-                        authViewModel.register(email, password)
+                        authViewModel.register(email, password, fullName)
                     }
                 }
             )
