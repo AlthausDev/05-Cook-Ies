@@ -30,6 +30,9 @@ class ProfileViewModel @Inject constructor(
     private val _userRecipes = MutableStateFlow<List<Recipe>>(emptyList()) // Estado para recetas del usuario
     val userRecipes: StateFlow<List<Recipe>> = _userRecipes
 
+    private val _favorites = MutableStateFlow<List<Recipe>>(emptyList())
+    val favorites: StateFlow<List<Recipe>> = _favorites
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -79,6 +82,19 @@ class ProfileViewModel @Inject constructor(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun loadFavorites(userId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = recipeRepository.getFavorites(userId)
+            if (result is RecipeResult.Success) {
+                _favorites.value = result.data
+            } else {
+                _favorites.value = emptyList()
+            }
+            _isLoading.value = false
         }
     }
 

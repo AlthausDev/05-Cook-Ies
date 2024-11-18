@@ -13,6 +13,7 @@ import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
 import com.althaus.dev.cookIes.ui.authentication.SignUpView
 import com.althaus.dev.cookIes.ui.authentication.StartUpView
+import com.althaus.dev.cookIes.ui.favorites.FavoritesView
 import com.althaus.dev.cookIes.ui.notifications.NotificationsView
 import com.althaus.dev.cookIes.ui.recipe.RecipeWizardView
 import com.althaus.dev.cookIes.ui.settings.SettingsView
@@ -132,7 +133,9 @@ fun NavigationWrapper(
                     authViewModel.resetError()
                     navHostController.navigate("recipeDetail/$recipeId")
                 },
-                onFavorites = {
+                navigateToFavorites = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.Favorites.route)
                 }
             )
         }
@@ -177,18 +180,18 @@ fun NavigationWrapper(
             )
         }
 
-
-
-//        composable(Screen.Favorites.route) {
-//            authViewModel.resetError()
-//            FavoritesView(
-//                onRecipeClick = { recipeId ->
-//                    authViewModel.resetError()
-//                    navHostController.navigate("recipeDetail/$recipeId")
-//                },
-//                recipeViewModel = recipeViewModel
-//            )
-//        }
+        composable(Screen.Favorites.route) {
+            FavoritesView(
+                recipeViewModel = recipeViewModel,
+                onRecipeClick = { recipeId ->
+                    authViewModel.resetError()
+                    navHostController.navigate("recipeDetail/$recipeId")
+                },
+                onBack = {
+                    navHostController.popBackStack()
+                }
+            )
+        }
     }
 }
 

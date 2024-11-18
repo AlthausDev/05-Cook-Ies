@@ -27,6 +27,16 @@ class RecipeRepository @Inject constructor(
         }
     }
 
+    suspend fun getFavorites(userId: String): RecipeResult<List<Recipe>> {
+        return safeRecipeCall {
+            val snapshot = firestore.collection("favorites")
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            snapshot.documents.mapNotNull { it.toObject(Recipe::class.java) }
+        }
+    }
+
     // Obtener todas las recetas como Flow
     suspend fun getRecipes(): Flow<RecipeResult<List<Recipe>>> = flow {
         emit(safeRecipeCall {
@@ -36,7 +46,7 @@ class RecipeRepository @Inject constructor(
     }
 
     // Obtener recetas de un usuario específico
-    suspend fun getUserRecipes(userId: String): Flow<RecipeResult<List<Recipe>>> = flow {
+    suspend fun getRecipesByUser(userId: String): Flow<RecipeResult<List<Recipe>>> = flow {
         emit(safeRecipeCall {
             val snapshot = recipesCollection.whereEqualTo("userId", userId).get().await()
             snapshot.documents.mapNotNull { it.toObject(Recipe::class.java) }

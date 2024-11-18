@@ -13,6 +13,7 @@ import javax.inject.Inject
 // Estado de la UI para manejar recetas
 data class RecipeUiState(
     val recipes: List<Recipe> = emptyList(),
+    val favorites: List<Recipe> = emptyList(), // Lista de recetas favoritas
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -30,6 +31,7 @@ class RecipeViewModel @Inject constructor(
 
     init {
         refreshRecipes()
+        refreshFavorites()
     }
 
     // Refrescar las recetas (cargar o recargar)
@@ -39,6 +41,14 @@ class RecipeViewModel @Inject constructor(
                 is RecipeResult.Success -> updateRecipes(result.data)
                 is RecipeResult.Failure -> showError("Error al cargar recetas: ${result.exception.localizedMessage}")
             }
+        }
+    }
+
+    // Refrescar las recetas favoritas
+    fun refreshFavorites(userId: String = getCurrentUserId()) = handleLoading {
+        when (val result = repository.getFavorites(userId)) {
+            is RecipeResult.Success -> updateFavorites(result.data)
+            is RecipeResult.Failure -> showError("Error al cargar recetas favoritas: ${result.exception.localizedMessage}")
         }
     }
 
@@ -79,11 +89,22 @@ class RecipeViewModel @Inject constructor(
         _uiState.update { it.copy(recipes = recipes, errorMessage = null) }
     }
 
+    // Actualizar la lista de recetas favoritas
+    private fun updateFavorites(favorites: List<Recipe>) {
+        _uiState.update { it.copy(favorites = favorites, errorMessage = null) }
+    }
+
     // Mostrar error en el flujo de mensajes y en el estado de UI
     private fun showError(message: String) {
         _uiState.update { it.copy(errorMessage = message) }
         viewModelScope.launch {
             _errorMessages.emit(message)
         }
+    }
+
+    // Obtener el ID del usuario actual (puedes adaptar esta función según tu implementación)
+    private fun getCurrentUserId(): String {
+        // Aquí deberías implementar cómo obtienes el ID del usuario autenticado
+        return "user-id-placeholder"
     }
 }

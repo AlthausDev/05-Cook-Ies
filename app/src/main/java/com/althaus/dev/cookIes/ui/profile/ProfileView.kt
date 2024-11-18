@@ -31,7 +31,7 @@ import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 fun ProfileView(
     profileViewModel: ProfileViewModel,
     onSettings: () -> Unit,
-    onFavorites: () -> Unit,
+    navigateToFavorites: () -> Unit,
     onRecipeClick: (String) -> Unit
 ) {
     val userProfile = profileViewModel.userProfile.collectAsState()
@@ -59,7 +59,7 @@ fun ProfileView(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            IconButton(onClick = onFavorites) {
+                            IconButton(onClick = navigateToFavorites) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = "Favoritos",
