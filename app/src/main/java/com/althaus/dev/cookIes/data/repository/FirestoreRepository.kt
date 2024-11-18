@@ -1,6 +1,5 @@
 package com.althaus.dev.cookIes.data.repository
 
-import com.althaus.dev.cookIes.data.model.UserProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -8,6 +7,8 @@ import javax.inject.Inject
 class FirestoreRepository @Inject constructor(
     private val db: FirebaseFirestore
 ) {
+    private val usersCollection = db.collection("users")
+
 
     // ---- Método genérico para guardar o actualizar en cualquier colección ----
     private suspend fun saveToCollection(collection: String, documentId: String, data: Map<String, Any>) {
@@ -21,28 +22,31 @@ class FirestoreRepository @Inject constructor(
 
     // ---- Usuarios ----
 
-    // ---- Usuarios ----
-
     suspend fun saveUser(userId: String, name: String, email: String, profileImage: String?) {
-        val userMap = mapOf(
-            "name" to name,
-            "email" to email,
-            "profileImage" to profileImage
-        ).filterValues { it != null } // Filtrar valores nulos
-            .mapValues { it.value!! } // Garantizar que no queden valores nulos
-
-        saveToCollection("users", userId, userMap)
+        try {
+            val user = mapOf(
+                "id" to userId,
+                "name" to name,
+                "email" to email,
+                "profileImage" to profileImage
+            )
+            usersCollection.document(userId).set(user).await()
+        } catch (e: Exception) {
+            throw Exception("Error al guardar el usuario: ${e.localizedMessage}")
+        }
     }
-
-
 
     suspend fun updateUser(userId: String, updates: Map<String, Any>) {
         updateToCollection("users", userId, updates)
     }
 
     suspend fun getUser(userId: String): Map<String, Any>? {
-        val snapshot = db.collection("users").document(userId).get().await()
-        return snapshot.data
+        return try {
+            val document = usersCollection.document(userId).get().await()
+            if (document.exists()) document.data else null
+        } catch (e: Exception) {
+            throw Exception("Error al obtener el usuario: ${e.localizedMessage}")
+        }
     }
 
     suspend fun deleteUser(userId: String) {

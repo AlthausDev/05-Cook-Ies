@@ -70,11 +70,17 @@ dependencies {
     implementation(libs.firebase.config)
 
     implementation(libs.play.services.location)
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.0.1")
+    implementation("com.google.firebase:firebase-appcheck-safetynet:16.1.2")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.0.1")
+
+
 
     implementation(libs.googlePlayServicesAuth)
     implementation(libs.coil)
 
     implementation(libs.hilt.android)
+    implementation(libs.googleid)
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.navigation.compose)
