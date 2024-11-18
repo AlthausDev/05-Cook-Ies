@@ -23,6 +23,7 @@ import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
 import com.althaus.dev.cookIes.theme.TextPrimary
+import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +35,7 @@ fun ProfileView(
     onRecipeClick: (String) -> Unit
 ) {
     val userProfile = profileViewModel.userProfile.collectAsState()
-    //val userRecipes = profileViewModel.userRecipes.collectAsState()
+    val userRecipes = profileViewModel.userRecipes.collectAsState()
     val isLoading = profileViewModel.isLoading.collectAsState()
     val errorMessage = profileViewModel.errorMessage.collectAsState()
 
@@ -45,34 +46,34 @@ fun ProfileView(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp), // Agregamos padding horizontal
+                            .padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "Mi Perfil",
                             style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(start = 8.dp) // Espaciado adicional para el título
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(end = 8.dp) // Espaciado adicional para los iconos
+                            modifier = Modifier.padding(end = 8.dp)
                         ) {
                             IconButton(onClick = onFavorites) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = "Favoritos",
                                     tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp) // Tamaño estándar
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(8.dp)) // Espacio entre los iconos
+                            Spacer(modifier = Modifier.width(8.dp))
                             IconButton(onClick = onSettings) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = "Editar Perfil",
                                     tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp) // Tamaño estándar
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
@@ -100,7 +101,7 @@ fun ProfileView(
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logo), // Imagen predeterminada
+                            painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Foto de perfil",
                             modifier = Modifier.fillMaxSize()
                         )
@@ -147,17 +148,12 @@ fun ProfileView(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                // Lista de recetas propias
-//                LazyColumn(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .padding(16.dp),
-//                    verticalArrangement = Arrangement.spacedBy(8.dp)
-//                ) {
-//                    items(userRecipes.value) { recipe ->
-//                        RecipeCard(recipe = recipe, onRecipeClick = { recipe.id?.let { onRecipeClick(it) } })
-//                    }
-//                }
+                // Lista de recetas del usuario
+                RecipeListView(
+                    recipes = userRecipes.value,
+                    onRecipeClick = onRecipeClick,
+                    emptyMessage = "No tienes recetas aún."
+                )
             }
         }
     )
