@@ -40,7 +40,7 @@ import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.TextPrimary
+import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 //@Preview(showBackground = true)
@@ -77,7 +77,7 @@ fun HomeView(
         // Indicador de carga y mensajes de error
         when {
             uiState.isLoading -> {
-                CircularProgressIndicator(color = TextPrimary, modifier = Modifier.padding(16.dp))
+                CircularProgressIndicator(color = PrimaryDark, modifier = Modifier.padding(16.dp))
             }
             uiState.errorMessage != null -> {
                 Text(
@@ -121,7 +121,7 @@ fun HeaderSection(navigateToProfile: () -> Unit) {
     ) {
         Text(
             text = "Recetario",
-            color = TextPrimary,
+            color = PrimaryDark,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold
         )
@@ -129,7 +129,7 @@ fun HeaderSection(navigateToProfile: () -> Unit) {
             Icon(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Perfil",
-                tint = TextPrimary
+                tint = PrimaryDark
             )
         }
     }
@@ -169,19 +169,19 @@ fun RecipeCard(recipe: Recipe, onRecipeClick: (Recipe) -> Unit) {
             ) {
                 Text(
                     text = recipe.name ?: "Receta desconocida",
-                    color = TextPrimary,
+                    color = PrimaryDark,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = recipe.description ?: "Descripción no disponible",
-                    color = TextPrimary.copy(alpha = 0.7f),
+                    color = PrimaryDark.copy(alpha = 0.7f),
                     fontSize = 14.sp,
                     maxLines = 2
                 )
                 Text(
                     text = "Dificultad: ${recipe.difficultyLevel}",
-                    color = TextPrimary,
+                    color = PrimaryDark,
                     fontSize = 12.sp
                 )
             }

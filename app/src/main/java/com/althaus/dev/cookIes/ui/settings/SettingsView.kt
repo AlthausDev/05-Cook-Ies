@@ -2,6 +2,7 @@ package com.althaus.dev.cookIes.ui.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
@@ -24,8 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.theme.ErrorLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
+import com.althaus.dev.cookIes.theme.SecondaryLight
 import com.althaus.dev.cookIes.theme.PrimaryLight
+import com.althaus.dev.cookIes.ui.components.TopBarWithBack
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,14 +53,9 @@ fun SettingsView(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Configuración",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
+            TopBarWithBack(
+                title = "Configuración",
+                onBack = onCancel
             )
         },
         content = { innerPadding ->
@@ -64,7 +63,7 @@ fun SettingsView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .background(Brush.verticalGradient(listOf(PrimaryLight, PrimaryDark)))
+                    .background(Brush.verticalGradient(listOf(PrimaryLight, SecondaryLight)))
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -85,45 +84,34 @@ fun SettingsView(
                     )
                 }
 
-                Button(
-                    onClick = { isEmailDialogOpen = true },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryDark)
+                Spacer(modifier = Modifier.weight(0.3f))
 
-                    ) {
-                    Text("Cambiar Foto")
-                }
+                SettingsButton(
+                    text = "Cambiar Foto",
+                    onClick = { isEmailDialogOpen = true }
+                )
 
-                // Botones para editar información
-                Button(
-                    onClick = { isNameDialogOpen = true },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryDark)
-                ) {
-                    Text("Cambiar Nombre")
-                }
+                SettingsButton(
+                    text = "Cambiar Nombre",
+                    onClick = { isNameDialogOpen = true }
+                )
 
-                Button(
-                    onClick = { isEmailDialogOpen = true },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryDark)
-                ) {
-                    Text("Cambiar Correo")
-                }
+                SettingsButton(
+                    text = "Cambiar Correo",
+                    onClick = { isEmailDialogOpen = true }
+                )
 
-                Button(
-                    onClick = { isPasswordDialogOpen = true },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryDark)
-                ) {
-                    Text("Cambiar Contraseña")
-                }
+                SettingsButton(
+                    text = "Cambiar Contraseña",
+                    onClick = { isPasswordDialogOpen = true }
+                )
 
-                // Botón para cerrar sesión
+                Spacer(modifier = Modifier.weight(0.2f))
+
                 Button(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    colors = ButtonDefaults.buttonColors(containerColor = ErrorLight),
                     shape = CircleShape
                 ) {
                     Text(
@@ -144,7 +132,7 @@ fun SettingsView(
                 errorMessage.value?.let {
                     Text(
                         text = it,
-                        color = Color.Red,
+                        color = ErrorLight,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -248,3 +236,27 @@ fun EditDialog(
         }
     )
 }
+
+@Composable
+fun SettingsButton(
+    text: String,
+    onClick: () -> Unit,
+    containerColor: Color = SecondaryLight,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth(0.8f)
+            .border(
+                width = 3.dp,
+                color = PrimaryDark.copy(alpha = 0.2f),
+                shape = CircleShape
+            ),
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor),
+        shape = CircleShape
+    ) {
+        Text(text)
+    }
+}
+

@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
+import com.althaus.dev.cookIes.ui.authentication.ForgotPasswordView
 import com.althaus.dev.cookIes.ui.dashboard.DashboardView
 import com.althaus.dev.cookIes.ui.authentication.LoginView
 import com.althaus.dev.cookIes.ui.profile.ProfileView
@@ -32,6 +33,8 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
     object Wizard : Screen("Wizard")
     object Favorites : Screen("favorites")
+    object ForgotPassword : Screen("forgotPassword")
+
 }
 
 @Composable
@@ -79,6 +82,10 @@ fun NavigationWrapper(
                 onLoginSuccess = {
                     authViewModel.resetError()
                     navigateWithClearBackStack(navHostController, Screen.Dashboard.route)
+                },
+                navigateToForgotPassword = {
+                    authViewModel.resetError()
+                    navHostController.navigate(Screen.ForgotPassword.route)
                 },
                 authViewModel = authViewModel
             )
@@ -136,6 +143,9 @@ fun NavigationWrapper(
                 navigateToFavorites = {
                     authViewModel.resetError()
                     navHostController.navigate(Screen.Favorites.route)
+                },
+                onBack = {
+                    navHostController.popBackStack()
                 }
             )
         }
@@ -192,6 +202,14 @@ fun NavigationWrapper(
                 }
             )
         }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordView(
+                authViewModel = authViewModel,
+                onBack = { navHostController.popBackStack() }
+            )
+        }
+
     }
 }
 

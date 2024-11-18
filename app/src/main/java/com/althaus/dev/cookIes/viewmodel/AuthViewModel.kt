@@ -48,6 +48,18 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun sendPasswordResetEmail(email: String, callback: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                authRepository.sendPasswordResetEmail(email)
+                callback(true, null)
+            } catch (e: Exception) {
+                callback(false, e.localizedMessage)
+            }
+        }
+    }
+
+
     fun logout() {
         authRepository.logout()
         _user.value = null

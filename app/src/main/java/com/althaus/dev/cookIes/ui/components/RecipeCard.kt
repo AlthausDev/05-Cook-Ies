@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.althaus.dev.cookIes.data.model.Recipe
-import com.althaus.dev.cookIes.theme.TextPrimary
+import com.althaus.dev.cookIes.theme.PrimaryDark
 
 @Composable
 fun RecipeCard(
@@ -63,7 +63,7 @@ fun RecipeCard(
                 Text(
                     text = recipe.name,
                     style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
-                    color = TextPrimary,
+                    color = PrimaryDark,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

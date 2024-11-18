@@ -1,6 +1,8 @@
 package com.althaus.dev.cookIes.ui.dashboard
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,12 +34,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.theme.GradientBackground
+import com.althaus.dev.cookIes.theme.PrimaryDark
+import com.althaus.dev.cookIes.theme.PrimaryLight
+import com.althaus.dev.cookIes.theme.SecondaryLight
 import com.althaus.dev.cookIes.ui.components.RecipeCard
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,110 +61,126 @@ fun DashboardView(
         recipeViewModel.refreshRecipes()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Dashboard",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = navigateToNotifications) {
-                                Icon(
-                                    imageVector = Icons.Default.Notifications,
-                                    contentDescription = "Notificaciones",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clickable(onClick = navigateToProfile)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.logo),
-                                    contentDescription = "Imagen de Perfil",
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    }
-                }
-            )
-        },
-
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = navigateToRecipeWizard,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar receta",
-                    modifier = Modifier.size(24.dp)
+    // Aplicar fondo gradiente como capa base
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(PrimaryLight, SecondaryLight)
                 )
-            }
-        },
+            )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Dashboard",
+                                style = MaterialTheme.typography.titleLarge
+                            )
 
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                    uiState.errorMessage != null -> {
-                        Text(
-                            text = uiState.errorMessage ?: "Error desconocido",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                    uiState.recipes.isNotEmpty() -> {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(uiState.recipes) { recipe ->
-                                RecipeCard(
-                                    recipe = recipe,
-                                    onClick = { navigateToRecipeDetail(recipe.id ?: "") }
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = navigateToNotifications) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = "Notificaciones",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clickable(onClick = navigateToProfile)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.logo),
+                                        contentDescription = "Imagen de Perfil",
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                         }
                     }
-                    else -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No hay recetas disponibles")
+                )
+            },
+
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = navigateToRecipeWizard,
+                    containerColor = SecondaryLight,
+                    contentColor = PrimaryDark,
+                    modifier = Modifier.border(
+                        width = 2.dp,
+                        color = PrimaryDark.copy(alpha = 0.2f), // Borde con transparencia
+                        shape = MaterialTheme.shapes.large
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Agregar receta",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            },
+
+            content = { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(16.dp)
+                ) {
+                    when {
+                        uiState.isLoading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                        uiState.errorMessage != null -> {
+                            Text(
+                                text = uiState.errorMessage ?: "Error desconocido",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        }
+                        uiState.recipes.isNotEmpty() -> {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(uiState.recipes) { recipe ->
+                                    RecipeCard(
+                                        recipe = recipe,
+                                        onClick = { navigateToRecipeDetail(recipe.id ?: "") }
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay recetas disponibles")
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }

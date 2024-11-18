@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -22,7 +23,8 @@ import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.TextPrimary
+import com.althaus.dev.cookIes.theme.PrimaryDark
+import com.althaus.dev.cookIes.theme.SecondaryLight
 import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
@@ -32,7 +34,8 @@ fun ProfileView(
     profileViewModel: ProfileViewModel,
     onSettings: () -> Unit,
     navigateToFavorites: () -> Unit,
-    onRecipeClick: (String) -> Unit
+    onRecipeClick: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     val userProfile = profileViewModel.userProfile.collectAsState()
     val userRecipes = profileViewModel.userRecipes.collectAsState()
@@ -52,8 +55,7 @@ fun ProfileView(
                     ) {
                         Text(
                             text = "Mi Perfil",
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(start = 8.dp)
+                            style = MaterialTheme.typography.titleLarge
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -78,16 +80,24 @@ fun ProfileView(
                             }
                         }
                     }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Regresar"
+                        )
+                    }
                 }
             )
         },
 
-        content = { innerPadding ->
+                content = { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .background(Brush.verticalGradient(listOf(PrimaryLight, PrimaryDark))),
+                    .background(Brush.verticalGradient(listOf(PrimaryLight, SecondaryLight))),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -109,14 +119,14 @@ fun ProfileView(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = profile.name ?: "Nombre del Usuario",
-                        color = TextPrimary,
+                        color = PrimaryDark,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = profile.email ?: "correo@ejemplo.com",
-                        color = TextPrimary.copy(alpha = 0.8f),
+                        color = PrimaryDark.copy(alpha = 0.8f),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
@@ -127,7 +137,7 @@ fun ProfileView(
 
                 // Indicador de carga o mensaje de error
                 if (isLoading.value) {
-                    CircularProgressIndicator(color = TextPrimary)
+                    CircularProgressIndicator(color = PrimaryDark)
                 } else if (errorMessage.value != null) {
                     Text(
                         text = errorMessage.value ?: "Error desconocido",
@@ -142,7 +152,7 @@ fun ProfileView(
                 // Título de "Mis Recetas"
                 Text(
                     text = "Mis Recetas",
-                    color = TextPrimary,
+                    color = PrimaryDark,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 8.dp)

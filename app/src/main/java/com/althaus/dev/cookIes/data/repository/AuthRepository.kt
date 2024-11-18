@@ -70,6 +70,11 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun sendPasswordResetEmail(email: String) {
+        firebaseAuth.sendPasswordResetEmail(email).await()
+    }
+
+
     suspend fun signInWithGoogle(idToken: String): AuthResult {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return signInWithCredential(credential)

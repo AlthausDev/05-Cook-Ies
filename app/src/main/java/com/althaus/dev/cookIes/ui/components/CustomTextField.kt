@@ -15,24 +15,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
+import com.althaus.dev.cookIes.theme.SecondaryLight
 
 @Composable
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    fieldWidth: Float = 0.8f,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+    visualTransformation: VisualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
 ) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = Modifier
-            .fillMaxWidth(0.8f)
-            .border(2.dp, PrimaryDark, CircleShape)
+            .fillMaxWidth(fieldWidth)
+            .border(2.dp, SecondaryLight, CircleShape)
             .background(PrimaryLight, CircleShape)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(paddingValues),
         singleLine = true,
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = visualTransformation,
         textStyle = androidx.compose.ui.text.TextStyle(
             color = PrimaryDark
         ),
@@ -44,7 +48,7 @@ fun CustomTextField(
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
-                        color = PrimaryDark.copy(alpha = 0.6f) // Placeholder más tenue
+                        color = PrimaryDark.copy(alpha = 0.6f)
                     )
                 }
                 innerTextField()
@@ -52,3 +56,4 @@ fun CustomTextField(
         }
     )
 }
+

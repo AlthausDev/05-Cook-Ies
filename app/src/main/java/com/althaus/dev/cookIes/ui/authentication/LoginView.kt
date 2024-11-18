@@ -1,6 +1,8 @@
 package com.althaus.dev.cookIes.ui.authentication
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,14 +13,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.theme.GradientBackground
 import com.althaus.dev.cookIes.theme.PrimaryButton
+import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.ui.components.*
-import com.althaus.dev.cookIes.theme.TextPrimary
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
 @Composable
 fun LoginView(
     navigateToSignUp: () -> Unit = {},
     onLoginSuccess: () -> Unit = {},
+    navigateToForgotPassword: () -> Unit = {},
     authViewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
@@ -44,7 +47,7 @@ fun LoginView(
 
             Text(
                 text = "Iniciar Sesión",
-                color = TextPrimary,
+                color = PrimaryDark,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -87,7 +90,19 @@ fun LoginView(
                 onClick = navigateToSignUp
             )
 
+            Spacer(modifier = Modifier.height(36.dp))
+            Text(
+                text = "¿Olvidaste tu contraseña? Restablécela aquí.",
+                fontSize = 15.sp,
+                color = PrimaryDark,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.clickable {navigateToForgotPassword() }
+            )
+
             Spacer(modifier = Modifier.weight(0.3f))
         }
     }
 }
+
+
+
