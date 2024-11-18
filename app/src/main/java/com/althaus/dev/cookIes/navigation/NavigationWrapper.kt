@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes.navigation
 
+import NotificationsViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,6 +39,7 @@ fun NavigationWrapper(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
     recipeViewModel: RecipeViewModel,
+    notificationsViewModel: NotificationsViewModel,
     firestoreRepository: FirestoreRepository
 ) {
     val currentUser = authViewModel.user.collectAsState().value
@@ -138,12 +140,11 @@ fun NavigationWrapper(
         composable(Screen.Notifications.route) {
             authViewModel.resetError()
             NotificationsView(
-                onBack = {
-                    authViewModel.resetError()
-                    navHostController.popBackStack()
-                }
+                notificationsViewModel = notificationsViewModel,
+                onBack = { navHostController.popBackStack() }
             )
         }
+
 
         composable(Screen.Settings.route) {
             SettingsView(

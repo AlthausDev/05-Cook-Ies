@@ -1,19 +1,15 @@
 package com.althaus.dev.cookIes
 
-import android.annotation.SuppressLint
+import NotificationsViewModel
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.navigation.NavigationWrapper
 import com.althaus.dev.cookIes.theme.CookIesTheme
@@ -21,7 +17,6 @@ import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 import com.google.android.gms.security.ProviderInstaller
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -53,6 +48,7 @@ class MainActivity : AppCompatActivity() {
                         authViewModel = authViewModel,
                         profileViewModel = profileViewModel,
                         recipeViewModel = recipeViewModel,
+                        notificationsViewModel = NotificationsViewModel(firestoreRepository),
                         firestoreRepository = firestoreRepository // Pasamos el repositorio aquí
                     )
                 }

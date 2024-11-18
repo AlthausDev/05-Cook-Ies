@@ -3,6 +3,9 @@ package com.althaus.dev.cookIes.data.model
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 @IgnoreExtraProperties
 data class Notification(
@@ -46,6 +49,13 @@ data class Notification(
         return map
     }
 
+    fun getReadableTimestamp(): String {
+        val date = Date(this.timestamp)
+        val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        return format.format(date)
+    }
+
+
     suspend fun saveToFirestore(repository: FirestoreRepository) {
         try {
             val notificationId = if (id.isBlank()) repository.generateNewId("notifications") else id
@@ -79,6 +89,8 @@ data class Notification(
         }
     }
 }
+
+
 
 enum class NotificationType {
     NEW_RECIPE,

@@ -1,109 +1,54 @@
-package com.althaus.dev.cookIes.viewmodel
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Notification
-import com.althaus.dev.cookIes.data.repository.NotificationRepository
-import com.althaus.dev.cookIes.data.repository.NotificationResult
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class NotificationViewModel @Inject constructor(
-    private val notificationRepository: NotificationRepository
+class NotificationsViewModel @Inject constructor(
+    private val firestoreRepository: FirestoreRepository
 ) : ViewModel() {
 
-    // ---- Estados ----
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
     val notifications: StateFlow<List<Notification>> = _notifications
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage
-
     init {
-        fetchNotifications()
+        loadNotifications()
     }
 
-    // ---- Gestión de Notificaciones ----
-
-    /**
-     * Obtener todas las notificaciones del repositorio.
-     */
-    fun fetchNotifications() {
-        executeWithLoading {
-            try {
-                notificationRepository.getNotifications().collect { result ->
-                    when (result) {
-                        is NotificationResult.Success -> _notifications.value = result.data
-                        is NotificationResult.Failure -> showError("Error al obtener notificaciones: ${result.exception.message}")
-                    }
-                }
-            } catch (e: Exception) {
-                showError("Error inesperado: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    /**
-     * Marcar una notificación como leída.
-     */
-    fun markAsRead(notificationId: String) {
-        executeWithLoading {
-            try {
-                val success = notificationRepository.markAsRead(notificationId)
-                if (success) {
-                    _notifications.value = _notifications.value.map {
-                        if (it.id == notificationId) it.copy(isRead = true) else it
-                    }
-                } else {
-                    showError("No se pudo marcar la notificación como leída.")
-                }
-            } catch (e: Exception) {
-                showError("Error al marcar la notificación como leída: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    /**
-     * Eliminar una notificación.
-     */
-    fun deleteNotification(notificationId: String) {
-        executeWithLoading {
-            try {
-                val success = notificationRepository.deleteNotification(notificationId)
-                if (success) {
-                    _notifications.value = _notifications.value.filter { it.id != notificationId }
-                } else {
-                    showError("No se pudo eliminar la notificación.")
-                }
-            } catch (e: Exception) {
-                showError("Error al eliminar la notificación: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    // ---- Utilidades para Manejo de Estados ----
-    private fun showError(message: String) {
-        _errorMessage.value = message
-    }
-
-    private fun executeWithLoading(operation: suspend () -> Unit) {
-        _isLoading.value = true
+    fun loadNotifications() {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
-                operation()
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                _notifications.value = firestoreRepository.getNotifications(userId)
             } catch (e: Exception) {
-                e.printStackTrace()
-                showError("Ocurrió un error: ${e.localizedMessage}")
+                // Manejo de errores, si es necesario
             } finally {
                 _isLoading.value = false
             }
         }
     }
+
+
+    fun markAsRead(notification: Notification) {
+        viewModelScope.launch {
+            try {
+                val updatedNotification = notification.markAsRead()
+                firestoreRepository.updateNotification(updatedNotification.id, mapOf("isRead" to true))
+                _notifications.value = _notifications.value.map {
+                    if (it.id == updatedNotification.id) updatedNotification else it
+                }
+            } catch (e: Exception) {
+                // Manejar el error si es necesario
+            }
+        }
+    }
 }
+

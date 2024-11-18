@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes.data.repository
 
+import com.althaus.dev.cookIes.data.model.Notification
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -115,15 +116,33 @@ class FirestoreRepository @Inject constructor(
 
     // ---- Notificaciones ----
 
+    // Guardar una notificación
     suspend fun saveNotification(notificationId: String, notificationData: Map<String, Any>) {
         saveToCollection("notifications", notificationId, notificationData)
     }
 
+    // Actualizar una notificación
     suspend fun updateNotification(notificationId: String, updates: Map<String, Any>) {
         updateToCollection("notifications", notificationId, updates)
     }
 
+    // Obtener todas las notificaciones de un usuario
+    suspend fun getNotifications(recipientId: String): List<Notification> {
+        return try {
+            val querySnapshot = db.collection("notifications")
+                .whereEqualTo("recipientId", recipientId)
+                .get()
+                .await()
 
+            querySnapshot.documents.mapNotNull { doc ->
+                doc.toObject(Notification::class.java)?.copy(id = doc.id)
+            }
+        } catch (e: Exception) {
+            throw Exception("Error al obtener notificaciones: ${e.localizedMessage}")
+        }
+    }
+
+    // Generar un nuevo ID para una colección
     suspend fun generateNewId(collection: String): String {
         return db.collection(collection).document().id
     }
