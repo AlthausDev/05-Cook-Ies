@@ -25,7 +25,7 @@ import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.SecondaryLight
-import com.althaus.dev.cookIes.ui.components.RecipeListView
+//import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,11 +159,11 @@ fun ProfileView(
                 )
 
                 // Lista de recetas del usuario
-                RecipeListView(
-                    recipes = userRecipes.value,
-                    onRecipeClick = onRecipeClick,
-                    emptyMessage = "No tienes recetas aún."
-                )
+//                RecipeListView(
+//                    recipes = userRecipes.value,
+//                    onRecipeClick = onRecipeClick,
+//                    emptyMessage = "No tienes recetas aún."
+//                )
             }
         }
     )

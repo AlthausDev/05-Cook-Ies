@@ -5,17 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
-import com.althaus.dev.cookIes.data.repository.RecipeResult
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 
 // Estado de la UI para manejar recetas
 data class RecipeUiState(
     val recipes: List<Recipe> = emptyList(),
-    val favorites: List<Recipe> = emptyList(), // Lista de recetas favoritas
+    val favorites: List<Recipe> = emptyList(),
+    val selectedRecipe: Recipe? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -36,92 +36,82 @@ class RecipeViewModel @Inject constructor(
         refreshFavorites()
     }
 
-    // Refrescar las recetas (cargar o recargar)
-    fun refreshRecipes() = handleLoading {
+    // Refrescar todas las recetas
+    fun refreshRecipes() = viewModelScope.launch {
         try {
-            val recipes = repository.getAllRecipes().mapNotNull { data ->
-                Recipe.fromMap(data)  // Asumiendo que tienes un método para convertir Map a Recipe
-            }
+            _uiState.update { it.copy(isLoading = true) }
+            val recipes = repository.getAllRecipes().mapNotNull { Recipe.fromMap(it) }
             updateRecipes(recipes)
         } catch (e: Exception) {
-            Log.e("RecipeViewModel", "Error al recolectar recetas: ${e.localizedMessage}", e)
-            showError("Error al recolectar recetas: ${e.localizedMessage}")
+            showError("Error al cargar recetas: ${e.localizedMessage}")
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
     // Refrescar las recetas favoritas
-    fun refreshFavorites(userId: String = getCurrentUserId()) = handleLoading {
+    fun refreshFavorites() = viewModelScope.launch {
         try {
-            val favorites = repository.getUserRecipes(userId).mapNotNull { data ->
-                Recipe.fromMap(data)  // Asumiendo que tienes un método para convertir Map a Recipe
-            }
+            val userId = getCurrentUserId()
+            _uiState.update { it.copy(isLoading = true) }
+            val favorites = repository.getUserRecipes(userId).mapNotNull { Recipe.fromMap(it) }
             updateFavorites(favorites)
         } catch (e: Exception) {
-            Log.e("RecipeViewModel", "Error al recolectar recetas favoritas: ${e.localizedMessage}", e)
-            showError("Error al recolectar recetas favoritas: ${e.localizedMessage}")
+            showError("Error al cargar recetas favoritas: ${e.localizedMessage}")
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+
+    // Obtener una receta por su ID
+    fun getRecipeById(recipeId: String) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, selectedRecipe = null) }
+        try {
+            repository.getRecipe(recipeId).collect { recipe ->
+                _uiState.update { it.copy(selectedRecipe = recipe, isLoading = false) }
+            }
+        } catch (e: Exception) {
+            showError("Error al obtener receta: ${e.localizedMessage}")
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
     // Agregar receta
-    fun addRecipe(recipe: Recipe) = handleLoading {
+    fun addRecipe(recipe: Recipe) = viewModelScope.launch {
         try {
-            val recipeData = recipe.toMap() // Asumiendo que tienes un método para convertir Recipe a Map
-            repository.saveRecipe(recipe.id ?: repository.generateNewId("recipes"), recipeData)
-            Log.d("RecipeViewModel", "Receta agregada exitosamente")
+            _uiState.update { it.copy(isLoading = true) }
+            repository.saveRecipe(recipe.id.ifBlank { repository.generateNewId("recipes") }, recipe.toMap())
             refreshRecipes()
         } catch (e: Exception) {
-            Log.e("RecipeViewModel", "Error inesperado al agregar receta: ${e.localizedMessage}", e)
-            showError("Error inesperado al agregar receta: ${e.localizedMessage}")
+            showError("Error al agregar receta: ${e.localizedMessage}")
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
     // Eliminar receta
-    fun deleteRecipe(recipeId: String) = handleLoading {
+    fun deleteRecipe(recipeId: String) = viewModelScope.launch {
         try {
+            _uiState.update { it.copy(isLoading = true) }
             repository.deleteRecipe(recipeId)
-            Log.d("RecipeViewModel", "Receta eliminada exitosamente")
             refreshRecipes()
         } catch (e: Exception) {
-            Log.e("RecipeViewModel", "Error inesperado al eliminar receta: ${e.localizedMessage}", e)
-            showError("Error inesperado al eliminar receta: ${e.localizedMessage}")
+            showError("Error al eliminar receta: ${e.localizedMessage}")
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
-    // ---- Métodos Privados ----
-
-    // Manejar operaciones de carga y estado
-    private fun handleLoading(operation: suspend () -> Unit) {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch {
-            try {
-                operation()
-            } catch (e: IllegalArgumentException) {
-                Log.e("RecipeViewModel", "Argumento no válido: ${e.localizedMessage}", e)
-                showError("Argumento no válido: ${e.localizedMessage}")
-            } catch (e: InvocationTargetException) {
-                Log.e("RecipeViewModel", "Error de reflexión: ${e.localizedMessage}", e)
-                showError("Error de reflexión: ${e.localizedMessage}")
-                e.cause?.printStackTrace()
-            } catch (e: Exception) {
-                Log.e("RecipeViewModel", "Error inesperado: ${e.localizedMessage}", e)
-                showError("Error inesperado: ${e.localizedMessage}")
-            } finally {
-                _uiState.update { it.copy(isLoading = false) }
-            }
-        }
-    }
-
-    // Actualizar la lista de recetas
+    // Manejo de estado y errores
     private fun updateRecipes(recipes: List<Recipe>) {
         _uiState.update { it.copy(recipes = recipes, errorMessage = null) }
     }
 
-    // Actualizar la lista de recetas favoritas
     private fun updateFavorites(favorites: List<Recipe>) {
         _uiState.update { it.copy(favorites = favorites, errorMessage = null) }
     }
 
-    // Mostrar error en el flujo de mensajes y en el estado de UI
     private fun showError(message: String) {
         _uiState.update { it.copy(errorMessage = message) }
         viewModelScope.launch {
@@ -129,9 +119,9 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-    // Obtener el ID del usuario actual (puedes adaptar esta función según tu implementación)
     private fun getCurrentUserId(): String {
-        // Aquí deberías implementar cómo obtienes el ID del usuario autenticado
-        return "user-id-placeholder"
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return currentUser?.uid ?: throw IllegalStateException("No se encontró un usuario autenticado")
     }
+
 }

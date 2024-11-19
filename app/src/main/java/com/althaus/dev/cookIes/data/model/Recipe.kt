@@ -3,9 +3,6 @@ package com.althaus.dev.cookIes.data.model
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @IgnoreExtraProperties
 data class Recipe(
@@ -49,14 +46,14 @@ data class Recipe(
         }
     }
 
-    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
-        try {
-            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una receta sin ID.")
-            repository.updateRecipe(id, updates)
-        } catch (e: Exception) {
-            throw Exception("Error al actualizar la receta en Firestore: ${e.localizedMessage}")
-        }
-    }
+//    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
+//        try {
+//            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una receta sin ID.")
+//            repository.updateRecipe(id, updates)
+//        } catch (e: Exception) {
+//            throw Exception("Error al actualizar la receta en Firestore: ${e.localizedMessage}")
+//        }
+//    }
 
     fun toMap(): Map<String, Any> {
         return mapOf(
@@ -80,7 +77,7 @@ data class Recipe(
 
 
     companion object {
-        fun fromMap(map: Map<String, Any?>): Recipe {
+        fun fromMap(map: Map<String, Any>): Recipe {
             return Recipe(
                 id = map["id"] as? String ?: "",
                 name = map["name"] as? String ?: "",
