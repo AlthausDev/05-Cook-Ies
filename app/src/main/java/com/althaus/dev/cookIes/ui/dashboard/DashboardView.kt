@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes.ui.dashboard
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -148,7 +149,13 @@ fun DashboardView(
                                 items(uiState.recipes) { recipe ->
                                     RecipeCard(
                                         recipe = recipe,
-                                        onClick = { recipe.id?.let { navigateToRecipeDetail(it) } }
+                                        onClick = {
+                                            recipe.id?.let { recipeId ->
+                                                navigateToRecipeDetail(recipeId) // Solo navega si el ID no es nulo
+                                            } ?: run {
+                                                Log.e("DashboardView", "Error: ID de receta es nulo o vacío")
+                                            }
+                                        }
                                     )
                                 }
                             }

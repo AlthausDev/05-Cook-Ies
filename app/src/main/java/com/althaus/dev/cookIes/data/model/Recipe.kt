@@ -76,6 +76,7 @@ data class Recipe(
     }
 
 
+
     companion object {
         fun fromMap(map: Map<String, Any>): Recipe {
             return Recipe(

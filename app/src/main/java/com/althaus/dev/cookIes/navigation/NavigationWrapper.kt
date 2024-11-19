@@ -113,7 +113,7 @@ fun NavigationWrapper(
             DashboardView(
                 recipeViewModel = recipeViewModel,
                 navigateToRecipeDetail = { recipeId ->
-                    navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
+                    navHostController.navigate("recipeDetail/$recipeId")
                 },
                 navigateToProfile = {
                     navHostController.navigate(Screen.Profile.route)

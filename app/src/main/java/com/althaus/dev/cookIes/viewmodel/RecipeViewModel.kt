@@ -68,7 +68,8 @@ class RecipeViewModel @Inject constructor(
     fun getRecipeById(recipeId: String) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true, selectedRecipe = null) }
         try {
-            repository.getRecipe(recipeId).collect { recipe ->
+            repository.getRecipe(recipeId).collect { data ->
+                val recipe = data?.let { Recipe.fromMap(it) } // Convierte el mapa en un objeto Recipe
                 _uiState.update { it.copy(selectedRecipe = recipe, isLoading = false) }
             }
         } catch (e: Exception) {
@@ -76,6 +77,7 @@ class RecipeViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false) }
         }
     }
+
 
     // Agregar receta
     fun addRecipe(recipe: Recipe) = viewModelScope.launch {

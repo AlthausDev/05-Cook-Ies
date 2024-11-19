@@ -40,27 +40,32 @@ class FirestoreRepository @Inject constructor(
     }
 
     // Obtener una receta por su ID (tiempo real)
-    fun getRecipe(recipeId: String): Flow<Recipe?> = callbackFlow {
-        val documentRef = db.collection("recipes").document(recipeId)
-        val listener = documentRef.addSnapshotListener { snapshot, e ->
-            if (e != null) {
-                close(e)
-                return@addSnapshotListener
+    fun getRecipe(recipeId: String): Flow<Map<String, Any>?> {
+        return callbackFlow {
+            val documentRef = db.collection("recipes").document(recipeId)
+            val listener = documentRef.addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    trySend(snapshot.data) // Mapa devuelto por Firestore
+                } else {
+                    trySend(null) // Documento no encontrado
+                }
             }
-            try {
-                val recipe = snapshot?.toObject(Recipe::class.java)
-                trySend(recipe).isSuccess
-            } catch (ex: Exception) {
-                trySend(null).isSuccess
-            }
+            awaitClose { listener.remove() }
         }
-        awaitClose { listener.remove() }
     }
+
+
 
     // Guardar o actualizar una receta
     suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>) {
         try {
-            db.collection("recipes").document(recipeId).set(recipeData).await()
+            val finalId = if (recipeId.isBlank()) generateNewId("recipes") else recipeId
+            val updatedData = recipeData.toMutableMap().apply { put("id", finalId) } // Agregar o actualizar el campo "id"
+            db.collection("recipes").document(finalId).set(updatedData).await()
         } catch (e: Exception) {
             throw Exception("Error al guardar la receta: ${e.localizedMessage}")
         }
