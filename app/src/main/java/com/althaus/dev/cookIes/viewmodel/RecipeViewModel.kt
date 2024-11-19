@@ -1,13 +1,15 @@
 package com.althaus.dev.cookIes.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
-import com.althaus.dev.cookIes.data.repository.RecipeRepository
+import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.data.repository.RecipeResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 
 // Estado de la UI para manejar recetas
@@ -20,7 +22,7 @@ data class RecipeUiState(
 
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
-    private val repository: RecipeRepository
+    private val repository: FirestoreRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeUiState())
@@ -36,35 +38,52 @@ class RecipeViewModel @Inject constructor(
 
     // Refrescar las recetas (cargar o recargar)
     fun refreshRecipes() = handleLoading {
-        repository.getRecipes().collect { result ->
-            when (result) {
-                is RecipeResult.Success -> updateRecipes(result.data)
-                is RecipeResult.Failure -> showError("Error al cargar recetas: ${result.exception.localizedMessage}")
+        try {
+            val recipes = repository.getAllRecipes().mapNotNull { data ->
+                Recipe.fromMap(data)  // Asumiendo que tienes un método para convertir Map a Recipe
             }
+            updateRecipes(recipes)
+        } catch (e: Exception) {
+            Log.e("RecipeViewModel", "Error al recolectar recetas: ${e.localizedMessage}", e)
+            showError("Error al recolectar recetas: ${e.localizedMessage}")
         }
     }
 
     // Refrescar las recetas favoritas
     fun refreshFavorites(userId: String = getCurrentUserId()) = handleLoading {
-        when (val result = repository.getFavorites(userId)) {
-            is RecipeResult.Success -> updateFavorites(result.data)
-            is RecipeResult.Failure -> showError("Error al cargar recetas favoritas: ${result.exception.localizedMessage}")
+        try {
+            val favorites = repository.getUserRecipes(userId).mapNotNull { data ->
+                Recipe.fromMap(data)  // Asumiendo que tienes un método para convertir Map a Recipe
+            }
+            updateFavorites(favorites)
+        } catch (e: Exception) {
+            Log.e("RecipeViewModel", "Error al recolectar recetas favoritas: ${e.localizedMessage}", e)
+            showError("Error al recolectar recetas favoritas: ${e.localizedMessage}")
         }
     }
 
     // Agregar receta
     fun addRecipe(recipe: Recipe) = handleLoading {
-        when (val result = repository.addRecipe(recipe)) {
-            is RecipeResult.Success -> refreshRecipes()
-            is RecipeResult.Failure -> showError("Error al agregar receta: ${result.exception.localizedMessage}")
+        try {
+            val recipeData = recipe.toMap() // Asumiendo que tienes un método para convertir Recipe a Map
+            repository.saveRecipe(recipe.id ?: repository.generateNewId("recipes"), recipeData)
+            Log.d("RecipeViewModel", "Receta agregada exitosamente")
+            refreshRecipes()
+        } catch (e: Exception) {
+            Log.e("RecipeViewModel", "Error inesperado al agregar receta: ${e.localizedMessage}", e)
+            showError("Error inesperado al agregar receta: ${e.localizedMessage}")
         }
     }
 
     // Eliminar receta
     fun deleteRecipe(recipeId: String) = handleLoading {
-        when (val result = repository.deleteRecipe(recipeId)) {
-            is RecipeResult.Success -> refreshRecipes()
-            is RecipeResult.Failure -> showError("Error al eliminar receta: ${result.exception.localizedMessage}")
+        try {
+            repository.deleteRecipe(recipeId)
+            Log.d("RecipeViewModel", "Receta eliminada exitosamente")
+            refreshRecipes()
+        } catch (e: Exception) {
+            Log.e("RecipeViewModel", "Error inesperado al eliminar receta: ${e.localizedMessage}", e)
+            showError("Error inesperado al eliminar receta: ${e.localizedMessage}")
         }
     }
 
@@ -76,7 +95,15 @@ class RecipeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 operation()
+            } catch (e: IllegalArgumentException) {
+                Log.e("RecipeViewModel", "Argumento no válido: ${e.localizedMessage}", e)
+                showError("Argumento no válido: ${e.localizedMessage}")
+            } catch (e: InvocationTargetException) {
+                Log.e("RecipeViewModel", "Error de reflexión: ${e.localizedMessage}", e)
+                showError("Error de reflexión: ${e.localizedMessage}")
+                e.cause?.printStackTrace()
             } catch (e: Exception) {
+                Log.e("RecipeViewModel", "Error inesperado: ${e.localizedMessage}", e)
                 showError("Error inesperado: ${e.localizedMessage}")
             } finally {
                 _uiState.update { it.copy(isLoading = false) }

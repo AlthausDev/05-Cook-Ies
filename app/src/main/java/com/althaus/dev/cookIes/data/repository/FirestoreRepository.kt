@@ -80,8 +80,11 @@ class FirestoreRepository @Inject constructor(
 
     suspend fun getAllRecipes(): List<Map<String, Any>> {
         val snapshot = db.collection("recipes").get().await()
-        return snapshot.documents.map { it.data ?: emptyMap() }
+        return snapshot.documents.map {
+            it.data ?: emptyMap()
+        }.filter { it.isNotEmpty() } // Filtra los documentos vacíos
     }
+
 
     // ---- Ingredientes ----
 
