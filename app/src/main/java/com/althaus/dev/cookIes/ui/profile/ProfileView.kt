@@ -3,6 +3,8 @@ package com.althaus.dev.cookIes.ui.profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,6 +27,7 @@ import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.SecondaryLight
+import com.althaus.dev.cookIes.ui.components.RecipeCard
 //import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
@@ -91,8 +94,7 @@ fun ProfileView(
                 }
             )
         },
-
-                content = { innerPadding ->
+        content = { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -159,11 +161,23 @@ fun ProfileView(
                 )
 
                 // Lista de recetas del usuario
-//                RecipeListView(
-//                    recipes = userRecipes.value,
-//                    onRecipeClick = onRecipeClick,
-//                    emptyMessage = "No tienes recetas aún."
-//                )
+                if (userRecipes.value.isNotEmpty()) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(userRecipes.value) { recipe ->
+                            RecipeCard(recipe = recipe, onClick = { recipe.id?.let { onRecipeClick(it) } })
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "No tienes recetas aún.",
+                        color = PrimaryDark.copy(alpha = 0.6f),
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     )

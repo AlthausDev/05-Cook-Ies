@@ -41,7 +41,7 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadUserProfile()
-        loadUserRecipes() // Cargar recetas del usuario al iniciar
+        loadUserRecipes()
     }
 
     fun loadUserProfile() {
@@ -62,23 +62,17 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+
     fun loadUserRecipes() {
         viewModelScope.launch {
             _isLoading.value = true
+            _errorMessage.value = null
             try {
-                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
-                recipeRepository.getRecipesByUser(userId).collect { result -> // Recoger el Flow
-                    when (result) {
-                        is RecipeResult.Success -> {
-                            _userRecipes.value = result.data
-                        }
-                        is RecipeResult.Failure -> {
-                            throw Exception(result.exception.localizedMessage)
-                        }
-                    }
-                }
+                val currentUserId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+                val recipes = firestoreRepository.getUserRecipes(currentUserId).map { Recipe.fromMap(it) }
+                _userRecipes.value = recipes
             } catch (e: Exception) {
-                showError("Error al cargar las recetas: ${e.localizedMessage}")
+                _errorMessage.value = "Error al cargar recetas: ${e.localizedMessage}"
             } finally {
                 _isLoading.value = false
             }
