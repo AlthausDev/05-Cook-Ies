@@ -2,6 +2,7 @@ package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.Recipe
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,8 @@ class FirestoreRepository @Inject constructor(
     private val db: FirebaseFirestore
 ) {
     private val usersCollection = db.collection("users")
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown-user"
+
 
     // ---- Métodos de Recetas ----
 
@@ -58,13 +61,20 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-
-
-    // Guardar o actualizar una receta
-    suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>) {
+      suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>, currentAuthorId: String) {
         try {
+            // Determinar si necesitamos generar un nuevo ID
             val finalId = if (recipeId.isBlank()) generateNewId("recipes") else recipeId
-            val updatedData = recipeData.toMutableMap().apply { put("id", finalId) } // Agregar o actualizar el campo "id"
+
+            // Preparar los datos con el ID y el autor
+            val updatedData = recipeData.toMutableMap().apply {
+                put("id", finalId) // Asegurar que el ID está incluido en los datos
+                if (!containsKey("authorId")) {
+                    put("authorId", currentAuthorId) // Agregar el authorId si no está presente
+                }
+            }
+
+            // Guardar en Firestore
             db.collection("recipes").document(finalId).set(updatedData).await()
         } catch (e: Exception) {
             throw Exception("Error al guardar la receta: ${e.localizedMessage}")
@@ -205,4 +215,6 @@ class FirestoreRepository @Inject constructor(
             throw Exception("Error al obtener notificaciones: ${e.localizedMessage}")
         }
     }
+
+
 }

@@ -37,14 +37,23 @@ data class Recipe(
     val caloriesPerServing: Int
         get() = if (servings > 0) totalCalories / servings else 0
 
-    suspend fun saveToFirestore(repository: FirestoreRepository) {
+    suspend fun saveToFirestore(repository: FirestoreRepository, currentAuthorId: String) {
         try {
+            // Generar un nuevo ID si el actual está en blanco
             val recipeId = if (id.isBlank()) repository.generateNewId("recipes") else id
-            repository.saveRecipe(recipeId, toMap())
+
+            // Convertir los datos a mapa
+            val data = toMap()
+
+            // Guardar la receta en Firestore utilizando el método que incluye currentAuthorId
+            repository.saveRecipe(recipeId, data, currentAuthorId)
         } catch (e: Exception) {
+            // Lanzar una excepción con un mensaje claro en caso de error
             throw Exception("Error al guardar la receta en Firestore: ${e.localizedMessage}")
         }
     }
+
+
 
 //    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
 //        try {

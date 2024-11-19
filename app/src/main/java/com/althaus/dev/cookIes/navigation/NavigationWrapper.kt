@@ -23,6 +23,7 @@ import com.althaus.dev.cookIes.ui.settings.SettingsView
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class Screen(val route: String) {
     object StartUp : Screen("startUp")
@@ -168,6 +169,7 @@ fun NavigationWrapper(
             RecipeWizardView(
                 firestoreRepository = firestoreRepository,
                 navHostController = navHostController,
+                currentAuthorId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown-user",
                 onComplete = {
                     navHostController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Dashboard.route) { inclusive = true }

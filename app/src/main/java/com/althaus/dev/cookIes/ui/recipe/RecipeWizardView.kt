@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 fun RecipeWizardView(
     firestoreRepository: FirestoreRepository,
     navHostController: NavHostController,
+    currentAuthorId: String, // Nuevo parámetro para identificar al autor
     onComplete: (Recipe) -> Unit,
     onCancel: () -> Unit
 ) {
@@ -61,7 +62,6 @@ fun RecipeWizardView(
                     1 -> IngredientsStep(
                         ingredients = recipeIngredients,
                         onAddIngredient = { ingredient ->
-                            // Agregar ingrediente a Firestore y luego actualizar el estado
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
                                     val newId = firestoreRepository.generateNewId("ingredients")
@@ -81,14 +81,13 @@ fun RecipeWizardView(
                         onSave = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
-                                    // Guardar receta
                                     val recipe = Recipe(
                                         name = recipeName,
                                         description = recipeDescription,
                                         ingredients = recipeIngredients,
                                         instructions = recipeInstructions
                                     )
-                                    recipe.saveToFirestore(firestoreRepository)
+                                    recipe.saveToFirestore(firestoreRepository, currentAuthorId) // Pasar currentAuthorId
                                     onComplete(recipe)
                                 } catch (e: Exception) {
                                     errorMessage = "Error al guardar la receta: ${e.localizedMessage}"
@@ -132,7 +131,7 @@ fun RecipeWizardView(
                         )
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
-                                recipe.saveToFirestore(firestoreRepository)
+                                recipe.saveToFirestore(firestoreRepository, currentAuthorId) // Pasar currentAuthorId
                                 onComplete(recipe)
                                 navHostController.navigate(Screen.Dashboard.route) {
                                     popUpTo(Screen.Dashboard.route) { inclusive = true }
@@ -148,6 +147,7 @@ fun RecipeWizardView(
         }
     )
 }
+
 
 
 

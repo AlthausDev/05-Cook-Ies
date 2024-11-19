@@ -78,33 +78,6 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-
-    // Agregar receta
-    fun addRecipe(recipe: Recipe) = viewModelScope.launch {
-        try {
-            _uiState.update { it.copy(isLoading = true) }
-            repository.saveRecipe(recipe.id.ifBlank { repository.generateNewId("recipes") }, recipe.toMap())
-            refreshRecipes()
-        } catch (e: Exception) {
-            showError("Error al agregar receta: ${e.localizedMessage}")
-        } finally {
-            _uiState.update { it.copy(isLoading = false) }
-        }
-    }
-
-    // Eliminar receta
-    fun deleteRecipe(recipeId: String) = viewModelScope.launch {
-        try {
-            _uiState.update { it.copy(isLoading = true) }
-            repository.deleteRecipe(recipeId)
-            refreshRecipes()
-        } catch (e: Exception) {
-            showError("Error al eliminar receta: ${e.localizedMessage}")
-        } finally {
-            _uiState.update { it.copy(isLoading = false) }
-        }
-    }
-
     // Manejo de estado y errores
     private fun updateRecipes(recipes: List<Recipe>) {
         _uiState.update { it.copy(recipes = recipes, errorMessage = null) }
