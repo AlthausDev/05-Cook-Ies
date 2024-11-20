@@ -2,19 +2,24 @@ package com.althaus.dev.cookIes.ui.recipe
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +33,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,20 +59,35 @@ fun RecipeDetailView(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val recipe = uiState.selectedRecipe
-    val isFavorite = uiState.favorites.any { it.id == recipe?.id }
+
+    // Estado local para la puntuación del usuario
+    val (localRating, setLocalRating) = remember(recipe?.averageRating) {
+        mutableStateOf(recipe?.averageRating?.takeIf { it > 0 } ?: 0f)
+    }
+
+    // Estado para manejar si la puntuación cambió
+    var hasRatingChanged by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = uiState.selectedRecipe?.name ?: "Cargando receta...",
+                        text = recipe?.name ?: "Cargando receta...",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = {
+                            // Si hubo cambios, actualizamos la puntuación antes de salir
+                            if (hasRatingChanged && recipe != null) {
+                                viewModel.rateRecipe(recipe.id, localRating)
+                            }
+                            onBack()
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Volver",
@@ -78,34 +101,35 @@ fun RecipeDetailView(
             )
         },
         bottomBar = {
-                BottomAppBar(
-                    content = {
-                        Spacer(modifier = Modifier.weight(1f, true))
-                        IconButton(
-                            onClick = {
-                                val isFavorite = uiState.favorites.any { it.id == recipe?.id }
+            BottomAppBar(
+                content = {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = {
+                            if (recipe != null) {
+                                val isFavorite = uiState.favorites.any { it.id == recipe.id }
                                 if (isFavorite) {
-                                    viewModel.removeFromFavorites(recipe!!.id)
+                                    viewModel.removeFromFavorites(recipe.id)
                                 } else {
-                                    viewModel.addToFavorites(recipe!!.id)
+                                    viewModel.addToFavorites(recipe.id)
                                 }
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Agregar o quitar de favoritos",
-                                tint = if (uiState.favorites.any { it.id == recipe?.id }) ErrorLight else Color.Gray
-                            )
                         }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-                        IconButton(onClick = onShare) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "Compartir receta"
-                            )
-                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Agregar o quitar de favoritos",
+                            tint = if (uiState.favorites.any { it.id == recipe?.id }) ErrorLight else Color.Gray
+                        )
                     }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    IconButton(onClick = onShare) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Compartir receta"
+                        )
+                    }
+                }
             )
         },
         content = { innerPadding ->
@@ -120,8 +144,7 @@ fun RecipeDetailView(
                         CircularProgressIndicator()
                     }
                 }
-                uiState.selectedRecipe != null -> {
-                    val recipe = uiState.selectedRecipe!!
+                recipe != null -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -132,7 +155,7 @@ fun RecipeDetailView(
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Imagen de la receta si está disponible
+                        // Imagen de la receta
                         recipe.imageUrl?.let { url ->
                             Image(
                                 painter = rememberAsyncImagePainter(url),
@@ -154,78 +177,48 @@ fun RecipeDetailView(
                         Text(
                             text = recipe.description,
                             style = MaterialTheme.typography.bodyLarge
-                           // color = PrimaryDark.copy(alpha = 0.8f)
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Información general de la receta
-                        Text(
-                            text = "Tiempo de preparación: ${recipe.prepTimeMinutes} minutos",
-                            style = MaterialTheme.typography.bodyMedium
-                            //color = PrimaryDark
-                        )
-                        Text(
-                            text = "Tiempo de cocción: ${recipe.cookTimeMinutes} minutos",
-                            style = MaterialTheme.typography.bodyMedium
-                           // color = PrimaryDark
-                        )
-                        Text(
-                            text = "Calorías: ${recipe.totalCalories} kcal",
-                            style = MaterialTheme.typography.bodyMedium
-                            //color = PrimaryDark
-                        )
-                        Text(
-                            text = "Porciones: ${recipe.servings}",
-                            style = MaterialTheme.typography.bodyMedium
-                            //color = PrimaryDark
-                        )
-                        Text(
-                            text = "Nivel de dificultad: ${recipe.difficultyLevel}/5",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = PrimaryDark
-                        )
+                        Text("Tiempo de preparación: ${recipe.prepTimeMinutes} minutos")
+                        Text("Tiempo de cocción: ${recipe.cookTimeMinutes} minutos")
+                        Text("Calorías: ${recipe.totalCalories} kcal")
+                        Text("Porciones: ${recipe.servings}")
+                        Text("Nivel de dificultad: ${recipe.difficultyLevel}/5")
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Lista de ingredientes
-                        Text(
-                            text = "Ingredientes:",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = PrimaryDark
-                        )
+                        Text("Ingredientes:", style = MaterialTheme.typography.titleMedium)
                         recipe.ingredients.forEach { ingredient ->
-                            Text(
-                                text = "- ${ingredient.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = PrimaryDark.copy(alpha = 0.8f)
-                            )
+                            Text("- ${ingredient.name}")
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Instrucciones de la receta
-                        Text(
-                            text = "Instrucciones:",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = PrimaryDark
-                        )
-                        Text(
-                            text = recipe.instructions,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = PrimaryDark.copy(alpha = 0.8f)
-                        )
+                        Text("Instrucciones:", style = MaterialTheme.typography.titleMedium)
+                        Text(recipe.instructions)
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Etiquetas de la receta
                         if (recipe.tags.isNotEmpty()) {
-                            Text(
-                                text = "Etiquetas: ${recipe.tags.joinToString(", ")}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = PrimaryDark.copy(alpha = 0.7f)
-                            )
+                            Text("Etiquetas: ${recipe.tags.joinToString(", ")}")
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Barra de calificación
+                        RatingBar(
+                            rating = localRating,
+                            onRatingChanged = { newRating ->
+                                setLocalRating(newRating)
+                                hasRatingChanged = true // Marcamos que hubo cambios
+                            }
+                        )
                     }
                 }
                 else -> {
@@ -246,3 +239,26 @@ fun RecipeDetailView(
         }
     )
 }
+
+@Composable
+fun RatingBar(
+    rating: Float,
+    onRatingChanged: (Float) -> Unit
+) {
+    Row(
+        modifier = Modifier.padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (i in 1..5) {
+            IconButton(onClick = { onRatingChanged(i.toFloat()) }) {
+                Icon(
+                    imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.Star,
+                    contentDescription = "Rating $i",
+                    tint = if (i <= rating) MaterialTheme.colorScheme.primary else Color.Gray,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
+    }
+}
+

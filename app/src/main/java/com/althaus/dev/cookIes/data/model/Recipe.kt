@@ -20,7 +20,9 @@ data class Recipe(
     val imageUrl: String? = null,
     val videoUrl: String? = null,
     val tags: List<String> = emptyList(),
-    val authorId: String? = null
+    val authorId: String? = null,
+    val averageRating: Float = 0.0f,   // Calificación promedio
+    val ratingCount: Int = 0          // Número de calificaciones
 ) {
     init {
         require(name.isNotBlank()) { "El nombre de la receta no puede estar vacío." }
@@ -39,30 +41,13 @@ data class Recipe(
 
     suspend fun saveToFirestore(repository: FirestoreRepository, currentAuthorId: String) {
         try {
-            // Generar un nuevo ID si el actual está en blanco
             val recipeId = if (id.isBlank()) repository.generateNewId("recipes") else id
-
-            // Convertir los datos a mapa
             val data = toMap()
-
-            // Guardar la receta en Firestore utilizando el método que incluye currentAuthorId
             repository.saveRecipe(recipeId, data, currentAuthorId)
         } catch (e: Exception) {
-            // Lanzar una excepción con un mensaje claro en caso de error
             throw Exception("Error al guardar la receta en Firestore: ${e.localizedMessage}")
         }
     }
-
-
-
-//    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
-//        try {
-//            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una receta sin ID.")
-//            repository.updateRecipe(id, updates)
-//        } catch (e: Exception) {
-//            throw Exception("Error al actualizar la receta en Firestore: ${e.localizedMessage}")
-//        }
-//    }
 
     fun toMap(): Map<String, Any> {
         return mapOf(
@@ -80,11 +65,11 @@ data class Recipe(
             "imageUrl" to imageUrl,
             "videoUrl" to videoUrl,
             "tags" to tags,
-            "authorId" to authorId
-        ).filterValues { it != null } as Map<String, Any> // Filtra nulos y asegura tipo
+            "authorId" to authorId,
+            "averageRating" to averageRating,
+            "ratingCount" to ratingCount
+        ).filterValues { it != null } as Map<String, Any>
     }
-
-
 
     companion object {
         fun fromMap(map: Map<String, Any>): Recipe {
@@ -103,9 +88,10 @@ data class Recipe(
                 imageUrl = map["imageUrl"] as? String,
                 videoUrl = map["videoUrl"] as? String,
                 tags = map["tags"] as? List<String> ?: emptyList(),
-                authorId = map["authorId"] as? String
+                authorId = map["authorId"] as? String,
+                averageRating = (map["averageRating"] as? Number)?.toFloat() ?: 0.0f,
+                ratingCount = (map["ratingCount"] as? Number)?.toInt() ?: 0
             )
         }
     }
 }
-

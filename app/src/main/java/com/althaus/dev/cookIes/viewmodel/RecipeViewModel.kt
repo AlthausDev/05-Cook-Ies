@@ -101,22 +101,14 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-
-
-    // Refrescar las recetas favoritas
-//    fun refreshFavorites() = viewModelScope.launch {
-//        try {
-//            val userId = getCurrentUserId()
-//            _uiState.update { it.copy(isLoading = true) }
-//            val favorites = repository.getUserRecipes(userId).mapNotNull { Recipe.fromMap(it) }
-//            updateFavorites(favorites)
-//        } catch (e: Exception) {
-//            showError("Error al cargar recetas favoritas: ${e.localizedMessage}")
-//        } finally {
-//            _uiState.update { it.copy(isLoading = false) }
-//        }
-//    }
-
+    fun rateRecipe(recipeId: String, rating: Float) = viewModelScope.launch {
+        try {
+            repository.updateRecipeRating(recipeId, rating)
+            refreshRecipes() // Refrescar recetas para ver los cambios en la UI
+        } catch (e: Exception) {
+            showError("Error al calificar la receta: ${e.localizedMessage}")
+        }
+    }
 
 
 

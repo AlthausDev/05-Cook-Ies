@@ -89,6 +89,31 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    suspend fun updateRecipe(recipeId: String, updates: Map<String, Any>) {
+        try {
+            db.collection("recipes").document(recipeId).update(updates).await()
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar la receta: ${e.localizedMessage}")
+        }
+    }
+
+
+    suspend fun updateRecipeRating(recipeId: String, newRating: Float) {
+        try {
+            val recipeData = getRecipeOnce(recipeId) ?: throw Exception("Receta no encontrada")
+            val currentRating = (recipeData["averageRating"] as? Number)?.toFloat() ?: 0.0f
+            val currentCount = (recipeData["ratingCount"] as? Number)?.toInt() ?: 0
+
+            val updatedRating = ((currentRating * currentCount) + newRating) / (currentCount + 1)
+            val updatedCount = currentCount + 1
+
+            updateRecipe(recipeId, mapOf("averageRating" to updatedRating, "ratingCount" to updatedCount))
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar el rating de la receta: ${e.localizedMessage}")
+        }
+    }
+
+
     // Generar un nuevo ID único para una colección
     fun generateNewId(collection: String): String {
         return db.collection(collection).document().id
