@@ -1,13 +1,18 @@
 package com.althaus.dev.cookIes.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -49,19 +54,70 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-    // Refrescar las recetas favoritas
-    fun refreshFavorites() = viewModelScope.launch {
+    fun addToFavorites(recipeId: String) = viewModelScope.launch {
         try {
-            val userId = getCurrentUserId()
-            _uiState.update { it.copy(isLoading = true) }
-            val favorites = repository.getUserRecipes(userId).mapNotNull { Recipe.fromMap(it) }
-            updateFavorites(favorites)
+            val currentUserId = getCurrentUserId()
+            val userData = repository.getUser(currentUserId)
+            val updatedFavorites = userData?.get("favorites") as? List<String> ?: emptyList()
+            if (!updatedFavorites.contains(recipeId)) {
+                val newFavorites = updatedFavorites + recipeId
+                repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
+                refreshFavorites() // Refrescar la lista de favoritos
+            }
         } catch (e: Exception) {
-            showError("Error al cargar recetas favoritas: ${e.localizedMessage}")
-        } finally {
-            _uiState.update { it.copy(isLoading = false) }
+            showError("Error al agregar a favoritos: ${e.localizedMessage}")
         }
     }
+
+
+    fun removeFromFavorites(recipeId: String) = viewModelScope.launch {
+        try {
+            val currentUserId = getCurrentUserId()
+            val userData = repository.getUser(currentUserId)
+            val updatedFavorites = userData?.get("favorites") as? List<String> ?: emptyList()
+            if (updatedFavorites.contains(recipeId)) {
+                val newFavorites = updatedFavorites - recipeId
+                repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
+                refreshFavorites() // Refrescar la lista de favoritos
+            }
+        } catch (e: Exception) {
+            showError("Error al eliminar de favoritos: ${e.localizedMessage}")
+        }
+    }
+
+
+    fun refreshFavorites() = viewModelScope.launch {
+        try {
+            val currentUserId = getCurrentUserId()
+            val userData = repository.getUser(currentUserId)
+            val favoriteRecipeIds = userData?.get("favorites") as? List<String> ?: emptyList()
+            val favoriteRecipes = favoriteRecipeIds.mapNotNull { id ->
+                val recipeData = repository.getRecipeOnce(id)
+                recipeData?.let { Recipe.fromMap(it) }
+            }
+            updateFavorites(favoriteRecipes)
+        } catch (e: Exception) {
+            showError("Error al cargar recetas favoritas: ${e.localizedMessage}")
+        }
+    }
+
+
+
+    // Refrescar las recetas favoritas
+//    fun refreshFavorites() = viewModelScope.launch {
+//        try {
+//            val userId = getCurrentUserId()
+//            _uiState.update { it.copy(isLoading = true) }
+//            val favorites = repository.getUserRecipes(userId).mapNotNull { Recipe.fromMap(it) }
+//            updateFavorites(favorites)
+//        } catch (e: Exception) {
+//            showError("Error al cargar recetas favoritas: ${e.localizedMessage}")
+//        } finally {
+//            _uiState.update { it.copy(isLoading = false) }
+//        }
+//    }
+
+
 
 
     // Obtener una receta por su ID

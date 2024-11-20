@@ -1,7 +1,6 @@
 package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Notification
-import com.althaus.dev.cookIes.data.model.Recipe
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -216,5 +215,23 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+
+    suspend fun getFavorites(userId: String): List<String> {
+        return try {
+            val document = db.collection("users").document(userId).get().await()
+            document.get("favorites") as? List<String> ?: emptyList()
+        } catch (e: Exception) {
+            throw Exception("Error al obtener favoritos: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getRecipeOnce(recipeId: String): Map<String, Any>? {
+        return try {
+            val snapshot = db.collection("recipes").document(recipeId).get().await()
+            snapshot.data
+        } catch (e: Exception) {
+            throw Exception("Error al obtener receta: ${e.localizedMessage}")
+        }
+    }
 
 }
