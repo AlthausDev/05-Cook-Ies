@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.althaus.dev.cookIes.theme.ErrorLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
 import com.althaus.dev.cookIes.theme.SecondaryLight
@@ -82,7 +83,7 @@ fun RecipeDetailView(
                         Spacer(modifier = Modifier.weight(1f, true))
                         IconButton(
                             onClick = {
-                                val isFavorite = uiState.favorites.any { it.id == recipe!!.id }
+                                val isFavorite = uiState.favorites.any { it.id == recipe?.id }
                                 if (isFavorite) {
                                     viewModel.removeFromFavorites(recipe!!.id)
                                 } else {
@@ -93,7 +94,7 @@ fun RecipeDetailView(
                             Icon(
                                 imageVector = Icons.Default.Favorite,
                                 contentDescription = "Agregar o quitar de favoritos",
-                                tint = if (uiState.favorites.any { it.id == recipe!!.id }) Color.Red else Color.Gray
+                                tint = if (uiState.favorites.any { it.id == recipe?.id }) ErrorLight else Color.Gray
                             )
                         }
 
