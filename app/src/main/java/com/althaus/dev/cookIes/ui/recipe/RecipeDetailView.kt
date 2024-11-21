@@ -1,18 +1,10 @@
 package com.althaus.dev.cookIes.ui.recipe
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -20,29 +12,17 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.theme.ErrorLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.theme.PrimaryLight
@@ -54,19 +34,25 @@ import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 fun RecipeDetailView(
     viewModel: RecipeViewModel,
     onBack: () -> Unit,
-    onFavorite: () -> Unit,
-    onShare: () -> Unit
+    onFavorite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val recipe = uiState.selectedRecipe
+    val context = LocalContext.current
 
     // Estado local para la puntuación del usuario
-    val (localRating, setLocalRating) = remember(recipe?.averageRating) {
-        mutableStateOf(recipe?.averageRating?.takeIf { it > 0 } ?: 0f)
+    var localRating by remember { mutableStateOf(recipe?.averageRating ?: 0f) }
+    var hasRatingChanged by remember { mutableStateOf(false) }
+
+    LaunchedEffect(recipe?.id) {
+        recipe?.id?.let { recipeId ->
+            val userRating = viewModel.getUserRatingForRecipe(recipeId)
+            if (userRating != null) {
+                localRating = userRating
+            }
+        }
     }
 
-    // Estado para manejar si la puntuación cambió
-    var hasRatingChanged by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -81,7 +67,6 @@ fun RecipeDetailView(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            // Si hubo cambios, actualizamos la puntuación antes de salir
                             if (hasRatingChanged && recipe != null) {
                                 viewModel.rateRecipe(recipe.id, localRating)
                             }
@@ -95,9 +80,7 @@ fun RecipeDetailView(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryDark
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryDark)
             )
         },
         bottomBar = {
@@ -123,7 +106,11 @@ fun RecipeDetailView(
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
-                    IconButton(onClick = onShare) {
+                    IconButton(
+                        onClick = {
+                            recipe?.let { shareRecipe(context, it) }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Compartir receta"
@@ -190,33 +177,12 @@ fun RecipeDetailView(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Lista de ingredientes
-                        Text("Ingredientes:", style = MaterialTheme.typography.titleMedium)
-                        recipe.ingredients.forEach { ingredient ->
-                            Text("- ${ingredient.name}")
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Instrucciones de la receta
-                        Text("Instrucciones:", style = MaterialTheme.typography.titleMedium)
-                        Text(recipe.instructions)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Etiquetas de la receta
-                        if (recipe.tags.isNotEmpty()) {
-                            Text("Etiquetas: ${recipe.tags.joinToString(", ")}")
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
                         // Barra de calificación
                         RatingBar(
                             rating = localRating,
                             onRatingChanged = { newRating ->
-                                setLocalRating(newRating)
-                                hasRatingChanged = true // Marcamos que hubo cambios
+                                localRating = newRating
+                                hasRatingChanged = true
                             }
                         )
                     }
@@ -240,6 +206,28 @@ fun RecipeDetailView(
     )
 }
 
+// Función para compartir una receta
+fun shareRecipe(context: Context, recipe: Recipe) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(
+            Intent.EXTRA_TEXT,
+            """
+                ¡Prueba esta receta increíble!
+                Nombre: ${recipe.name}
+                Descripción: ${recipe.description}
+                Tiempo de preparación: ${recipe.prepTimeMinutes} minutos
+                Tiempo de cocción: ${recipe.cookTimeMinutes} minutos
+                Calorías: ${recipe.totalCalories} kcal
+                Porciones: ${recipe.servings}
+                
+                ¡Descárgala en nuestra app para más recetas como esta!
+            """.trimIndent()
+        )
+    }
+    context.startActivity(Intent.createChooser(shareIntent, "Compartir receta vía"))
+}
+
 @Composable
 fun RatingBar(
     rating: Float,
@@ -261,4 +249,3 @@ fun RatingBar(
         }
     }
 }
-

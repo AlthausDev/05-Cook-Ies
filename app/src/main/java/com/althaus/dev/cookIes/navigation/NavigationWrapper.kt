@@ -201,8 +201,7 @@ fun NavigationWrapper(
             RecipeDetailView(
                 viewModel = recipeViewModel.apply { getRecipeById(recipeId) },
                 onBack = { navHostController.popBackStack() },
-                onFavorite = { /* Acción para favoritos */ },
-                onShare = { /* Acción para compartir */ }
+                onFavorite = { /* Acción para favoritos */ }
             )
         }
     }

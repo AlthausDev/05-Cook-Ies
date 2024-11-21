@@ -11,6 +11,7 @@ data class UserProfile(
     val email: String = "",                        // Correo electrónico del usuario
     val profileImage: String? = null,              // URL de la imagen de perfil (opcional)
     val favorites: List<String> = emptyList(),     // IDs de recetas favoritas
+    val ratings: Map<String, Float> = emptyMap(),  // Calificaciones de recetas (ID de receta -> Puntuación)
     val bio: String = "",                          // Biografía del usuario
     val creationDate: Timestamp = Timestamp.now(), // Fecha de creación
     val isVerified: Boolean = false                // Si la cuenta está verificada
@@ -22,6 +23,7 @@ data class UserProfile(
             "email" to email,
             "profileImage" to profileImage,
             "favorites" to favorites,
+            "ratings" to ratings,
             "bio" to bio,
             "creationDate" to creationDate,
             "isVerified" to isVerified
@@ -37,6 +39,7 @@ data class UserProfile(
                 email = map["email"] as? String ?: "",
                 profileImage = map["profileImage"] as? String,
                 favorites = map["favorites"] as? List<String> ?: emptyList(),
+                ratings = map["ratings"] as? Map<String, Float> ?: emptyMap(),
                 bio = map["bio"] as? String ?: "",
                 creationDate = map["creationDate"] as? Timestamp ?: Timestamp.now(),
                 isVerified = map["isVerified"] as? Boolean ?: false
@@ -44,20 +47,14 @@ data class UserProfile(
         }
     }
 
-    // Métodos adicionales para facilitar el manejo
-    fun addFavorite(recipeId: String): UserProfile {
-        if (recipeId.isNotBlank() && !favorites.contains(recipeId)) {
-            val updatedFavorites = favorites + recipeId
-            return this.copy(favorites = updatedFavorites)
-        }
-        return this
+    // Actualizar una calificación de receta
+    fun updateRating(recipeId: String, rating: Float): UserProfile {
+        val updatedRatings = ratings.toMutableMap().apply { this[recipeId] = rating }
+        return this.copy(ratings = updatedRatings)
     }
 
-    fun removeFavorite(recipeId: String): UserProfile {
-        if (favorites.contains(recipeId)) {
-            val updatedFavorites = favorites - recipeId
-            return this.copy(favorites = updatedFavorites)
-        }
-        return this
+    // Obtener la calificación de una receta
+    fun getRating(recipeId: String): Float? {
+        return ratings[recipeId]
     }
 }

@@ -1,6 +1,7 @@
 package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Notification
+import com.althaus.dev.cookIes.data.model.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -249,6 +250,16 @@ class FirestoreRepository @Inject constructor(
             throw Exception("Error al obtener favoritos: ${e.localizedMessage}")
         }
     }
+
+    suspend fun getUserSync(userId: String): UserProfile? {
+        return try {
+            val userData = getUser(userId)
+            userData?.let { UserProfile.fromMap(it) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 
     suspend fun getRecipeOnce(recipeId: String): Map<String, Any>? {
         return try {

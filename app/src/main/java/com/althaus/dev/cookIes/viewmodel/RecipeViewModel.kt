@@ -111,7 +111,6 @@ class RecipeViewModel @Inject constructor(
     }
 
 
-
     // Obtener una receta por su ID
     fun getRecipeById(recipeId: String) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true, selectedRecipe = null) }
@@ -146,5 +145,13 @@ class RecipeViewModel @Inject constructor(
         val currentUser = FirebaseAuth.getInstance().currentUser
         return currentUser?.uid ?: throw IllegalStateException("No se encontró un usuario autenticado")
     }
+
+    suspend fun getUserRatingForRecipe(recipeId: String): Float? {
+        val currentUserId = getCurrentUserId()
+        val userData = repository.getUserSync(currentUserId) // Método síncrono
+        val ratings = userData?.ratings ?: return null
+        return ratings[recipeId]
+    }
+
 
 }
