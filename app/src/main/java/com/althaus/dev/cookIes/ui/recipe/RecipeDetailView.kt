@@ -49,6 +49,8 @@ fun RecipeDetailView(
             val userRating = viewModel.getUserRatingForRecipe(recipeId)
             if (userRating != null) {
                 localRating = userRating
+            } else{
+                localRating = recipe.averageRating
             }
         }
     }
