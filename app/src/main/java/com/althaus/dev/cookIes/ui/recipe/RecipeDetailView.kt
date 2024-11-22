@@ -60,7 +60,7 @@ fun RecipeDetailView(
                     Text(
                         text = recipe?.name ?: "Cargando receta...",
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = Color.White
                     )
                 },
                 navigationIcon = {
@@ -176,13 +176,8 @@ fun RecipeDetailView(
 
                         // Puntuación promedio
                         Text(
-                            text = "Puntuación promedio:",
+                            text = "Puntuación promedio: " + String.format("%.2f", recipe.averageRating),
                             style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = String.format("%.2f", recipe.averageRating), // Mostrar con 2 decimales
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.Yellow
                         )
 
                         RatingBar(

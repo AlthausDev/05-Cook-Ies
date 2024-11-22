@@ -100,6 +100,21 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    suspend fun updateRecipeRating(recipeId: String, newRating: Double) {
+        try {
+            val recipeData = getRecipeOnce(recipeId) ?: throw Exception("Receta no encontrada")
+            val currentRating = (recipeData["averageRating"] as? Number)?.toFloat() ?: 0.0f
+            val currentCount = (recipeData["ratingCount"] as? Number)?.toInt() ?: 0
+
+            val updatedRating = ((currentRating * currentCount) + newRating) / (currentCount + 1)
+            val updatedCount = currentCount + 1
+
+            updateRecipe(recipeId, mapOf("averageRating" to updatedRating, "ratingCount" to updatedCount))
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar el rating de la receta: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun updateUserRatings(userId: String, ratings: Map<String, Double>) {
         try {
             println("Actualizando ratings para el usuario $userId con valores: $ratings")

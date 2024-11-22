@@ -110,6 +110,13 @@ class RecipeViewModel @Inject constructor(
                 this[recipeId] = rating // Actualizar o agregar la nueva calificación
             }
 
+            try {
+                repository.updateRecipeRating(recipeId, rating)
+                refreshRecipes()
+            } catch (e: Exception) {
+                showError("Error al calificar la receta: ${e.localizedMessage}")
+            }
+
             // Guardar el mapa actualizado en Firestore
             repository.updateUserRatings(currentUserId, updatedRatings)
 
