@@ -21,7 +21,7 @@ data class Recipe(
     val videoUrl: String? = null,
     val tags: List<String> = emptyList(),
     val authorId: String? = null,
-    val averageRating: Float = 0.0f,   // Calificación promedio
+    val averageRating: Double = 0.0,   // Calificación promedio
     val ratingCount: Int = 0          // Número de calificaciones
 ) {
     init {
@@ -89,7 +89,7 @@ data class Recipe(
                 videoUrl = map["videoUrl"] as? String,
                 tags = map["tags"] as? List<String> ?: emptyList(),
                 authorId = map["authorId"] as? String,
-                averageRating = (map["averageRating"] as? Number)?.toFloat() ?: 0.0f,
+                averageRating = (map["averageRating"] as? Double)?: 0.0,
                 ratingCount = (map["ratingCount"] as? Number)?.toInt() ?: 0
             )
         }

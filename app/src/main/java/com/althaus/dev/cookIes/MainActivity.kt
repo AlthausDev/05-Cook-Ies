@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
             navController = rememberNavController() // Inicializa el navController en el contexto de Compose
             CookIesTheme {
                 Surface {
+
                     // Pasamos todos los ViewModels necesarios a NavigationWrapper
                     NavigationWrapper(
                         navHostController = navController,

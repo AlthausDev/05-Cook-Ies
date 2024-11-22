@@ -61,7 +61,9 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-      suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>, currentAuthorId: String) {
+
+
+    suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>, currentAuthorId: String) {
         try {
             // Determinar si necesitamos generar un nuevo ID
             val finalId = if (recipeId.isBlank()) generateNewId("recipes") else recipeId
@@ -98,19 +100,29 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-
-    suspend fun updateRecipeRating(recipeId: String, newRating: Float) {
+    suspend fun updateUserRatings(userId: String, ratings: Map<String, Double>) {
         try {
-            val recipeData = getRecipeOnce(recipeId) ?: throw Exception("Receta no encontrada")
-            val currentRating = (recipeData["averageRating"] as? Number)?.toFloat() ?: 0.0f
-            val currentCount = (recipeData["ratingCount"] as? Number)?.toInt() ?: 0
+            println("Actualizando ratings para el usuario $userId con valores: $ratings")
 
-            val updatedRating = ((currentRating * currentCount) + newRating) / (currentCount + 1)
-            val updatedCount = currentCount + 1
+            val userDocument = usersCollection.document(userId)
+            val snapshot = userDocument.get().await()
 
-            updateRecipe(recipeId, mapOf("averageRating" to updatedRating, "ratingCount" to updatedCount))
+            if (snapshot.exists()) {
+                val existingRatings = snapshot.get("ratings") as? Map<String, Double> ?: emptyMap()
+                println("Ratings existentes: $existingRatings")
+
+                val updatedRatings = existingRatings.toMutableMap().apply {
+                    putAll(ratings)
+                }
+                userDocument.update("ratings", updatedRatings).await()
+                println("Ratings actualizados correctamente en Firestore para el usuario $userId")
+            } else {
+                userDocument.set(mapOf("ratings" to ratings)).await()
+                println("Se creó el campo ratings y se actualizó en Firestore para el usuario $userId")
+            }
         } catch (e: Exception) {
-            throw Exception("Error al actualizar el rating de la receta: ${e.localizedMessage}")
+            println("Error al actualizar ratings en Firestore: ${e.localizedMessage}")
+            throw Exception("Error al actualizar las calificaciones del usuario: ${e.localizedMessage}")
         }
     }
 

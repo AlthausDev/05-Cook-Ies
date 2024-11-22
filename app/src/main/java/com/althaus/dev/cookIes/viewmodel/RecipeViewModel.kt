@@ -21,6 +21,7 @@ data class RecipeUiState(
     val recipes: List<Recipe> = emptyList(),
     val favorites: List<Recipe> = emptyList(),
     val selectedRecipe: Recipe? = null,
+    val userRatings: Map<String, Double> = emptyMap(), // Calificaciones del usuario por receta
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -69,7 +70,6 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-
     fun removeFromFavorites(recipeId: String) = viewModelScope.launch {
         try {
             val currentUserId = getCurrentUserId()
@@ -84,7 +84,6 @@ class RecipeViewModel @Inject constructor(
             showError("Error al eliminar de favoritos: ${e.localizedMessage}")
         }
     }
-
 
     fun refreshFavorites() = viewModelScope.launch {
         try {
@@ -101,11 +100,28 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-    fun rateRecipe(recipeId: String, rating: Float) = viewModelScope.launch {
+    fun rateRecipe(recipeId: String, rating: Double) = viewModelScope.launch {
         try {
-            repository.updateRecipeRating(recipeId, rating)
-            refreshRecipes() // Refrescar recetas para ver los cambios en la UI
+            val currentUserId = getCurrentUserId()
+
+            // Obtener calificaciones actuales del usuario desde Firestore
+            val userData = repository.getUserSync(currentUserId)
+            val updatedRatings = userData?.ratings.orEmpty().toMutableMap().apply {
+                this[recipeId] = rating // Actualizar o agregar la nueva calificación
+            }
+
+            // Guardar el mapa actualizado en Firestore
+            repository.updateUserRatings(currentUserId, updatedRatings)
+
+            // Actualizar el estado local de las calificaciones
+            _uiState.update { uiState ->
+                uiState.copy(userRatings = updatedRatings)
+            }
+
+            println("Calificación del usuario actualizada exitosamente en Firestore.")
+
         } catch (e: Exception) {
+            println("Error al calificar la receta: ${e.localizedMessage}")
             showError("Error al calificar la receta: ${e.localizedMessage}")
         }
     }
@@ -116,8 +132,21 @@ class RecipeViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, selectedRecipe = null) }
         try {
             repository.getRecipe(recipeId).collect { data ->
-                val recipe = data?.let { Recipe.fromMap(it) } // Convierte el mapa en un objeto Recipe
-                _uiState.update { it.copy(selectedRecipe = recipe, isLoading = false) }
+                val recipe = data?.let { Recipe.fromMap(it) }
+                if (recipe != null) {
+                    val userRating = getUserRatingForRecipe(recipe.id) // Obtener calificación personalizada
+                    _uiState.update {
+                        it.copy(
+                            selectedRecipe = recipe,
+                            userRatings = it.userRatings.toMutableMap().apply {
+                                put(recipe.id, userRating ?: 0.0)
+                            },
+                            isLoading = false
+                        )
+                    }
+                } else {
+                    _uiState.update { it.copy(isLoading = false) }
+                }
             }
         } catch (e: Exception) {
             showError("Error al obtener receta: ${e.localizedMessage}")
@@ -146,12 +175,10 @@ class RecipeViewModel @Inject constructor(
         return currentUser?.uid ?: throw IllegalStateException("No se encontró un usuario autenticado")
     }
 
-    suspend fun getUserRatingForRecipe(recipeId: String): Float? {
+    suspend fun getUserRatingForRecipe(recipeId: String): Double? {
         val currentUserId = getCurrentUserId()
         val userData = repository.getUserSync(currentUserId) // Método síncrono
         val ratings = userData?.ratings ?: return null
         return ratings[recipeId]
     }
-
-
 }

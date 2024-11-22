@@ -11,7 +11,7 @@ data class UserProfile(
     val email: String = "",                        // Correo electrónico del usuario
     val profileImage: String? = null,              // URL de la imagen de perfil (opcional)
     val favorites: List<String> = emptyList(),     // IDs de recetas favoritas
-    val ratings: Map<String, Float> = emptyMap(),  // Calificaciones de recetas (ID de receta -> Puntuación)
+    val ratings: Map<String, Double> = emptyMap(),  // Calificaciones de recetas (ID de receta -> Puntuación)
     val bio: String = "",                          // Biografía del usuario
     val creationDate: Timestamp = Timestamp.now(), // Fecha de creación
     val isVerified: Boolean = false                // Si la cuenta está verificada
@@ -39,7 +39,7 @@ data class UserProfile(
                 email = map["email"] as? String ?: "",
                 profileImage = map["profileImage"] as? String,
                 favorites = map["favorites"] as? List<String> ?: emptyList(),
-                ratings = map["ratings"] as? Map<String, Float> ?: emptyMap(),
+                ratings = map["ratings"] as? Map<String, Double> ?: emptyMap(),
                 bio = map["bio"] as? String ?: "",
                 creationDate = map["creationDate"] as? Timestamp ?: Timestamp.now(),
                 isVerified = map["isVerified"] as? Boolean ?: false
@@ -48,13 +48,13 @@ data class UserProfile(
     }
 
     // Actualizar una calificación de receta
-    fun updateRating(recipeId: String, rating: Float): UserProfile {
+    fun updateRating(recipeId: String, rating: Double): UserProfile {
         val updatedRatings = ratings.toMutableMap().apply { this[recipeId] = rating }
         return this.copy(ratings = updatedRatings)
     }
 
     // Obtener la calificación de una receta
-    fun getRating(recipeId: String): Float? {
+    fun getRating(recipeId: String): Double? {
         return ratings[recipeId]
     }
 }

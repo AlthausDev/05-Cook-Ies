@@ -5,7 +5,9 @@ import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -40,21 +42,16 @@ fun RecipeDetailView(
     val recipe = uiState.selectedRecipe
     val context = LocalContext.current
 
-    // Estado local para la puntuación del usuario
-    var localRating by remember { mutableStateOf(recipe?.averageRating ?: 0f) }
-    var hasRatingChanged by remember { mutableStateOf(false) }
+    // Estado local para las puntuaciones
+    var userRating by remember { mutableStateOf(0.0) }
+    var hasUserRatingChanged by remember { mutableStateOf(false) }
 
+    // Cargar la puntuación del usuario cuando cambia la receta
     LaunchedEffect(recipe?.id) {
         recipe?.id?.let { recipeId ->
-            val userRating = viewModel.getUserRatingForRecipe(recipeId)
-            if (userRating != null) {
-                localRating = userRating
-            } else{
-                localRating = recipe.averageRating
-            }
+            userRating = viewModel.getUserRatingForRecipe(recipeId) ?: 0.0
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -69,8 +66,8 @@ fun RecipeDetailView(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            if (hasRatingChanged && recipe != null) {
-                                viewModel.rateRecipe(recipe.id, localRating)
+                            if (hasUserRatingChanged && recipe != null) {
+                                viewModel.rateRecipe(recipe.id, userRating)
                             }
                             onBack()
                         }
@@ -134,16 +131,14 @@ fun RecipeDetailView(
                     }
                 }
                 recipe != null -> {
+                    // Contenido desplazable
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Brush.verticalGradient(colors = listOf(PrimaryLight, SecondaryLight)))
+                            .verticalScroll(rememberScrollState()) // Habilitar desplazamiento
                             .padding(innerPadding)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.Start
+                            .padding(16.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-
                         // Imagen de la receta
                         recipe.imageUrl?.let { url ->
                             Image(
@@ -179,14 +174,48 @@ fun RecipeDetailView(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Barra de calificación
-                        RatingBar(
-                            rating = localRating,
-                            onRatingChanged = { newRating ->
-                                localRating = newRating
-                                hasRatingChanged = true
-                            }
+                        // Puntuación promedio
+                        Text(
+                            text = "Puntuación promedio:",
+                            style = MaterialTheme.typography.titleMedium
                         )
+                        Text(
+                            text = String.format("%.2f", recipe.averageRating), // Mostrar con 2 decimales
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Yellow
+                        )
+
+                        RatingBar(
+                            rating = recipe.averageRating, // Usamos la puntuación promedio directamente
+                            onRatingChanged = {}, // No interactiva
+                            isEnabled = false
+                        )
+                        Text(
+                            text = "(${recipe.ratingCount} votos)", // Mostrar total de votos
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Puntuación del usuario
+                        Text(
+                            text = "Tu puntuación:",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        RatingBar(
+                            rating = userRating,
+                            onRatingChanged = { newRating ->
+                                userRating = newRating
+                                hasUserRatingChanged = true
+                                recipe?.id?.let { recipeId ->
+                                    viewModel.rateRecipe(recipeId, newRating)
+                                }
+                            },
+                            isEnabled = true
+                        )
+
                     }
                 }
                 else -> {
@@ -207,6 +236,9 @@ fun RecipeDetailView(
         }
     )
 }
+
+
+
 
 // Función para compartir una receta
 fun shareRecipe(context: Context, recipe: Recipe) {
@@ -232,19 +264,24 @@ fun shareRecipe(context: Context, recipe: Recipe) {
 
 @Composable
 fun RatingBar(
-    rating: Float,
-    onRatingChanged: (Float) -> Unit
+    rating: Double,
+    onRatingChanged: (Double) -> Unit,
+    isEnabled: Boolean = true // Determina si la barra es interactiva
 ) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         for (i in 1..5) {
-            IconButton(onClick = { onRatingChanged(i.toFloat()) }) {
+            IconButton(
+                onClick = {
+                    if (isEnabled) onRatingChanged(i.toDouble())
+                }
+            ) {
                 Icon(
                     imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = "Rating $i",
-                    tint = if (i <= rating) MaterialTheme.colorScheme.primary else Color.Gray,
+                    contentDescription = "Estrella $i",
+                    tint = if (i <= rating) Color.Yellow else Color.Gray, // Cambiar estrellas seleccionadas a amarillo
                     modifier = Modifier.size(48.dp)
                 )
             }
