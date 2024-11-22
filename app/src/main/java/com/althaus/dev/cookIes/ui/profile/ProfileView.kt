@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,11 @@ fun ProfileView(
     onRecipeClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
+
+    LaunchedEffect(Unit) {
+        profileViewModel.clearError()
+    }
+
     val userProfile = profileViewModel.userProfile.collectAsState()
     val userRecipes = profileViewModel.userRecipes.collectAsState()
     val isLoading = profileViewModel.isLoading.collectAsState()

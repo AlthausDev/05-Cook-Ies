@@ -86,6 +86,25 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun updateUserEmail(newEmail: String, currentPassword: String): AuthResult {
+        return try {
+            val user = FirebaseAuth.getInstance().currentUser
+                ?: return AuthResult.UserNotFound // Usuario no autenticado
+            val email = user.email ?: return AuthResult.Failure(Exception("Correo no encontrado"))
+
+            // Re-autenticar al usuario antes de cambiar el correo
+            val credential = EmailAuthProvider.getCredential(email, currentPassword)
+            user.reauthenticate(credential).await() // Re-autenticación obligatoria
+
+            // Actualizar el correo
+            user.updateEmail(newEmail).await()
+            AuthResult.Success(user) // Retornar éxito con el usuario actualizado
+        } catch (e: Exception) {
+            AuthResult.Failure(e) // Manejar excepciones
+        }
+    }
+
+
     // Métodos de Actualización
     suspend fun updateUserName(newName: String): AuthResult {
         val currentUser = firebaseAuth.currentUser ?: return AuthResult.UserNotFound

@@ -46,6 +46,13 @@ fun SettingsView(
     onSave: () -> Unit,
     onLogout: () -> Unit
 ) {
+
+    // Restablecer el estado de error al salir de la vista
+    LaunchedEffect(Unit) {
+        profileViewModel.clearError()
+    }
+
+
     // Estado local para manejar la URI de la foto seleccionada
     var isImageDialogOpen by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<String?>(null) }
@@ -200,6 +207,7 @@ fun SettingsView(
         )
     }
 
+
     // Modal para cambiar contraseña
     if (isPasswordDialogOpen) {
         EditPasswordDialog(
@@ -263,9 +271,17 @@ fun SettingsView(
                 }
             }
         )
+
+        // Mensaje de error
+        errorMessage.value?.let {
+            Text(
+                text = it,
+                color = ErrorLight,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
-
 
 @Composable
 fun EditDialog(
@@ -287,7 +303,7 @@ fun EditDialog(
                 TextField(
                     value = value1,
                     onValueChange = onValue1Change,
-                    label = { Text("Nuevo Valor") },
+                    label = { Text("Nuevo Correo") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -311,6 +327,7 @@ fun EditDialog(
         }
     )
 }
+
 
 @Composable
 fun EditNameDialog(

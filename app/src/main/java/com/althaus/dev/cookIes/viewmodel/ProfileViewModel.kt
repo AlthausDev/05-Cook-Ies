@@ -44,6 +44,8 @@ class ProfileViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+
+
     init {
         loadUserProfile()
         loadUserRecipes()
@@ -153,21 +155,18 @@ class ProfileViewModel @Inject constructor(
 
     fun updateUserEmail(newEmail: String, currentPassword: String) {
         executeWithLoading {
-            val reauthResult = authRepository.reAuthenticate(currentPassword)
-            if (reauthResult is AuthResult.Failure) {
-                showError("Error al reautenticar: ${reauthResult.exception.localizedMessage}")
-                return@executeWithLoading
-            }
-
-            val updateResult = authRepository.updateUserEmail(newEmail)
-            if (updateResult is AuthResult.Success) {
-                loadUserProfile() // Refrescar el perfil después del cambio
-                showError("Correo actualizado exitosamente.")
-            } else if (updateResult is AuthResult.Failure) {
-                showError("Error al actualizar el correo: ${updateResult.exception.localizedMessage}")
+            val result = authRepository.updateUserEmail(newEmail, currentPassword)
+            when (result) {
+                is AuthResult.Success -> {
+                    _userProfile.value = _userProfile.value?.copy(email = newEmail) // Actualizar email localmente
+                    showError("Correo actualizado con éxito.")
+                }
+                is AuthResult.Failure -> showError("Error al actualizar el correo: ${result.exception.localizedMessage}")
+                AuthResult.UserNotFound -> showError("Usuario no autenticado.")
             }
         }
     }
+
 
     fun updateUserPassword(newPassword: String, currentPassword: String) {
         viewModelScope.launch {
@@ -194,6 +193,11 @@ class ProfileViewModel @Inject constructor(
     fun showError(message: String) {
         _errorMessage.value = message
     }
+
+    fun clearError() {
+        _errorMessage.value = null
+    }
+
 
     private fun executeWithLoading(operation: suspend () -> Unit) {
         _isLoading.value = true
