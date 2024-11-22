@@ -1,5 +1,8 @@
 package com.althaus.dev.cookIes.ui.settings
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,12 +21,15 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.theme.ErrorLight
 import com.althaus.dev.cookIes.theme.PrimaryDark
@@ -40,6 +46,10 @@ fun SettingsView(
     onSave: () -> Unit,
     onLogout: () -> Unit
 ) {
+    // Estado local para manejar la URI de la foto seleccionada
+    var isImageDialogOpen by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<String?>(null) }
+
     var name by remember { mutableStateOf(profileViewModel.userProfile.value?.name ?: "") }
     var email by remember { mutableStateOf(profileViewModel.userProfile.value?.email ?: "") }
     var currentPassword by remember { mutableStateOf("") }
@@ -48,8 +58,13 @@ fun SettingsView(
     var isPasswordDialogOpen by remember { mutableStateOf(false) }
     var isNameDialogOpen by remember { mutableStateOf(false) }
 
+    val userProfile = profileViewModel.userProfile.collectAsState()
     val isLoading = profileViewModel.isLoading.collectAsState()
     val errorMessage = profileViewModel.errorMessage.collectAsState()
+
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        selectedImageUri = uri?.toString()
+    }
 
     Scaffold(
         topBar = {
@@ -70,26 +85,43 @@ fun SettingsView(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Imagen de perfil editable
+                // Imagen de perfil
                 Box(
                     modifier = Modifier
                         .size(120.dp)
                         .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    selectedImageUri?.let { uri ->
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Vista previa",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } ?: userProfile.value?.profileImage?.let { imageUrl ->
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = "Foto de Perfil",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } ?: Image(
                         painter = painterResource(id = R.drawable.default_profile),
                         contentDescription = "Foto de Perfil",
                         modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                Spacer(modifier = Modifier.weight(0.3f))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                SettingsButton(
-                    text = "Cambiar Foto",
-                    onClick = { isEmailDialogOpen = true }
-                )
+                // Botón para cambiar foto
+                Button(
+                    onClick = { isImageDialogOpen = true },
+                    modifier = Modifier.fillMaxWidth(0.8f),
+                    colors = ButtonDefaults.buttonColors(containerColor = SecondaryLight),
+                    shape = CircleShape
+                ) {
+                    Text("Cambiar Foto")
+                }
 
                 SettingsButton(
                     text = "Cambiar Nombre",
@@ -140,18 +172,12 @@ fun SettingsView(
         }
     )
 
-    // Modal para cambiar nombre
+    // Modal para cambiar el nombre del usuario
     if (isNameDialogOpen) {
-        EditDialog(
-            title = "Cambiar Nombre",
-            value1 = name,
-            onValue1Change = { name = it },
-            value2 = currentPassword,
-            onValue2Change = { currentPassword = it },
-            onSave = {
-                profileViewModel.updateName(
-                    newName = (profileViewModel.userProfile.value?.copy(name = name) ?: return@EditDialog).toString()
-                )
+        EditNameDialog(
+            currentName = userProfile.value?.name ?: "",
+            onSave = { newName ->
+                profileViewModel.updateUserName(newName)
                 isNameDialogOpen = false
             },
             onCancel = { isNameDialogOpen = false }
@@ -187,6 +213,60 @@ fun SettingsView(
                 isPasswordDialogOpen = false
             },
             onCancel = { isPasswordDialogOpen = false }
+        )
+    }
+
+    // Modal para cambiar foto
+    if (isImageDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { isImageDialogOpen = false },
+            title = { Text("Cambiar Foto de Perfil") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    selectedImageUri?.let { uri ->
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Vista previa",
+                            modifier = Modifier.size(120.dp).clip(CircleShape)
+                        )
+                    } ?: Text("No se ha seleccionado ninguna imagen.")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(onClick = { galleryLauncher.launch("image/*") }) {
+                        Text("Seleccionar Foto")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        selectedImageUri?.let { uri ->
+                            if (Uri.parse(uri).isAbsolute) {
+                                profileViewModel.updateProfileImage(Uri.parse(uri))
+                                isImageDialogOpen = false
+                            } else {
+                                profileViewModel.showError("URI de la imagen no válida.")
+                            }
+                        }
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        selectedImageUri = null
+                        isImageDialogOpen = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
         )
     }
 }
@@ -236,6 +316,47 @@ fun EditDialog(
         }
     )
 }
+
+@Composable
+fun EditNameDialog(
+    currentName: String,
+    onSave: (String) -> Unit,
+    onCancel: () -> Unit
+) {
+    var name by remember { mutableStateOf(currentName) }
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("Cambiar Nombre") },
+        text = {
+            Column {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nuevo Nombre") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        onSave(name.trim())
+                    }
+                }
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onCancel) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
 
 @Composable
 fun SettingsButton(

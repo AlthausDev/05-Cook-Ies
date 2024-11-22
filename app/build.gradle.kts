@@ -81,6 +81,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.googleid)
+    implementation(libs.firebase.storage.ktx)
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.navigation.compose)

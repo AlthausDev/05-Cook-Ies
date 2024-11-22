@@ -1,5 +1,6 @@
 package com.althaus.dev.cookIes.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.althaus.dev.cookIes.data.model.Recipe
@@ -9,11 +10,15 @@ import com.althaus.dev.cookIes.data.repository.AuthResult
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.data.repository.RecipeRepository
 import com.althaus.dev.cookIes.data.repository.RecipeResult
+import com.google.firebase.Firebase
+import com.google.firebase.storage.storage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -79,6 +84,32 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun updateProfileImage(imageUri: Uri) {
+        viewModelScope.launch {
+            try {
+                // Subir la imagen a Firestore Storage
+                val storageRef = Firebase.storage.reference.child("profile_images/${UUID.randomUUID()}.jpg")
+                val uploadTask = storageRef.putFile(imageUri).await()
+
+                // Obtener la URL de descarga
+                val downloadUrl = storageRef.downloadUrl.await()
+
+                // Actualizar la URL en el perfil del usuario
+                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+                firestoreRepository.updateUser(userId, mapOf("profileImage" to downloadUrl.toString()))
+
+                // Actualizar el estado local del perfil
+                val updatedProfile = _userProfile.value?.copy(profileImage = downloadUrl.toString())
+                _userProfile.value = updatedProfile
+            } catch (e: Exception) {
+                _errorMessage.value = "Error al actualizar la imagen: ${e.localizedMessage}"
+            }
+        }
+    }
+
+
+
+
     fun loadFavorites(userId: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -101,18 +132,23 @@ class ProfileViewModel @Inject constructor(
 
     // ---- Actualización Individual ----
 
-    fun updateName(newName: String) {
-        executeWithLoading {
+    fun updateUserName(newName: String) {
+        viewModelScope.launch {
             try {
-                val currentUser = authRepository.currentUser
-                    ?: throw Exception("Usuario no autenticado")
-                authRepository.updateUserName(newName)
-                _userProfile.value = _userProfile.value?.copy(name = newName)
+                val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+
+                // Actualizar Firestore
+                firestoreRepository.updateUser(userId, mapOf("name" to newName))
+
+                // Actualizar el estado local
+                val updatedProfile = _userProfile.value?.copy(name = newName)
+                _userProfile.value = updatedProfile
             } catch (e: Exception) {
-                showError("Error al actualizar el nombre: ${e.localizedMessage}")
+                _errorMessage.value = "Error al actualizar el nombre: ${e.localizedMessage}"
             }
         }
     }
+
 
     fun updateUserEmail(newEmail: String, currentPassword: String) {
         executeWithLoading {
@@ -142,7 +178,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     // ---- Utilidades para Manejo de Estados ----
-    private fun showError(message: String) {
+    fun showError(message: String) {
         _errorMessage.value = message
     }
 
