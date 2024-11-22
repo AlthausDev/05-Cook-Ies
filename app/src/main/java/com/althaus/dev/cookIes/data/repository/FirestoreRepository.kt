@@ -2,6 +2,7 @@ package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.UserProfile
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -189,6 +190,30 @@ class FirestoreRepository @Inject constructor(
             usersCollection.document(userId).delete().await()
         } catch (e: Exception) {
             throw Exception("Error al eliminar el usuario: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun reAuthenticate(currentPassword: String): AuthResult {
+        return try {
+            val user = FirebaseAuth.getInstance().currentUser
+                ?: return AuthResult.UserNotFound // Si no hay usuario autenticado
+            val email = user.email ?: return AuthResult.Failure(Exception("Correo no encontrado"))
+            val credential = EmailAuthProvider.getCredential(email, currentPassword)
+            user.reauthenticate(credential).await() // Re-autenticar con las credenciales proporcionadas
+            AuthResult.Success(user) // Retornar éxito con el usuario autenticado
+        } catch (e: Exception) {
+            AuthResult.Failure(e) // Manejo de excepciones
+        }
+    }
+
+    suspend fun updateUserPassword(newPassword: String): AuthResult {
+        return try {
+            val user = FirebaseAuth.getInstance().currentUser
+                ?: return AuthResult.UserNotFound // Si no hay usuario autenticado
+            user.updatePassword(newPassword).await() // Cambiar la contraseña del usuario
+            AuthResult.Success(user) // Retornar éxito con el usuario actualizado
+        } catch (e: Exception) {
+            AuthResult.Failure(e) // Manejo de excepciones
         }
     }
 

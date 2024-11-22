@@ -110,6 +110,7 @@ class ProfileViewModel @Inject constructor(
 
 
 
+
     fun loadFavorites(userId: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -169,13 +170,25 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun updateUserPassword(newPassword: String, currentPassword: String) {
-        executeWithLoading {
-            val result = authRepository.updateUserPassword(newPassword, currentPassword)
-            if (result is AuthResult.Failure) {
-                showError("Error al actualizar la contraseña: ${result.exception.localizedMessage}")
+        viewModelScope.launch {
+            try {
+                val reauthResult = authRepository.reAuthenticate(currentPassword)
+                if (reauthResult is AuthResult.Success) {
+                    val updateResult = authRepository.updateUserPassword(newPassword, currentPassword)
+                    if (updateResult is AuthResult.Success) {
+                        _errorMessage.value = "Contraseña actualizada con éxito."
+                    } else if (updateResult is AuthResult.Failure) {
+                        throw Exception(updateResult.exception.localizedMessage)
+                    }
+                } else if (reauthResult is AuthResult.Failure) {
+                    throw Exception(reauthResult.exception.localizedMessage)
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Error al actualizar la contraseña: ${e.localizedMessage}"
             }
         }
     }
+
 
     // ---- Utilidades para Manejo de Estados ----
     fun showError(message: String) {

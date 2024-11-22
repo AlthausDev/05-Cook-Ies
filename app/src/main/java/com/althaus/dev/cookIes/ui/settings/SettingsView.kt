@@ -202,14 +202,9 @@ fun SettingsView(
 
     // Modal para cambiar contraseña
     if (isPasswordDialogOpen) {
-        EditDialog(
-            title = "Cambiar Contraseña",
-            value1 = newPassword,
-            onValue1Change = { newPassword = it },
-            value2 = currentPassword,
-            onValue2Change = { currentPassword = it },
-            onSave = {
-                profileViewModel.updateUserPassword(newPassword = newPassword, currentPassword = currentPassword)
+        EditPasswordDialog(
+            onSave = { currentPassword, newPassword ->
+                profileViewModel.updateUserPassword(newPassword, currentPassword)
                 isPasswordDialogOpen = false
             },
             onCancel = { isPasswordDialogOpen = false }
@@ -356,6 +351,54 @@ fun EditNameDialog(
         }
     )
 }
+
+@Composable
+fun EditPasswordDialog(
+    onSave: (String, String) -> Unit,
+    onCancel: () -> Unit
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("Cambiar Contraseña") },
+        text = {
+            Column {
+                TextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text("Contraseña Actual") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text("Nueva Contraseña") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (currentPassword.isNotBlank() && newPassword.isNotBlank()) {
+                        onSave(currentPassword.trim(), newPassword.trim())
+                    }
+                }
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onCancel) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
 
 
 @Composable
