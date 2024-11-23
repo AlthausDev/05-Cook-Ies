@@ -6,6 +6,7 @@ plugins {
     id("kotlin-kapt")
     kotlin("kapt")
     alias(libs.plugins.daggerHiltAndroid)
+    id ("kotlin-parcelize")
 }
 
 android {

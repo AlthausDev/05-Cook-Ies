@@ -1,8 +1,12 @@
 <resources>
+    <!-- Nombre de la aplicación -->
     <string name="app_name">cookIes</string>
 
+    <!-- Navegación -->
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <!-- Default Web Client ID -->
+    <!-- Este ID se utiliza para configurar Google Sign-In y debe coincidir con el client_id del archivo google-services.json -->
     <string name="default_web_client_id">935720145677-uj8cb5eg080ekeg4v5v5mcijqgkjl23d.apps.googleusercontent.com</string>
 </resources>
