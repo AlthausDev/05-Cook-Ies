@@ -15,6 +15,7 @@ class FirestoreRepository @Inject constructor(
     private val db: FirebaseFirestore
 ) {
     private val usersCollection = db.collection("users")
+    private val notificationsCollection = db.collection("notifications")
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown-user"
 
 
@@ -184,38 +185,6 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    // Eliminar un usuario
-    suspend fun deleteUser(userId: String) {
-        try {
-            usersCollection.document(userId).delete().await()
-        } catch (e: Exception) {
-            throw Exception("Error al eliminar el usuario: ${e.localizedMessage}")
-        }
-    }
-
-    suspend fun reAuthenticate(currentPassword: String): AuthResult {
-        return try {
-            val user = FirebaseAuth.getInstance().currentUser
-                ?: return AuthResult.UserNotFound // Si no hay usuario autenticado
-            val email = user.email ?: return AuthResult.Failure(Exception("Correo no encontrado"))
-            val credential = EmailAuthProvider.getCredential(email, currentPassword)
-            user.reauthenticate(credential).await() // Re-autenticar con las credenciales proporcionadas
-            AuthResult.Success(user) // Retornar éxito con el usuario autenticado
-        } catch (e: Exception) {
-            AuthResult.Failure(e) // Manejo de excepciones
-        }
-    }
-
-    suspend fun updateUserPassword(newPassword: String): AuthResult {
-        return try {
-            val user = FirebaseAuth.getInstance().currentUser
-                ?: return AuthResult.UserNotFound // Si no hay usuario autenticado
-            user.updatePassword(newPassword).await() // Cambiar la contraseña del usuario
-            AuthResult.Success(user) // Retornar éxito con el usuario actualizado
-        } catch (e: Exception) {
-            AuthResult.Failure(e) // Manejo de excepciones
-        }
-    }
 
     // ---- Métodos de Ingredientes ----
 
@@ -261,24 +230,34 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+
     // ---- Métodos de Notificaciones ----
 
-    suspend fun saveNotification(notificationId: String, notificationData: Map<String, Any>) {
+    /**
+     * Guarda una nueva notificación en Firestore.
+     */
+    suspend fun saveNotification(notification: Notification) {
         try {
-            db.collection("notifications").document(notificationId).set(notificationData).await()
+            db.collection("notifications").document(notification.id).set(notification).await()
         } catch (e: Exception) {
             throw Exception("Error al guardar la notificación: ${e.localizedMessage}")
         }
     }
 
+    /**
+     * Actualiza una notificación existente en Firestore.
+     */
     suspend fun updateNotification(notificationId: String, updates: Map<String, Any>) {
         try {
-            db.collection("notifications").document(notificationId).update(updates).await()
+            notificationsCollection.document(notificationId).update(updates).await()
         } catch (e: Exception) {
             throw Exception("Error al actualizar la notificación: ${e.localizedMessage}")
         }
     }
 
+    /**
+     * Obtiene todas las notificaciones para un usuario específico.
+     */
     suspend fun getNotifications(recipientId: String): List<Notification> {
         return try {
             val snapshot = db.collection("notifications")
@@ -289,17 +268,32 @@ class FirestoreRepository @Inject constructor(
                 doc.toObject(Notification::class.java)?.copy(id = doc.id)
             }
         } catch (e: Exception) {
+            e.printStackTrace() // Registro detallado del error
             throw Exception("Error al obtener notificaciones: ${e.localizedMessage}")
         }
     }
 
 
-    suspend fun getFavorites(userId: String): List<String> {
-        return try {
-            val document = db.collection("users").document(userId).get().await()
-            document.get("favorites") as? List<String> ?: emptyList()
+    /**
+     * Marca una notificación como leída.
+     */
+    suspend fun markNotificationAsRead(notificationId: String) {
+        try {
+            updateNotification(notificationId, mapOf("isRead" to true))
         } catch (e: Exception) {
-            throw Exception("Error al obtener favoritos: ${e.localizedMessage}")
+            throw Exception("Error al marcar la notificación como leída: ${e.localizedMessage}")
+        }
+    }
+
+    /**
+     * Obtiene una notificación específica por ID.
+     */
+    suspend fun getNotification(notificationId: String): Notification? {
+        return try {
+            val snapshot = notificationsCollection.document(notificationId).get().await()
+            snapshot.toObject(Notification::class.java)?.copy(id = snapshot.id)
+        } catch (e: Exception) {
+            throw Exception("Error al obtener la notificación: ${e.localizedMessage}")
         }
     }
 

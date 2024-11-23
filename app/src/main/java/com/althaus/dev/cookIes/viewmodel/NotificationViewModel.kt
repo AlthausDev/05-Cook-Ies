@@ -18,37 +18,60 @@ class NotificationsViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
     init {
         loadNotifications()
     }
 
+    /**
+     * Carga las notificaciones del usuario actual desde Firestore.
+     */
     fun loadNotifications() {
         viewModelScope.launch {
             _isLoading.value = true
+            _errorMessage.value = null
             try {
-                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                    ?: throw Exception("Usuario no autenticado")
                 _notifications.value = firestoreRepository.getNotifications(userId)
             } catch (e: Exception) {
-                // Manejo de errores, si es necesario
+                _errorMessage.value = "Error al cargar notificaciones: ${e.localizedMessage}"
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-
+    /**
+     * Marca una notificación como leída.
+     */
     fun markAsRead(notification: Notification) {
         viewModelScope.launch {
             try {
+                // Actualizar el estado localmente
                 val updatedNotification = notification.markAsRead()
-                firestoreRepository.updateNotification(updatedNotification.id, mapOf("isRead" to true))
                 _notifications.value = _notifications.value.map {
                     if (it.id == updatedNotification.id) updatedNotification else it
                 }
+
+                // Sincronizar con Firestore
+                firestoreRepository.updateNotification(
+                    updatedNotification.id,
+                    mapOf("isRead" to true)
+                )
             } catch (e: Exception) {
-                // Manejar el error si es necesario
+                _errorMessage.value =
+                    "Error al marcar la notificación como leída: ${e.localizedMessage}"
             }
         }
     }
-}
 
+    /**
+     * Limpia el mensaje de error.
+     */
+    fun resetError() {
+        _errorMessage.value = null
+    }
+}

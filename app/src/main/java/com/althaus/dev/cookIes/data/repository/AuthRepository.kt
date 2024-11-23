@@ -30,15 +30,11 @@ class AuthRepository @Inject constructor(
         get() = firebaseAuth.currentUser
 
     // Google Sign-In Client configurado internamente
-    private val googleSignInClient: GoogleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
-    }
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id)) // Debe ser correcto
+        .requestEmail()
+        .build()
 
-    fun provideGoogleSignInClient(): GoogleSignInClient = googleSignInClient
 
     // Llamada segura para autenticación
     private suspend fun safeAuthCall(authCall: suspend () -> FirebaseUser?): AuthResult {
@@ -76,9 +72,21 @@ class AuthRepository @Inject constructor(
 
 
     suspend fun signInWithGoogle(idToken: String): AuthResult {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        return signInWithCredential(credential)
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseAuth.signInWithCredential(credential).await()
+            authResult.user?.let {
+                // Log para verificar si el usuario se obtiene
+                println("FirebaseAuth: Usuario autenticado: ${it.uid}")
+                AuthResult.Success(it)
+            } ?: AuthResult.UserNotFound
+        } catch (e: Exception) {
+            println("Error en signInWithGoogle: ${e.localizedMessage}")
+            AuthResult.Failure(e)
+        }
     }
+
+
 
     private suspend fun signInWithCredential(credential: AuthCredential): AuthResult {
         return safeAuthCall {
@@ -149,6 +157,6 @@ class AuthRepository @Inject constructor(
     // Cerrar sesión
     fun logout() {
         firebaseAuth.signOut()
-        googleSignInClient.signOut()
+       //googleSignInClient.signOut()
     }
 }

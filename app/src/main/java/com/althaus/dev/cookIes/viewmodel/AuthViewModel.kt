@@ -2,6 +2,7 @@ package com.althaus.dev.cookIes.viewmodel
 
 import android.app.Activity
 import android.content.Context
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,15 +69,20 @@ class AuthViewModel @Inject constructor(
 
     fun handleGoogleSignInResult(idToken: String?) {
         if (idToken.isNullOrEmpty()) {
-            showError("Error: ID Token es nulo")
+            showError("El token de Google es inválido o nulo.")
             return
         }
+
+        // Log para depurar
+        println("ID Token recibido: $idToken")
+
         executeAuth {
             handleAuthResult(authRepository.signInWithGoogle(idToken)) { user ->
+                println("Usuario autenticado: ${user.uid}")
                 saveUserInFirestore(
                     user = user,
                     name = user.displayName ?: "Usuario",
-                    email = user.email ?: "Sin correo"
+                    email = user.email ?: "Correo no disponible"
                 )
             }
         }
@@ -113,8 +119,8 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun launchGoogleSignIn(launcher: ActivityResultLauncher<Int>) {
-        launcher.launch(0)
+    fun launchGoogleSignIn(launcher: ManagedActivityResultLauncher<Unit, String?>) {
+        launcher.launch(Unit) // Usar Unit como input
     }
 
     // ---- Manejo de Resultados ----

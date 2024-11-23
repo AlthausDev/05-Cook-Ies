@@ -2,6 +2,8 @@ package com.althaus.dev.cookIes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.althaus.dev.cookIes.data.model.Notification
+import com.althaus.dev.cookIes.data.model.NotificationType
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -60,10 +62,31 @@ class RecipeViewModel @Inject constructor(
             val currentUserId = getCurrentUserId()
             val userData = repository.getUser(currentUserId)
             val updatedFavorites = userData?.get("favorites") as? List<String> ?: emptyList()
+
+            // Verificar si ya está en favoritos
             if (!updatedFavorites.contains(recipeId)) {
+                // Actualizar favoritos en Firestore
                 val newFavorites = updatedFavorites + recipeId
                 repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
-                refreshFavorites() // Refrescar la lista de favoritos
+
+                // Obtener el autor de la receta
+                val recipeData = repository.getRecipeOnce(recipeId)
+                val authorId = recipeData?.get("authorId") as? String
+                    ?: throw Exception("No se encontró el autor de la receta")
+
+                // Crear y guardar la notificación
+                val notification = Notification(
+                    id = repository.generateNewId("notifications"), // Generar un ID único
+                    title = "¡Tu receta ha sido marcada como favorita!",
+                    message = "Un usuario ha añadido tu receta a sus favoritos.",
+                    type = NotificationType.FAVORITE,
+                    recipientId = authorId,
+                    relatedRecipeId = recipeId
+                )
+                repository.saveNotification(notification) // Usar directamente el objeto Notification
+
+                // Refrescar favoritos localmente
+                refreshFavorites()
             }
         } catch (e: Exception) {
             showError("Error al agregar a favoritos: ${e.localizedMessage}")

@@ -1,28 +1,30 @@
 package com.althaus.dev.cookIes.data.model
 
-import com.althaus.dev.cookIes.data.repository.FirestoreRepository
+import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
+import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-
+@Parcelize
 @IgnoreExtraProperties
 data class Notification(
     @DocumentId val id: String = "",
-    val title: String,
-    val message: String,
+    val title: String = "",
+    val message: String = "",
     val type: NotificationType = NotificationType.GENERAL,
     val timestamp: Long = System.currentTimeMillis(),
     val isRead: Boolean = false,
-    val recipientId: String,
+    val recipientId: String = "",
     val relatedRecipeId: String? = null
-) {
+) : Parcelable {
     init {
         require(title.isNotBlank()) { "El título de la notificación no puede estar vacío." }
         require(recipientId.isNotBlank()) { "El ID del destinatario no puede estar vacío." }
 
-        if (type == NotificationType.NEW_RECIPE || type == NotificationType.FAVORITE) {
+        if (type in listOf(NotificationType.NEW_RECIPE, NotificationType.FAVORITE)) {
             require(!relatedRecipeId.isNullOrEmpty()) {
                 "relatedRecipeId es obligatorio para notificaciones de tipo $type."
             }
@@ -43,8 +45,8 @@ data class Notification(
             "isRead" to isRead,
             "recipientId" to recipientId
         )
-        relatedRecipeId?.let {
-            map["relatedRecipeId"] = it
+        if (type in listOf(NotificationType.NEW_RECIPE, NotificationType.FAVORITE)) {
+            relatedRecipeId?.let { map["relatedRecipeId"] = it }
         }
         return map
     }
@@ -55,32 +57,17 @@ data class Notification(
         return format.format(date)
     }
 
-
-    suspend fun saveToFirestore(repository: FirestoreRepository) {
-        try {
-            val notificationId = if (id.isBlank()) repository.generateNewId("notifications") else id
-            repository.saveNotification(notificationId, toMap())
-        } catch (e: Exception) {
-            throw Exception("Error al guardar la notificación en Firestore: ${e.localizedMessage}")
-        }
-    }
-
-    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
-        try {
-            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar una notificación sin ID.")
-            repository.updateNotification(id, updates)
-        } catch (e: Exception) {
-            throw Exception("Error al actualizar la notificación en Firestore: ${e.localizedMessage}")
-        }
-    }
-
     companion object {
         fun fromMap(map: Map<String, Any?>): Notification {
             return Notification(
                 id = map["id"] as? String ?: "",
                 title = map["title"] as? String ?: "",
                 message = map["message"] as? String ?: "",
-                type = NotificationType.valueOf(map["type"] as? String ?: "GENERAL"),
+                type = try {
+                    NotificationType.valueOf(map["type"] as? String ?: "GENERAL")
+                } catch (e: IllegalArgumentException) {
+                    NotificationType.GENERAL
+                },
                 timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis(),
                 isRead = map["isRead"] as? Boolean ?: false,
                 recipientId = map["recipientId"] as? String ?: "",
@@ -90,12 +77,11 @@ data class Notification(
     }
 }
 
-
-
-enum class NotificationType {
-    NEW_RECIPE,
-    COMMENT,
-    FAVORITE,
-    REMINDER,
-    GENERAL
+@Parcelize
+enum class NotificationType(val description: String) : Parcelable {
+    NEW_RECIPE("Nueva receta"),
+    COMMENT("Nuevo comentario"),
+    FAVORITE("Agregado a favoritos"),
+    REMINDER("Recordatorio"),
+    GENERAL("Notificación general");
 }

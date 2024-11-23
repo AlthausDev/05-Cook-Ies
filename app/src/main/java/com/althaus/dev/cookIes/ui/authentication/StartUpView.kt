@@ -1,6 +1,5 @@
 package com.althaus.dev.cookIes.ui.authentication
 
-import AuthResultContract
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -42,22 +41,16 @@ fun StartUpView(
     val errorMessage by authViewModel.errorMessage.collectAsState()
 
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = context as? Activity ?: return
 
     // Configuración del cliente de Google Sign-In
     val googleSignInClient = activity?.let { authViewModel.getGoogleSignInClient(it) }
 
     // Comprobar si `googleSignInClient` no es nulo antes de crear el contrato
-    val googleSignInLauncher = googleSignInClient?.let {
-        rememberLauncherForActivityResult(
-            contract = AuthResultContract(it)
-        ) { idToken ->
-            idToken?.let { authViewModel.handleGoogleSignInResult(it) }
-        }
-    }
-
-    LaunchedEffect(user) {
-        if (user != null) onLoginSuccess()
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = AuthResultContract(authViewModel.getGoogleSignInClient(activity))
+    ) { idToken ->
+        idToken?.let { authViewModel.handleGoogleSignInResult(it) }
     }
 
     // Verificar si el usuario ya está autenticado y redirigir según corresponda
@@ -96,8 +89,8 @@ fun StartUpView(
                 painter = painterResource(id = R.drawable.google),
                 title = "Iniciar con Google",
                 onClick = {
-                    if (googleSignInLauncher != null) {
-                        authViewModel.launchGoogleSignIn(googleSignInLauncher)
+                    googleSignInLauncher?.let { launcher ->
+                        authViewModel.launchGoogleSignIn(launcher)
                     }
                 }
             )

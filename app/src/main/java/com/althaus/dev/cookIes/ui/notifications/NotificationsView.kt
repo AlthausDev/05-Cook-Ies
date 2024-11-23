@@ -23,6 +23,7 @@ fun NotificationsView(
 ) {
     val notificationsState = notificationsViewModel.notifications.collectAsState()
     val isLoading = notificationsViewModel.isLoading.collectAsState()
+    val errorMessage = notificationsViewModel.errorMessage.collectAsState()
 
     Scaffold(
         topBar = {
@@ -46,6 +47,21 @@ fun NotificationsView(
             when {
                 isLoading.value -> {
                     CircularProgressIndicator()
+                }
+                errorMessage.value != null -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = errorMessage.value ?: "Error desconocido",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(onClick = { notificationsViewModel.loadNotifications() }) {
+                            Text("Reintentar")
+                        }
+                    }
                 }
                 notificationsState.value.isNullOrEmpty() -> {
                     Text(
@@ -82,7 +98,7 @@ fun NotificationCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(vertical = 4.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (notification.isRead) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
@@ -94,33 +110,28 @@ fun NotificationCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Título de la notificación
             Text(
                 text = notification.title,
                 style = MaterialTheme.typography.titleMedium
             )
-            // Mensaje de la notificación
             Text(
                 text = notification.message,
                 style = MaterialTheme.typography.bodyMedium
             )
-            // Fecha legible de la notificación
             Text(
                 text = notification.getReadableTimestamp(),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.End,
                 modifier = Modifier.fillMaxWidth()
             )
-            // Botón para marcar como leída
             if (!notification.isRead) {
                 Button(
                     onClick = { onMarkAsRead(notification) },
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text("Marcar como leída") // Este texto podría internacionalizarse
+                    Text("Marcar como leída")
                 }
             }
         }
     }
 }
-
