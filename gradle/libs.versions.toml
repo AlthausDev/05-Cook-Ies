@@ -1,5 +1,10 @@
 [versions]
+activityComposeVersion = "1.9.3"
 agp = "8.3.2"
+datastorePreferences = "1.1.1"
+firebaseAppcheckPlayintegrity = "18.0.0"
+firebaseAppcheckPlayintegrityVersion = "18.0.0"
+firebaseAppcheckSafetynet = "16.1.2"
 googleServices = "4.4.2"
 hiltAndroid = "2.51"
 kotlin = "1.9.21"
@@ -11,6 +16,8 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.11.00"
 firebaseBom = "33.6.0"
+lifecycleRuntimeKtxVersion = "2.8.7"
+multidexVersion = "1.0.3"
 playServicesLocation = "21.3.0"
 services = "4.4.2"
 crashlytics = "3.0.2"
@@ -23,7 +30,14 @@ googleid = "1.1.1"
 firebaseStorageKtx = "21.0.1"
 
 [libraries]
+androidx-activity-compose-v181 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-lifecycle-runtime-ktx-v261 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtxVersion" }
+firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrity" }
+firebase-appcheck-playintegrity-v1701 = { module = "com.google.firebase:firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrityVersion" }
+firebase-appcheck-safetynet = { module = "com.google.firebase:firebase-appcheck-safetynet", version.ref = "firebaseAppcheckSafetynet" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
@@ -57,6 +71,7 @@ googlePlayServicesAuth = { module = "com.google.android.gms:play-services-auth",
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+support-multidex = { module = "com.android.support:multidex", version.ref = "multidexVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

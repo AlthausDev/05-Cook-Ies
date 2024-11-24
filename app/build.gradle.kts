@@ -60,7 +60,14 @@ android {
 
 dependencies {
 
-    implementation ("com.android.support:multidex:1.0.3")
+    implementation (libs.support.multidex)
+    implementation (libs.androidx.datastore.preferences)
+
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.lifecycle.runtime.ktx.v261)
+    implementation (libs.androidx.activity.compose.v181)
+
+
 
 
     implementation(platform(libs.firebase.bom))
@@ -71,9 +78,9 @@ dependencies {
     implementation(libs.firebase.config)
 
     implementation(libs.play.services.location)
-    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.0.1")
-    implementation("com.google.firebase:firebase-appcheck-safetynet:16.1.2")
-    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.0.1")
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.safetynet)
+    implementation(libs.firebase.appcheck.playintegrity.v1701)
 
 
 
