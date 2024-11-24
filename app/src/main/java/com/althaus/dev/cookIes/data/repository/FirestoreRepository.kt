@@ -285,18 +285,6 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    /**
-     * Obtiene una notificación específica por ID.
-     */
-    suspend fun getNotification(notificationId: String): Notification? {
-        return try {
-            val snapshot = notificationsCollection.document(notificationId).get().await()
-            snapshot.toObject(Notification::class.java)?.copy(id = snapshot.id)
-        } catch (e: Exception) {
-            throw Exception("Error al obtener la notificación: ${e.localizedMessage}")
-        }
-    }
-
     suspend fun getUserSync(userId: String): UserProfile? {
         return try {
             val userData = getUser(userId)

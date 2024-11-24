@@ -101,7 +101,7 @@ fun NotificationCard(
             .padding(vertical = 4.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (notification.isRead) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            containerColor = if (notification.read) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         )
     ) {
         Column(
@@ -118,13 +118,15 @@ fun NotificationCard(
                 text = notification.message,
                 style = MaterialTheme.typography.bodyMedium
             )
-            Text(
-                text = notification.getReadableTimestamp(),
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (!notification.isRead) {
+            notification.readableTimestamp?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            if (!notification.read) {
                 Button(
                     onClick = { onMarkAsRead(notification) },
                     modifier = Modifier.align(Alignment.End)

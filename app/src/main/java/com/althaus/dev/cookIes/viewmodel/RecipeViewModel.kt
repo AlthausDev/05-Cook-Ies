@@ -79,7 +79,7 @@ class RecipeViewModel @Inject constructor(
                     id = repository.generateNewId("notifications"), // Generar un ID único
                     title = "¡Tu receta ha sido marcada como favorita!",
                     message = "Un usuario ha añadido tu receta a sus favoritos.",
-                    type = NotificationType.FAVORITE,
+                    type = NotificationType.FAVORITE.toString(),
                     recipientId = authorId,
                     relatedRecipeId = recipeId
                 )
