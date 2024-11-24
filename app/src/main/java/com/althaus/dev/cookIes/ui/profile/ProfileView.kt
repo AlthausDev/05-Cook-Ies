@@ -24,10 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
-import com.althaus.dev.cookIes.theme.PrimaryDark
-import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.PrimaryDark
-import com.althaus.dev.cookIes.theme.SecondaryLight
 import com.althaus.dev.cookIes.ui.components.RecipeCard
 //import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
@@ -105,7 +101,7 @@ fun ProfileView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .background(Brush.verticalGradient(listOf(PrimaryLight, SecondaryLight))),
+                    .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -127,14 +123,14 @@ fun ProfileView(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = profile.name ?: "Nombre del Usuario",
-                        color = PrimaryDark,
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = profile.email ?: "correo@ejemplo.com",
-                        color = PrimaryDark.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
@@ -145,7 +141,7 @@ fun ProfileView(
 
                 // Indicador de carga o mensaje de error
                 if (isLoading.value) {
-                    CircularProgressIndicator(color = PrimaryDark)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 } else if (errorMessage.value != null) {
                     Text(
                         text = errorMessage.value ?: "Error desconocido",
@@ -160,7 +156,7 @@ fun ProfileView(
                 // Título de "Mis Recetas"
                 Text(
                     text = "Mis Recetas",
-                    color = PrimaryDark,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -179,7 +175,7 @@ fun ProfileView(
                 } else {
                     Text(
                         text = "No tienes recetas aún.",
-                        color = PrimaryDark.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center
                     )

@@ -16,7 +16,7 @@ val Typography = Typography(
         fontSize = 30.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark // Asignar color global
+        color = DarkOnPrimary // Asignar color global
     ),
     displayMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -24,7 +24,7 @@ val Typography = Typography(
         fontSize = 28.sp,
         lineHeight = 34.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     displaySmall = TextStyle(
         fontFamily = FontFamily.Default,
@@ -32,7 +32,7 @@ val Typography = Typography(
         fontSize = 26.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
 
     // Estilo para encabezados secundarios
@@ -42,7 +42,7 @@ val Typography = Typography(
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -50,7 +50,7 @@ val Typography = Typography(
         fontSize = 22.sp,
         lineHeight = 30.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     headlineSmall = TextStyle(
         fontFamily = FontFamily.Default,
@@ -58,7 +58,7 @@ val Typography = Typography(
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
 
     // Estilo de título para secciones o subtítulos destacados
@@ -68,7 +68,7 @@ val Typography = Typography(
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     titleMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -76,7 +76,7 @@ val Typography = Typography(
         fontSize = 18.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     titleSmall = TextStyle(
         fontFamily = FontFamily.Default,
@@ -84,7 +84,7 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
 
     // Estilo para el cuerpo de texto
@@ -94,7 +94,7 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -102,7 +102,7 @@ val Typography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.Default,
@@ -110,7 +110,7 @@ val Typography = Typography(
         fontSize = 12.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.4.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
 
     // Estilo para etiquetas o textos pequeños
@@ -120,7 +120,7 @@ val Typography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -128,7 +128,7 @@ val Typography = Typography(
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
@@ -136,6 +136,6 @@ val Typography = Typography(
         fontSize = 10.sp,
         lineHeight = 14.sp,
         letterSpacing = 0.5.sp,
-        color = PrimaryDark
+        color = DarkOnPrimary
     )
 )

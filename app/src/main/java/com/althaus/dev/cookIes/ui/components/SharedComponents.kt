@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
-import com.althaus.dev.cookIes.theme.PrimaryDark
 
 @Composable
 fun AppLogo() {
@@ -34,14 +34,14 @@ fun AppLogo() {
 fun TitleAndSubtitle(title: String, subtitle: String) {
     Text(
         text = title,
-        color = PrimaryDark,
+        color = MaterialTheme.colorScheme.primary,
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center
     )
     Text(
         text = subtitle,
-        color = PrimaryDark,
+        color = MaterialTheme.colorScheme.primary,
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
         textAlign = TextAlign.Center
@@ -55,7 +55,7 @@ fun ClickableText(
 ) {
     Text(
         text = text,
-        color = PrimaryDark,
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.clickable { onClick() },
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
@@ -84,7 +84,7 @@ fun CustomButton(
         modifier = modifier
             .height(48.dp)
             .background(Color.White, shape = CircleShape)
-            .border(1.dp, PrimaryDark, shape = CircleShape)
+            .border(1.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
             .padding(horizontal = 16.dp)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
@@ -98,7 +98,7 @@ fun CustomButton(
         )
         Text(
             text = title,
-            color = PrimaryDark,
+            color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
@@ -109,5 +109,5 @@ fun CustomButton(
 
 @Composable
 fun LoadingIndicator() {
-    CircularProgressIndicator(color = PrimaryDark)
+    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
 }

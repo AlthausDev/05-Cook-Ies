@@ -48,7 +48,8 @@ fun NavigationWrapper(
     profileViewModel: ProfileViewModel,
     recipeViewModel: RecipeViewModel,
     notificationsViewModel: NotificationsViewModel,
-    firestoreRepository: FirestoreRepository
+    firestoreRepository: FirestoreRepository,
+    onToggleTheme: () -> Unit
 ) {
     val currentUser by authViewModel.user.collectAsState()
     val startDestination = if (currentUser != null) Screen.Dashboard.route else Screen.StartUp.route
@@ -161,7 +162,8 @@ fun NavigationWrapper(
                 onLogout = {
                     authViewModel.logout()
                     navigateWithClearBackStack(navHostController, Screen.StartUp.route)
-                }
+                },
+                onToggleTheme = onToggleTheme // Pasamos el callback de alternancia de tema
             )
         }
 

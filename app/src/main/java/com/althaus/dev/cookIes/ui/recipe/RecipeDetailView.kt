@@ -25,10 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.althaus.dev.cookIes.data.model.Recipe
-import com.althaus.dev.cookIes.theme.ErrorLight
-import com.althaus.dev.cookIes.theme.PrimaryDark
-import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.SecondaryLight
+
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +76,7 @@ fun RecipeDetailView(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryDark)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
         },
         bottomBar = {
@@ -101,7 +98,7 @@ fun RecipeDetailView(
                         Icon(
                             imageVector = Icons.Default.Favorite,
                             contentDescription = "Agregar o quitar de favoritos",
-                            tint = if (uiState.favorites.any { it.id == recipe?.id }) ErrorLight else Color.Gray
+                            tint = if (uiState.favorites.any { it.id == recipe?.id }) MaterialTheme.colorScheme.error else Color.Gray
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))

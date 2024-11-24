@@ -3,7 +3,6 @@ package com.althaus.dev.cookIes.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
@@ -11,65 +10,71 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Esquema de color claro
-private val ThemeColors = lightColorScheme(
-    primary = PrimaryLight,
-    onPrimary = PrimaryDark, // Texto/íconos sobre primary
-    background = PrimaryLight,
-    onBackground = PrimaryDark, // Texto sobre background
-    surface = SecondaryLight,
-    onSurface = PrimaryDark, // Texto sobre surface
-    error = ErrorLight,
-    onError = Color.White, // Texto sobre error
-    secondary = SecondaryLight, // Color secundario
-    onSecondary = PrimaryDark // Texto/íconos sobre secondary
+// =======================================
+// Esquema de colores
+// =======================================
+
+// Esquema de colores para el tema claro
+private val LightColorScheme = lightColorScheme(
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    error = LightError,
+    onError = LightOnError
 )
 
-
-// Esquema de color oscuro
+// Esquema de colores para el tema oscuro
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
-    secondary = DarkSecondary,
-    background = DarkBackground,
-    surface = DarkSurface,
-    error = DarkError,
-    onBackground = DarkOnBackground,
-    onSurface = DarkOnSurface,
     onPrimary = DarkOnPrimary,
+    secondary = DarkSecondary,
     onSecondary = DarkOnSecondary,
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    error = DarkError,
     onError = DarkOnError
 )
 
+// =======================================
 // Formas personalizadas
+// =======================================
 val AppShapes = Shapes(
     small = RoundedCornerShape(4.dp),
     medium = RoundedCornerShape(8.dp),
     large = RoundedCornerShape(16.dp)
 )
 
-// Tema principal de la aplicación
+// =======================================
+// Tema principal
+// =======================================
 @Composable
 fun CookIesTheme(
-    userDarkTheme: Boolean? = null, // null usa el tema por defecto del sistema
+    userDarkTheme: Boolean? = null, // null para usar el tema del sistema
     content: @Composable () -> Unit
 ) {
-    // Determina el tema actual (Light por defecto)
+    // Determina si usar el tema oscuro o claro
     val darkTheme = when (userDarkTheme) {
         true -> true // Usuario fuerza tema oscuro
         false -> false // Usuario fuerza tema claro
         null -> isSystemInDarkTheme() // Usa el tema del sistema
     }
 
-    //val colors = if (darkTheme) DarkColorScheme else ThemeColors
-    val colors = ThemeColors
+    // Selecciona el esquema de color según el tema
+    val colors = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colors,
@@ -80,13 +85,17 @@ fun CookIesTheme(
     }
 }
 
-// Fondo dinámico con gradiente
+// =======================================
+// Componentes comunes
+// =======================================
+
+// Fondo dinámico con gradiente (para usar en cualquier pantalla)
 @Composable
 fun GradientBackground(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val colors = listOf(
+    val gradientColors = listOf(
         MaterialTheme.colorScheme.surface,
         MaterialTheme.colorScheme.background
     )
@@ -94,7 +103,7 @@ fun GradientBackground(
     Box(
         modifier = modifier.background(
             Brush.verticalGradient(
-                colors = colors,
+                colors = gradientColors,
                 tileMode = TileMode.Clamp
             )
         )
@@ -103,8 +112,7 @@ fun GradientBackground(
     }
 }
 
-
-// Estilo de botones
+// Botón primario con estilo consistente
 @Composable
 fun PrimaryButton(
     text: String,
@@ -130,4 +138,3 @@ fun PrimaryButton(
         )
     }
 }
-

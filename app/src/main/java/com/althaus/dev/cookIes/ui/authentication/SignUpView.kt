@@ -1,6 +1,7 @@
 package com.althaus.dev.cookIes.ui.authentication
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,7 +13,6 @@ import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.theme.GradientBackground
 import com.althaus.dev.cookIes.theme.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.*
-import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
 @Composable
@@ -50,7 +50,7 @@ fun SignUpView(
             // Título de la pantalla
             Text(
                 text = "Crear Cuenta",
-                color = PrimaryDark,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center

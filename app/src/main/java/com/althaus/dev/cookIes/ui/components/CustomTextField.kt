@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,9 +14,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
-import com.althaus.dev.cookIes.theme.PrimaryDark
-import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.SecondaryLight
+
 
 @Composable
 fun CustomTextField(
@@ -32,13 +31,13 @@ fun CustomTextField(
         onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth(fieldWidth)
-            .border(2.dp, SecondaryLight, CircleShape)
-            .background(PrimaryLight, CircleShape)
+            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            .background(MaterialTheme.colorScheme.primary, CircleShape)
             .padding(paddingValues),
         singleLine = true,
         visualTransformation = visualTransformation,
         textStyle = androidx.compose.ui.text.TextStyle(
-            color = PrimaryDark
+            color = MaterialTheme.colorScheme.primary
         ),
         decorationBox = { innerTextField ->
             Box(
@@ -48,7 +47,7 @@ fun CustomTextField(
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
-                        color = PrimaryDark.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                     )
                 }
                 innerTextField()

@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.theme.GradientBackground
 import com.althaus.dev.cookIes.theme.PrimaryButton
-import com.althaus.dev.cookIes.theme.PrimaryDark
 import com.althaus.dev.cookIes.ui.components.*
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
@@ -47,7 +46,7 @@ fun LoginView(
 
             Text(
                 text = "Iniciar Sesión",
-                color = PrimaryDark,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -94,7 +93,7 @@ fun LoginView(
             Text(
                 text = "¿Olvidaste tu contraseña? Restablécela aquí.",
                 fontSize = 15.sp,
-                color = PrimaryDark,
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.clickable {navigateToForgotPassword() }
             )

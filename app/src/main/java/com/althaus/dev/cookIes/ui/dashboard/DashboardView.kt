@@ -22,9 +22,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
-import com.althaus.dev.cookIes.theme.PrimaryDark
-import com.althaus.dev.cookIes.theme.PrimaryLight
-import com.althaus.dev.cookIes.theme.SecondaryLight
 import com.althaus.dev.cookIes.ui.components.RecipeCard
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
@@ -45,13 +42,6 @@ fun DashboardView(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(PrimaryLight, SecondaryLight)
-                )
-            )
     ) {
         Scaffold(
             topBar = {
@@ -99,11 +89,11 @@ fun DashboardView(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = navigateToRecipeWizard,
-                    containerColor = SecondaryLight,
-                    contentColor = PrimaryDark,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.border(
                         width = 2.dp,
-                        color = PrimaryDark.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                         shape = MaterialTheme.shapes.large
                     )
                 ) {

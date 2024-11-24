@@ -14,7 +14,6 @@ import com.althaus.dev.cookIes.data.model.Ingredient
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.navigation.Screen
-import com.althaus.dev.cookIes.theme.ErrorLight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -105,7 +104,7 @@ fun RecipeWizardView(
                 errorMessage?.let {
                     Text(
                         text = it,
-                        color = ErrorLight,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
@@ -349,7 +348,7 @@ fun WizardNavigation(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Button(onClick = onCancel, colors = ButtonDefaults.buttonColors(containerColor = ErrorLight)) {
+        Button(onClick = onCancel, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
         Text("Cancelar")
         }
 
