@@ -2,32 +2,35 @@ package com.althaus.dev.cookIes.ui.authentication
 
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.theme.DarkOnPrimary
+import com.althaus.dev.cookIes.theme.DarkSecondary
 import com.althaus.dev.cookIes.theme.GradientBackground
-import com.althaus.dev.cookIes.theme.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.AppLogo
 import com.althaus.dev.cookIes.ui.components.ClickableText
-import com.althaus.dev.cookIes.ui.components.CustomButton
+import com.althaus.dev.cookIes.ui.components.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.ErrorText
 import com.althaus.dev.cookIes.ui.components.LoadingIndicator
 import com.althaus.dev.cookIes.ui.components.TitleAndSubtitle
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
-import com.google.api.Context
 
 @Composable
 fun StartUpView(
@@ -84,16 +87,20 @@ fun StartUpView(
             )
 
             // Botón para iniciar sesión con Google
-            CustomButton(
-                modifier = Modifier.fillMaxWidth(0.8f),
-                painter = painterResource(id = R.drawable.google),
-                title = "Iniciar con Google",
+            PrimaryButton(
+                text = "Iniciar con Google",
                 onClick = {
                     googleSignInLauncher?.let { launcher ->
                         authViewModel.launchGoogleSignIn(launcher)
                     }
-                }
+                },
+                icon = painterResource(id = R.drawable.google),
+                backgroundColor = Color.White, // Fondo dinámico
+                contentColor = if (isSystemInDarkTheme())  DarkOnPrimary else MaterialTheme.colorScheme.primary, // Texto dinámico
+                borderColor = if (isSystemInDarkTheme()) DarkSecondary else MaterialTheme.colorScheme.primary // Borde dinámico
             )
+
+
 
             // Enlace a registro
             ClickableText(

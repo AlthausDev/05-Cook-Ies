@@ -12,7 +12,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.theme.GradientBackground
-import com.althaus.dev.cookIes.theme.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.*
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
@@ -91,7 +90,7 @@ fun LoginView(
 
             Spacer(modifier = Modifier.height(36.dp))
             Text(
-                text = "¿Olvidaste tu contraseña? Restablécela aquí.",
+                text = "¿Olvidaste tu contraseña? Restablécela",
                 fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center,

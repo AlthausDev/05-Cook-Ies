@@ -37,10 +37,11 @@ val DarkBackground = Color(0xFF121212) // Fondo principal
 val DarkSurface = Color(0xFF1F1F1F) // Superficies elevadas
 
 // Colores primarios y secundarios
-val DarkPrimary = Color(0xFFBB86FC) // Color primario
+val DarkPrimary = Color(0xFFFFFFFF) // Color primario
 val DarkPrimaryVariant = Color(0xFF3700B3) // Variante del primario
-val DarkSecondary = Color(0xFF03DAC6) // Color secundario
+val DarkSecondary = Color(0xFF849595) // Color secundario
 val DarkSecondaryVariant = Color(0xFF018786) // Variante del secundario
+val DarkText = Color(0xFFFFFFFF) // Variante del secundario
 
 // Colores de error
 val DarkError = Color(0xFFCF6679) // Color de error

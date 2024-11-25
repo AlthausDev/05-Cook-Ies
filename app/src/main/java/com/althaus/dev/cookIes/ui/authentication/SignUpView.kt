@@ -11,7 +11,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.theme.GradientBackground
-import com.althaus.dev.cookIes.theme.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.*
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
