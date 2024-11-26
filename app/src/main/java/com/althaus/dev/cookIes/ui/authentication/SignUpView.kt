@@ -102,12 +102,12 @@ fun SignUpView(
 
             // Indicador de carga
             if (isLoading) {
-                LoadingIndicator()
+                SharedLoadingIndicator()
             }
 
             // Mensaje de error
             errorMessage?.let {
-                ErrorText(message = it)
+                SharedErrorMessage(message = it)
             }
 
             // Redirección a la pantalla de inicio de sesión

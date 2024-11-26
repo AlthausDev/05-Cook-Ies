@@ -4,23 +4,22 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
@@ -68,13 +67,17 @@ fun ClickableText(
 }
 
 @Composable
-fun ErrorText(message: String) {
-    Text(
-        text = message,
-        color = Color.Red,
-        fontSize = 14.sp,
-        textAlign = TextAlign.Center
-    )
+fun SharedErrorMessage(message: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+    }
 }
 
 @Composable
@@ -82,16 +85,16 @@ fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    icon: Painter? = null, // Ícono opcional
-    backgroundColor: Color = MaterialTheme.colorScheme.secondary, // Fondo por defecto
-    contentColor: Color = MaterialTheme.colorScheme.primary, // Texto por defecto
-    borderColor: Color = MaterialTheme.colorScheme.primary // Color del borde
+    icon: Painter? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.secondary,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    borderColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(
         modifier = modifier
             .height(48.dp)
             .fillMaxWidth(0.8f)
-            .border(1.dp, borderColor, shape = CircleShape) // Siempre aplica el borde
+            .border(1.dp, borderColor, shape = CircleShape)
             .background(backgroundColor, shape = CircleShape)
             .clickable { onClick() }
             .padding(horizontal = 16.dp),
@@ -115,6 +118,7 @@ fun PrimaryButton(
         )
     }
 }
+
 @Composable
 fun CustomTextField(
     value: String,
@@ -123,10 +127,10 @@ fun CustomTextField(
     isPassword: Boolean = false,
     fieldWidth: Float = 0.8f,
     paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-    textColor: Color = MaterialTheme.colorScheme.onBackground, // Color del texto
-    placeholderColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f), // Placeholder
-    backgroundColor: Color = MaterialTheme.colorScheme.secondary, // Fondo
-    borderColor: Color = MaterialTheme.colorScheme.primary, // Borde
+    textColor: Color = MaterialTheme.colorScheme.onBackground,
+    placeholderColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+    backgroundColor: Color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface,
+    borderColor: Color = MaterialTheme.colorScheme.primary,
     visualTransformation: VisualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
 ) {
     BasicTextField(
@@ -159,7 +163,57 @@ fun CustomTextField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoadingIndicator() {
-    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+fun SharedTopAppBar(
+    title: String,
+    actions: @Composable RowScope.() -> Unit = {},
+    backgroundColor: Color = MaterialTheme.colorScheme.secondary,
+    contentColor: Color = MaterialTheme.colorScheme.onBackground
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = contentColor
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = backgroundColor
+        ),
+        actions = actions
+    )
+}
+
+@Composable
+fun SharedFloatingActionButton(
+    onClick: () -> Unit,
+    icon: ImageVector
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+
+@Composable
+fun SharedLoadingIndicator(size: Int = 48) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = (size / 12f).dp
+        )
+    }
 }

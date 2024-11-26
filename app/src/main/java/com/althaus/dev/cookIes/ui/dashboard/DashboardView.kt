@@ -2,8 +2,6 @@ package com.althaus.dev.cookIes.ui.dashboard
 
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,11 +16,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.ui.components.RecipeCard
+import com.althaus.dev.cookIes.ui.components.SharedErrorMessage
+import com.althaus.dev.cookIes.ui.components.SharedFloatingActionButton
+import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
+import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,126 +42,89 @@ fun DashboardView(
         recipeViewModel.refreshRecipes()
     }
 
-    Box(
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Dashboard",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(onClick = navigateToNotifications) {
-                                    Icon(
-                                        imageVector = Icons.Default.Notifications,
-                                        contentDescription = "Notificaciones",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .clickable(onClick = navigateToProfile)
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.logo),
-                                        contentDescription = "Imagen de Perfil",
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                            }
-                        }
+    Scaffold(
+        topBar = {
+            SharedTopAppBar(
+                title = "Dashboard",
+                actions = {
+                    IconButton(onClick = navigateToNotifications) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notificaciones",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = navigateToRecipeWizard,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        shape = MaterialTheme.shapes.large
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Agregar receta",
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clickable(onClick = navigateToProfile)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Imagen de Perfil",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
-            },
-            content = { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(16.dp)
-                ) {
-                    when {
-                        uiState.isLoading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                        uiState.errorMessage != null -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = uiState.errorMessage ?: "Error desconocido",
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        floatingActionButton = {
+            SharedFloatingActionButton(
+                onClick = navigateToRecipeWizard,
+                icon = Icons.Default.Add
+            )
+        },
+
+                content = { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp)
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        SharedLoadingIndicator()
+                    }
+                    uiState.errorMessage != null -> {
+                        SharedErrorMessage(
+                            message = uiState.errorMessage ?: "Error desconocido"
+                        )
+                    }
+                    uiState.recipes.isNotEmpty() -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.recipes) { recipe ->
+                                RecipeCard(
+                                    recipe = recipe,
+                                    onClick = {
+                                        recipe.id?.let { recipeId ->
+                                            navigateToRecipeDetail(recipeId)
+                                        } ?: run {
+                                            Log.e("DashboardView", "Error: ID de receta es nulo o vacío")
+                                        }
+                                    }
                                 )
                             }
                         }
-                        uiState.recipes.isNotEmpty() -> {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(uiState.recipes) { recipe ->
-                                    RecipeCard(
-                                        recipe = recipe,
-                                        onClick = {
-                                            recipe.id?.let { recipeId ->
-                                                navigateToRecipeDetail(recipeId) // Solo navega si el ID no es nulo
-                                            } ?: run {
-                                                Log.e("DashboardView", "Error: ID de receta es nulo o vacío")
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        else -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("No hay recetas disponibles")
-                            }
+                    }
+                    else -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No hay recetas disponibles",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
                         }
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }

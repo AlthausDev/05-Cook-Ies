@@ -76,11 +76,11 @@ fun LoginView(
             )
 
             if (isLoading) {
-                LoadingIndicator()
+                SharedLoadingIndicator()
             }
 
             errorMessage?.let {
-                ErrorText(message = it)
+                SharedErrorMessage(message = it)
             }
 
             ClickableText(

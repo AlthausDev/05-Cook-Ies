@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -27,8 +26,8 @@ import com.althaus.dev.cookIes.theme.GradientBackground
 import com.althaus.dev.cookIes.ui.components.AppLogo
 import com.althaus.dev.cookIes.ui.components.ClickableText
 import com.althaus.dev.cookIes.ui.components.PrimaryButton
-import com.althaus.dev.cookIes.ui.components.ErrorText
-import com.althaus.dev.cookIes.ui.components.LoadingIndicator
+import com.althaus.dev.cookIes.ui.components.SharedErrorMessage
+import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.TitleAndSubtitle
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
@@ -110,12 +109,12 @@ fun StartUpView(
 
             // Indicador de carga
             if (isLoading) {
-                LoadingIndicator()
+                SharedLoadingIndicator()
             }
 
             // Mensaje de error
             errorMessage?.let { msg ->
-                ErrorText(message = msg)
+                SharedErrorMessage(message = msg)
             }
 
             Spacer(modifier = Modifier.weight(1f))
