@@ -32,14 +32,17 @@ fun RecipeCard(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(12.dp), // Esquinas más suaves
+        elevation = CardDefaults.cardElevation(6.dp), // Elevación ajustada
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
-                .padding(8.dp)
+                .padding(12.dp) // Más espacio interior para evitar saturación
         ) {
             // Imagen de la receta (si existe)
             Image(
@@ -51,7 +54,7 @@ fun RecipeCard(
                     .clip(RoundedCornerShape(8.dp))
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp)) // Espaciado ajustado
 
             Column(
                 modifier = Modifier
@@ -62,7 +65,7 @@ fun RecipeCard(
                 // Título de la receta
                 Text(
                     text = recipe.name,
-                    style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -71,7 +74,8 @@ fun RecipeCard(
                 // Descripción de la receta
                 Text(
                     text = recipe.description.takeIf { it.isNotBlank() } ?: "Sin descripción",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -84,18 +88,18 @@ fun RecipeCard(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "Tiempo de preparación",
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "${recipe.prepTimeMinutes ?: 0} min",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = recipe.cuisineType.takeIf { it.isNotBlank() } ?: "Desconocido",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
