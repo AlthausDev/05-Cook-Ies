@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -23,8 +24,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.data.model.Recipe
+import com.althaus.dev.cookIes.data.model.UserProfile
 import com.althaus.dev.cookIes.ui.components.RecipeCard
+import com.althaus.dev.cookIes.ui.components.SharedErrorMessage
+import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
+import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 //import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
@@ -37,7 +44,6 @@ fun ProfileView(
     onRecipeClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
-
     LaunchedEffect(Unit) {
         profileViewModel.clearError()
     }
@@ -49,48 +55,31 @@ fun ProfileView(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Mi Perfil",
-                            style = MaterialTheme.typography.titleLarge
+            SharedTopAppBar(
+                title = "Mi Perfil",
+                actions = {
+                    IconButton(onClick = navigateToFavorites) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Favoritos",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            IconButton(onClick = navigateToFavorites) {
-                                Icon(
-                                    imageVector = Icons.Default.Favorite,
-                                    contentDescription = "Favoritos",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = onSettings) {
-                                Icon(
-                                    imageVector = Icons.Default.Settings,
-                                    contentDescription = "Editar Perfil",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = onSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Editar Perfil",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Regresar"
+                            contentDescription = "Regresar",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -101,86 +90,137 @@ fun ProfileView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))),
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Mostrar perfil de usuario
-                userProfile.value?.let { profile ->
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .background(Color.White, shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = profile.name ?: "Nombre del Usuario",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = profile.email ?: "correo@ejemplo.com",
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                // Cabecera del perfil
+                UserProfileHeader(userProfile = userProfile.value)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Indicador de carga o mensaje de error
-                if (isLoading.value) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                } else if (errorMessage.value != null) {
-                    Text(
-                        text = errorMessage.value ?: "Error desconocido",
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center
-                    )
+                when {
+                    isLoading.value -> SharedLoadingIndicator()
+                    errorMessage.value != null -> SharedErrorMessage(message = errorMessage.value ?: "Error desconocido")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título de "Mis Recetas"
-                Text(
-                    text = "Mis Recetas",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                // Sección de recetas del usuario
+                UserRecipesSection(
+                    recipes = userRecipes.value,
+                    onRecipeClick = onRecipeClick
                 )
-
-                // Lista de recetas del usuario
-                if (userRecipes.value.isNotEmpty()) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(userRecipes.value) { recipe ->
-                            RecipeCard(recipe = recipe, onClick = { recipe.id?.let { onRecipeClick(it) } })
-                        }
-                    }
-                } else {
-                    Text(
-                        text = "No tienes recetas aún.",
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
             }
         }
     )
+}
+
+@Composable
+fun UserProfileHeader(userProfile: UserProfile?) {
+    userProfile?.let { profile ->
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (profile.profileImage.isNullOrBlank()) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo), // Imagen predeterminada
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                } else {
+                    // Cargar imagen desde URL
+                    AsyncImage(
+                        model = profile.profileImage,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = profile.name.ifBlank { "Nombre del Usuario" },
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = profile.email.ifBlank { "correo@ejemplo.com" },
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+    } ?: run {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Perfil no disponible",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+
+@Composable
+fun UserRecipesSection(
+    recipes: List<Recipe>,
+    onRecipeClick: (String) -> Unit
+) {
+    if (recipes.isNotEmpty()) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(recipes, key = { it.id ?: "" }) { recipe ->
+                RecipeCard(
+                    recipe = recipe,
+                    onClick = { recipe.id?.let(onRecipeClick) }
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No tienes recetas aún.",
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }
