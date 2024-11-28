@@ -8,11 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
@@ -44,14 +42,12 @@ class MainActivity : AppCompatActivity() {
 
         // Asegurar que SSL esté actualizado
         ProviderInstaller.installIfNeeded(applicationContext)
-        //themePreferences = ThemePreferences(applicationContext)
-
 
         setContent {
             navController = rememberNavController() // Controlador de navegación
 
-            // Estado del tema (puedes inicializarlo desde SharedPreferences si es necesario)
-            val isDarkTheme = remember { mutableStateOf<Boolean?>(null) }
+            // Estado del tema inicializado en modo claro (false)
+            val isDarkTheme = remember { mutableStateOf(false) }
             val scope = rememberCoroutineScope()
 
             CookIesTheme(userDarkTheme = isDarkTheme.value) { // Aplica el tema
@@ -65,28 +61,13 @@ class MainActivity : AppCompatActivity() {
                         firestoreRepository = firestoreRepository,
                         onToggleTheme = {
                             scope.launch {
-                                isDarkTheme.value = when (isDarkTheme.value) {
-                                    true -> false // Cambiar de oscuro a claro
-                                    false -> null // Cambiar de claro a sistema
-                                    null -> true // Cambiar de sistema a oscuro
-                                }
+                                // Alternar entre modo claro y oscuro
+                                isDarkTheme.value = !isDarkTheme.value
                             }
                         }
                     )
                 }
             }
-        }
-    }
-
-    // Alternar entre modos de tema
-    private fun toggleTheme(currentMode: Int) {
-        val newMode = when (currentMode) {
-            0 -> 1 // Sistema -> Claro
-            1 -> 2 // Claro -> Oscuro
-            else -> 0 // Oscuro -> Sistema
-        }
-        lifecycleScope.launch {
-            //themePreferences.saveThemeMode(newMode)
         }
     }
 

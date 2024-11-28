@@ -169,8 +169,8 @@ fun SharedTopAppBar(
     title: String,
     actions: @Composable RowScope.() -> Unit = {},
     navigationIcon: @Composable (() -> Unit)? = null, // Sigue siendo opcional
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
-    contentColor: Color = MaterialTheme.colorScheme.onBackground
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     TopAppBar(
         title = {

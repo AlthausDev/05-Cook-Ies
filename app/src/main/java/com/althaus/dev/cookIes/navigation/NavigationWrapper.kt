@@ -157,7 +157,6 @@ fun NavigationWrapper(
         composable(Screen.Settings.route) {
             SettingsView(
                 profileViewModel = profileViewModel,
-                onSave = { navHostController.popBackStack() },
                 onCancel = { navHostController.popBackStack() },
                 onLogout = {
                     authViewModel.logout()

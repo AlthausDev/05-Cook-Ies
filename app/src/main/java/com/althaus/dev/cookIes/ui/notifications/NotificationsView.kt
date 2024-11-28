@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.data.model.Notification
+import com.althaus.dev.cookIes.ui.components.NotificationCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,54 +85,6 @@ fun NotificationsView(
                             )
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun NotificationCard(
-    notification: Notification,
-    onMarkAsRead: (Notification) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (notification.read) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = notification.title,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = notification.message,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            notification.readableTimestamp?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            if (!notification.read) {
-                Button(
-                    onClick = { onMarkAsRead(notification) },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Marcar como leída")
                 }
             }
         }

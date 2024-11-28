@@ -41,6 +41,7 @@ ksp = "1.9.0-1.0.12"
 # Navegación
 navigationCompose = "2.8.4"
 navigationFragmentKtx = "2.8.4"
+uiTestAndroid = "1.7.5"
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -108,3 +109,4 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }

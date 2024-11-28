@@ -50,6 +50,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.althaus.dev.cookIes.R
+import com.althaus.dev.cookIes.ui.components.PrimaryButton
+import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
+import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,33 +60,28 @@ import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 fun SettingsView(
     profileViewModel: ProfileViewModel,
     onCancel: () -> Unit,
-    onSave: () -> Unit,
     onLogout: () -> Unit,
-    //isDarkTheme: Boolean, // Estado del tema actual
+    //isDarkTheme: Boolean,
     onToggleTheme: () -> Unit // Acción para alternar el tema
 ) {
-
-    // Restablecer el estado de error al salir de la vista
     LaunchedEffect(Unit) {
         profileViewModel.clearError()
     }
 
-
-    // Estado local para manejar la URI de la foto seleccionada
     var isImageDialogOpen by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<String?>(null) }
+    var isNameDialogOpen by remember { mutableStateOf(false) }
+    var isEmailDialogOpen by remember { mutableStateOf(false) }
+    var isPasswordDialogOpen by remember { mutableStateOf(false) }
 
     var name by remember { mutableStateOf(profileViewModel.userProfile.value?.name ?: "") }
     var email by remember { mutableStateOf(profileViewModel.userProfile.value?.email ?: "") }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
-    var isEmailDialogOpen by remember { mutableStateOf(false) }
-    var isPasswordDialogOpen by remember { mutableStateOf(false) }
-    var isNameDialogOpen by remember { mutableStateOf(false) }
 
-    val userProfile = profileViewModel.userProfile.collectAsState()
-    val isLoading = profileViewModel.isLoading.collectAsState()
-    val errorMessage = profileViewModel.errorMessage.collectAsState()
+    val userProfile by profileViewModel.userProfile.collectAsState()
+    val isLoading by profileViewModel.isLoading.collectAsState()
+    val errorMessage by profileViewModel.errorMessage.collectAsState()
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         selectedImageUri = uri?.toString()
@@ -91,30 +89,8 @@ fun SettingsView(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Configuración",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = {}) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Modo claro"
-                                )
-                            }
-                        }
-                    }
-                },
+            SharedTopAppBar(
+                title = "Configuración",
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
                         Icon(
@@ -122,15 +98,23 @@ fun SettingsView(
                             contentDescription = "Regresar"
                         )
                     }
-                }
-            )
         },
+        actions = {
+            IconButton(onClick = onToggleTheme) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription =  "Modo claro",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    )
+},
         content = { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary)))
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -148,75 +132,58 @@ fun SettingsView(
                         AsyncImage(
                             model = uri,
                             contentDescription = "Vista previa",
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
                         )
-                    } ?: userProfile.value?.profileImage?.let { imageUrl ->
+                    } ?: userProfile?.profileImage?.let { imageUrl ->
                         AsyncImage(
                             model = imageUrl,
                             contentDescription = "Foto de Perfil",
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
                         )
                     } ?: Image(
                         painter = painterResource(id = R.drawable.default_profile),
                         contentDescription = "Foto de Perfil",
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Botón para cambiar foto
-                Button(
-                    onClick = { isImageDialogOpen = true },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = CircleShape
-                ) {
-                    Text("Cambiar Foto")
-                }
-
-                SettingsButton(
-                    text = "Cambiar Nombre",
-                    onClick = { isNameDialogOpen = true }
-                )
-
-                SettingsButton(
-                    text = "Cambiar Correo",
-                    onClick = { isEmailDialogOpen = true }
-                )
-
-                SettingsButton(
-                    text = "Cambiar Contraseña",
-                    onClick = { isPasswordDialogOpen = true }
-                )
 
                 Spacer(modifier = Modifier.weight(0.2f))
 
-                Button(
+                // Botón para cambiar foto
+                PrimaryButton(
+                    text = "Cambiar Foto",
+                    onClick = { isImageDialogOpen = true },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+
+                // Botones de configuración
+                PrimaryButton(text = "Cambiar Nombre", onClick = { isNameDialogOpen = true })
+                PrimaryButton(text = "Cambiar Correo", onClick = { isEmailDialogOpen = true })
+                PrimaryButton(text = "Cambiar Contraseña", onClick = { isPasswordDialogOpen = true })
+
+                Spacer(modifier = Modifier.weight(0.2f))
+
+                // Botón de cierre de sesión
+                PrimaryButton(
+                    text = "Cerrar Sesión",
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(0.8f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = CircleShape
-                ) {
-                    Text(
-                        text = "Cerrar Sesión",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                    backgroundColor = MaterialTheme.colorScheme.error,
+                    contentColor = Color.White
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
 
                 // Indicador de carga
-                if (isLoading.value) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                if (isLoading) {
+                    SharedLoadingIndicator()
                 }
 
                 // Mensaje de error
-                errorMessage.value?.let {
+                errorMessage?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -224,10 +191,10 @@ fun SettingsView(
         }
     )
 
-    // Modal para cambiar el nombre del usuario
+    // Diálogos
     if (isNameDialogOpen) {
         EditNameDialog(
-            currentName = userProfile.value?.name ?: "",
+            currentName = userProfile?.name.orEmpty(),
             onSave = { newName ->
                 profileViewModel.updateUserName(newName)
                 isNameDialogOpen = false
@@ -236,7 +203,6 @@ fun SettingsView(
         )
     }
 
-    // Modal para cambiar correo
     if (isEmailDialogOpen) {
         EditDialog(
             title = "Cambiar Correo",
@@ -252,8 +218,6 @@ fun SettingsView(
         )
     }
 
-
-    // Modal para cambiar contraseña
     if (isPasswordDialogOpen) {
         EditPasswordDialog(
             onSave = { currentPassword, newPassword ->
@@ -264,7 +228,6 @@ fun SettingsView(
         )
     }
 
-    // Modal para cambiar foto
     if (isImageDialogOpen) {
         AlertDialog(
             onDismissRequest = { isImageDialogOpen = false },
@@ -290,43 +253,24 @@ fun SettingsView(
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        selectedImageUri?.let { uri ->
-                            if (Uri.parse(uri).isAbsolute) {
-                                profileViewModel.updateProfileImage(Uri.parse(uri))
-                                isImageDialogOpen = false
-                            } else {
-                                profileViewModel.showError("URI de la imagen no válida.")
-                            }
-                        }
+                Button(onClick = {
+                    selectedImageUri?.let { uri ->
+                        profileViewModel.updateProfileImage(Uri.parse(uri))
+                        isImageDialogOpen = false
                     }
-                ) {
+                }) {
                     Text("Guardar")
                 }
             },
             dismissButton = {
-                Button(
-                    onClick = {
-                        selectedImageUri = null
-                        isImageDialogOpen = false
-                    }
-                ) {
+                Button(onClick = { isImageDialogOpen = false }) {
                     Text("Cancelar")
                 }
             }
         )
-
-        // Mensaje de error
-        errorMessage.value?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }
+
 
 @Composable
 fun EditDialog(
@@ -460,29 +404,3 @@ fun EditPasswordDialog(
         }
     )
 }
-
-
-
-@Composable
-fun SettingsButton(
-    text: String,
-    onClick: () -> Unit,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth(0.8f)
-            .border(
-                width = 3.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                shape = CircleShape
-            ),
-        colors = ButtonDefaults.buttonColors(containerColor = containerColor),
-        shape = CircleShape
-    ) {
-        Text(text)
-    }
-}
-

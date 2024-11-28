@@ -97,6 +97,7 @@ dependencies {
 
     // --- Inyección de Dependencias con Hilt ---
     implementation(libs.hilt.android)
+    implementation(libs.androidx.ui.test.android)
     kapt(libs.hilt.compiler)
 
     // --- Servicios de Google ---

@@ -1,6 +1,7 @@
 package com.althaus.dev.cookIes.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import coil.compose.rememberAsyncImagePainter
+import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.model.Recipe
 
 @Composable
@@ -31,7 +35,8 @@ fun RecipeCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(2.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp), // Esquinas más suaves
         elevation = CardDefaults.cardElevation(6.dp), // Elevación ajustada
         colors = CardDefaults.cardColors(
@@ -42,17 +47,23 @@ fun RecipeCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
-                .padding(12.dp) // Más espacio interior para evitar saturación
+                .padding(12.dp)
         ) {
             // Imagen de la receta (si existe)
             Image(
-                painter = rememberAsyncImagePainter(recipe.imageUrl ?: ""),
+                painter = if (recipe.imageUrl.isNullOrEmpty()) {
+                    painterResource(id = R.drawable.default_profile) // Usar imagen predeterminada
+                } else {
+                    rememberAsyncImagePainter(recipe.imageUrl) // Usar la imagen proporcionada
+                },
                 contentDescription = "Imagen de ${recipe.name}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
             )
+
+
 
             Spacer(modifier = Modifier.width(12.dp)) // Espaciado ajustado
 
