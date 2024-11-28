@@ -168,7 +168,8 @@ fun CustomTextField(
 fun SharedTopAppBar(
     title: String,
     actions: @Composable RowScope.() -> Unit = {},
-    backgroundColor: Color = MaterialTheme.colorScheme.secondary,
+    navigationIcon: @Composable (() -> Unit)? = null, // Sigue siendo opcional
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = MaterialTheme.colorScheme.onBackground
 ) {
     TopAppBar(
@@ -179,10 +180,11 @@ fun SharedTopAppBar(
                 color = contentColor
             )
         },
+        navigationIcon = navigationIcon ?: {},
+        actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = backgroundColor
-        ),
-        actions = actions
+        )
     )
 }
 
