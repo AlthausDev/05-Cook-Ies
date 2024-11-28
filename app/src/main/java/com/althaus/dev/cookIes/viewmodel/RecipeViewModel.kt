@@ -69,6 +69,11 @@ class RecipeViewModel @Inject constructor(
                 val newFavorites = updatedFavorites + recipeId
                 repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
 
+                // Refrescar favoritos localmente
+                _uiState.update {
+                    it.copy(favorites = it.favorites + Recipe(id = recipeId)) // Agregar receta al estado local
+                }
+
                 // Obtener el autor de la receta
                 val recipeData = repository.getRecipeOnce(recipeId)
                 val authorId = recipeData?.get("authorId") as? String
@@ -101,6 +106,12 @@ class RecipeViewModel @Inject constructor(
             if (updatedFavorites.contains(recipeId)) {
                 val newFavorites = updatedFavorites - recipeId
                 repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
+
+                // Refrescar favoritos localmente
+                _uiState.update {
+                    it.copy(favorites = it.favorites.filterNot { it.id == recipeId }) // Remover receta del estado local
+                }
+
                 refreshFavorites() // Refrescar la lista de favoritos
             }
         } catch (e: Exception) {
