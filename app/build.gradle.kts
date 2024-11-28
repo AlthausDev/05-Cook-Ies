@@ -60,48 +60,60 @@ android {
 
 dependencies {
 
-    implementation (libs.support.multidex)
-    implementation (libs.androidx.datastore.preferences)
+    // --- Librerías Core de Android ---
+    //implementation(libs.support.multidex)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.datastore.preferences)
 
-    implementation (libs.androidx.lifecycle.viewmodel.compose)
-    implementation (libs.androidx.lifecycle.runtime.ktx.v261)
-    implementation (libs.androidx.activity.compose.v181)
+    // --- Ciclo de Vida ---
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    // --- Compose y UI ---
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.activity.compose)
 
+    // --- Navegación ---
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
-
+    // --- Firebase ---
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.realtime)
     implementation(libs.firebase.config)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.storage.ktx)
 
-    implementation(libs.play.services.location)
+    // --- Firebase App Check ---
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.safetynet)
-    implementation(libs.firebase.appcheck.playintegrity.v1701)
 
-
-
-    implementation(libs.googlePlayServicesAuth)
-    implementation(libs.coil)
-
+    // --- Inyección de Dependencias con Hilt ---
     implementation(libs.hilt.android)
-    implementation(libs.googleid)
-    implementation(libs.firebase.storage.ktx)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.fragment.ktx)
+    // --- Servicios de Google ---
+    implementation(libs.googlePlayServicesAuth)
+    implementation(libs.play.services.location)
+    implementation(libs.googleid)
+
+    // --- Utilidades para Compose ---
+    implementation(libs.accompanist.flowlayout)
+
+    // --- Manejo de Imágenes ---
+    implementation(libs.coil)
+
+    // --- Diseño Material ---
+    implementation(libs.material)
+
+    // --- Dependencias para Testing ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -109,33 +121,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.fragment.ktx)
-
-    // Testing dependencies
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    // Material Design (separate dependency not managed in libs)
-    implementation("com.google.android.material:material:1.11.0")
-
-    // Android Navigation libraries (ensure version compatibility with your project setup)
-    implementation("androidx.navigation:navigation-fragment-ktx:2.6.0")
-    implementation("androidx.navigation:navigation-ui-ktx:2.6.0")
-
 }
