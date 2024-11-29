@@ -50,23 +50,23 @@ class NotificationsViewModel @Inject constructor(
     fun markAsRead(notification: Notification) {
         viewModelScope.launch {
             try {
-                // Actualizar el estado localmente
-                val updatedNotification = notification.markAsRead()
-                _notifications.value = _notifications.value.map {
-                    if (it.id == updatedNotification.id) updatedNotification else it
-                }
-
-                // Sincronizar con Firestore
+                // Actualizar Firestore
                 firestoreRepository.updateNotification(
-                    updatedNotification.id,
-                    mapOf("isRead" to true)
+                    notification.id,
+                    mapOf("read" to true)
                 )
+
+                // Crear una nueva lista para forzar la recomposición
+                _notifications.value = _notifications.value.map {
+                    if (it.id == notification.id) it.copy(read = true) else it
+                }
             } catch (e: Exception) {
-                _errorMessage.value =
-                    "Error al marcar la notificación como leída: ${e.localizedMessage}"
+                _errorMessage.value = "Error al marcar como leída: ${e.localizedMessage}"
             }
         }
     }
+
+
 
     /**
      * Limpia el mensaje de error.

@@ -260,13 +260,24 @@ class FirestoreRepository @Inject constructor(
      */
     suspend fun getNotifications(recipientId: String): List<Notification> {
         return try {
+            // Obtiene los documentos de la colección "notifications" filtrados por el recipientId
             val snapshot = db.collection("notifications")
                 .whereEqualTo("recipientId", recipientId)
-                .get().await()
+                .get()
+                .await()
 
-            snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Notification::class.java)?.copy(id = doc.id)
+            val notifications = snapshot.documents.mapNotNull { doc ->
+                // Convierte cada documento en un objeto Notification
+                doc.toObject(Notification::class.java)?.copy(id = doc.id).apply {
+                    if (this == null) {
+                        println("Documento inválido omitido: ${doc.id}")
+                    }
+                }
             }
+
+            println("Total de notificaciones recuperadas: ${notifications.size}")
+
+            notifications
         } catch (e: Exception) {
             e.printStackTrace() // Registro detallado del error
             throw Exception("Error al obtener notificaciones: ${e.localizedMessage}")

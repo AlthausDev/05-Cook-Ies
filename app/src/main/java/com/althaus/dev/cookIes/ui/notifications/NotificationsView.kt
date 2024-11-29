@@ -15,8 +15,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.ui.components.NotificationCard
+import com.althaus.dev.cookIes.ui.components.PrimaryButton
+import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsView(
     notificationsViewModel: NotificationsViewModel,
@@ -28,8 +29,8 @@ fun NotificationsView(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Notificaciones") },
+            SharedTopAppBar(
+                title = "Notificaciones",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
@@ -47,7 +48,7 @@ fun NotificationsView(
         ) {
             when {
                 isLoading.value -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
                 errorMessage.value != null -> {
                     Column(
@@ -59,9 +60,10 @@ fun NotificationsView(
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Button(onClick = { notificationsViewModel.loadNotifications() }) {
-                            Text("Reintentar")
-                        }
+                        PrimaryButton(
+                            onClick = { notificationsViewModel.loadNotifications() },
+                            text = "Reintentar"
+                        )
                     }
                 }
                 notificationsState.value.isNullOrEmpty() -> {
@@ -72,11 +74,17 @@ fun NotificationsView(
                     )
                 }
                 else -> {
+                    // Generar una clave única basada en el estado de las notificaciones
+                    val refreshKey = notificationsState.value.hashCode()
+
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(notificationsState.value) { notification ->
+                        items(
+                            items = notificationsState.value,
+                            key = { notification -> "${notification.id}-$refreshKey" } // Forzar recomposición con hash
+                        ) { notification ->
                             NotificationCard(
                                 notification = notification,
                                 onMarkAsRead = {

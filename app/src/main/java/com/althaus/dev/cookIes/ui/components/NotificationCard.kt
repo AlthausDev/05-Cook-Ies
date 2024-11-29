@@ -2,14 +2,9 @@ package com.althaus.dev.cookIes.ui.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,25 +25,41 @@ fun NotificationCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .border(2.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp)),
+            .padding(vertical = 8.dp) // Mantiene el padding externo siempre
+            .border(
+                width = if (notification.read) 1.dp else 2.dp,
+                color = if (notification.read) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(12.dp)
+            ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
+        elevation = if (notification.read) {
+            CardDefaults.cardElevation(0.dp)
+        } else {
+            CardDefaults.cardElevation(6.dp)
+        },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (notification.read) {
+                MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f) // Color para notificaciones leídas
+            } else {
+                MaterialTheme.colorScheme.surface // Color para no leídas
+            }
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp), // Siempre tiene padding interno
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Título de la notificación
             Text(
                 text = notification.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (notification.read) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Texto de color primary con alpha aumentado
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -57,9 +68,13 @@ fun NotificationCard(
             Text(
                 text = notification.message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 4, // Permitir más líneas si el mensaje es largo
-                overflow = TextOverflow.Clip // Mostrar todo el texto sin cortar
+                color = if (notification.read) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Texto del mensaje con alpha aumentado
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 4,
+                overflow = TextOverflow.Clip
             )
 
             // Fecha/hora de la notificación
@@ -67,21 +82,25 @@ fun NotificationCard(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (notification.read) {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Fecha/hora con alpha aumentado
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
             }
 
             // Botón de acción, ubicado al final
-            PrimaryButton(
-                onClick = { onMarkAsRead(notification) },
-                text = "Marcar como leída",
-                modifier = Modifier
-                    .align(Alignment.End) // Alineado a la derecha
-                    .padding(top = 8.dp)
-                    .width(200.dp) // Ajustar el ancho del botón
-                    .height(40.dp) // Reducir la altura del botón
-            )
-
+            if (!notification.read) { // Ocultar el botón si la notificación ya está leída
+                PrimaryButton(
+                    onClick = { onMarkAsRead(notification) },
+                    text = "Marcar como leída",
+                    modifier = Modifier
+                        .align(Alignment.End) // Alineado a la derecha
+                        .padding(top = 8.dp)
+                )
+            }
         }
     }
+
 }
