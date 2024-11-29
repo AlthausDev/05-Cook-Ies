@@ -56,7 +56,7 @@ class NotificationsViewModel @Inject constructor(
                     mapOf("read" to true)
                 )
 
-                // Crear una nueva lista para forzar la recomposición
+                // Actualizar el estado localmente, creando una nueva lista para forzar recomposición
                 _notifications.value = _notifications.value.map {
                     if (it.id == notification.id) it.copy(read = true) else it
                 }
@@ -65,7 +65,6 @@ class NotificationsViewModel @Inject constructor(
             }
         }
     }
-
 
 
     /**

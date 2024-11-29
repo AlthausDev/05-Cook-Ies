@@ -74,16 +74,13 @@ fun NotificationsView(
                     )
                 }
                 else -> {
-                    // Generar una clave única basada en el estado de las notificaciones
-                    val refreshKey = notificationsState.value.hashCode()
-
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(
                             items = notificationsState.value,
-                            key = { notification -> "${notification.id}-$refreshKey" } // Forzar recomposición con hash
+                            key = { notification -> notification.id }
                         ) { notification ->
                             NotificationCard(
                                 notification = notification,
