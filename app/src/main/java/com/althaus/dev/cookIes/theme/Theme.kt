@@ -1,14 +1,17 @@
 package com.althaus.dev.cookIes.theme
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TileMode
@@ -86,24 +89,32 @@ fun CookIesTheme(
 // Componentes comunes
 // =======================================
 
-// Fondo dinámico con gradiente (para usar en cualquier pantalla)
 @Composable
 fun GradientBackground(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    // Animar los colores para transiciones suaves
+    val animatedSurfaceColor = animateColorAsState(targetValue = surfaceColor)
+    val animatedBackgroundColor = animateColorAsState(targetValue = backgroundColor)
+
     val gradientColors = listOf(
-        MaterialTheme.colorScheme.surface,
-        MaterialTheme.colorScheme.background
+        animatedSurfaceColor.value,
+        animatedBackgroundColor.value
     )
 
     Box(
-        modifier = modifier.background(
-            Brush.verticalGradient(
-                colors = gradientColors,
-                tileMode = TileMode.Clamp
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = gradientColors,
+                    tileMode = TileMode.Clamp
+                )
             )
-        )
     ) {
         content()
     }

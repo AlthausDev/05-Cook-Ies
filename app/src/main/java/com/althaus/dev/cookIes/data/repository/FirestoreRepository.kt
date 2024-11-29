@@ -222,6 +222,19 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    /**
+     * Obtiene los nombres de todos los ingredientes en Firestore.
+     */
+    suspend fun getIngredientNames(): List<String> {
+        return try {
+            val snapshot = db.collection("ingredients").get().await()
+            snapshot.documents.mapNotNull { it.getString("name") }
+        } catch (e: Exception) {
+            throw Exception("Error al obtener nombres de ingredientes: ${e.localizedMessage}")
+        }
+    }
+
+
     suspend fun deleteIngredient(ingredientId: String) {
         try {
             db.collection("ingredients").document(ingredientId).delete().await()
