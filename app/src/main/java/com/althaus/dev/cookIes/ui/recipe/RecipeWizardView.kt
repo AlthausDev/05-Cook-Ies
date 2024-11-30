@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.althaus.dev.cookIes.data.model.Ingredient
@@ -42,6 +45,7 @@ import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.navigation.Screen
 import com.althaus.dev.cookIes.theme.GradientBackground
+import com.althaus.dev.cookIes.ui.components.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -154,9 +158,12 @@ fun RecipeWizardView(
                                     errorMessage = "Por favor, completa todos los campos requeridos antes de continuar."
                                 }
                             },
-                            onBack = { currentStep-- },
-                            onComplete = {
-                                CoroutineScope(Dispatchers.IO).launch {
+                            onBack = {
+                                currentStep--
+                                errorMessage = null // Limpia el mensaje de error
+                            },
+                            onSave = {
+                                CoroutineScope(Dispatchers.Main).launch {
                                     try {
                                         val recipe = Recipe(
                                             name = recipeName,
@@ -164,9 +171,9 @@ fun RecipeWizardView(
                                             ingredients = recipeIngredients,
                                             instructions = recipeInstructions
                                         )
-                                        recipe.saveToFirestore(firestoreRepository, currentAuthorId)
+                                        recipe.saveToFirestore(firestoreRepository, currentAuthorId) // Guardar receta
                                         onComplete(recipe)
-                                        navHostController.navigate(Screen.Dashboard.route) {
+                                        navHostController.navigate(Screen.Dashboard.route) { // Navega al Dashboard
                                             popUpTo(Screen.Dashboard.route) { inclusive = true }
                                         }
                                     } catch (e: Exception) {
@@ -174,7 +181,12 @@ fun RecipeWizardView(
                                     }
                                 }
                             },
-                            onCancel = onCancel
+                            onCancel = onCancel,
+                            onNavigateToDashboard = { // Agregar esta función para usarla
+                                navHostController.navigate(Screen.Dashboard.route) {
+                                    popUpTo(Screen.Dashboard.route) { inclusive = true }
+                                }
+                            }
                         )
                     }
                 }
@@ -265,42 +277,49 @@ fun IngredientsStep(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = "Ingredientes",
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary // Encabezado en Primary
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
         )
-        for (ingredient in ingredients) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary // Texto de ingredientes en Primary
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = { onRemoveIngredient(ingredient) }) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar ingrediente",
-                        tint = MaterialTheme.colorScheme.error // Icono en color de error
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(ingredients) { ingredient ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
                     )
+                    IconButton(onClick = { onRemoveIngredient(ingredient) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Eliminar ingrediente",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
-        Button(
+        PrimaryButton(
+            text = "Agregar Ingrediente",
             onClick = { showDialog = true },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Text("Agregar Ingrediente")
-        }
-
+            modifier = Modifier.fillMaxWidth()
+        )
         if (showDialog) {
             AddIngredientDialog(
                 onAdd = { ingredient ->
@@ -314,6 +333,7 @@ fun IngredientsStep(
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddIngredientDialog(
@@ -322,8 +342,8 @@ fun AddIngredientDialog(
     firestoreRepository: FirestoreRepository
 ) {
     var ingredientName by remember { mutableStateOf("") }
-    var ingredientQuantity by remember { mutableStateOf("1") } // Cantidad predeterminada
-    var ingredientUnit by remember { mutableStateOf("Unidad/es") } // Unidad predeterminada
+    var ingredientQuantity by remember { mutableStateOf("1") } // Valor predeterminado
+    var ingredientUnit by remember { mutableStateOf("Unidad/es") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var suggestions by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -342,6 +362,7 @@ fun AddIngredientDialog(
         }
     }
 
+
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
@@ -352,46 +373,43 @@ fun AddIngredientDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Campo para el nombre del ingrediente con autocompletado
-                Box {
-                    TextField(
-                        value = ingredientName,
-                        onValueChange = { ingredientName = it },
-                        label = {
-                            Text(
-                                text = "Nombre del Ingrediente",
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                // Campo para el nombre del ingrediente
+                TextField(
+                    value = ingredientName,
+                    onValueChange = { ingredientName = it },
+                    label = {
+                        Text(
+                            text = "Nombre del Ingrediente",
                             color = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-                    // Mostrar sugerencias dinámicas
-                    if (suggestions.isNotEmpty()) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            items(suggestions) { suggestion ->
-                                Text(
-                                    text = suggestion,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            ingredientName =
-                                                suggestion// Autocompletar el campo
-                                            suggestions = emptyList() // Ocultar sugerencias
-                                        }
-                                        .padding(8.dp),
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+                // Mostrar sugerencias dinámicas
+                if (suggestions.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        items(suggestions) { suggestion ->
+                            Text(
+                                text = suggestion,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        ingredientName = suggestion // Autocompletar el campo
+                                        suggestions = emptyList() // Ocultar sugerencias
+                                    }
+                                    .padding(8.dp),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.primary
                                 )
-                            }
+                            )
                         }
                     }
                 }
@@ -408,21 +426,28 @@ fun AddIngredientDialog(
                     },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 // Menú desplegable para seleccionar la unidad
-                Box {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
                     Button(
                         onClick = { isDropdownExpanded = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = ingredientUnit,
-                            color = MaterialTheme.colorScheme.onPrimary
+                        shape = MaterialTheme.shapes.small, // Esquinas cuadradas
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(150.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
                         )
+                    ) {
+                        Text(text = ingredientUnit)
                     }
-
                     DropdownMenu(
                         expanded = isDropdownExpanded,
                         onDismissRequest = { isDropdownExpanded = false }
@@ -446,7 +471,7 @@ fun AddIngredientDialog(
                     }
                 }
 
-                // Mostrar mensajes de error si existen
+                // Mensaje de error si existe
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -457,18 +482,18 @@ fun AddIngredientDialog(
             }
         },
         confirmButton = {
-            Button(
+            PrimaryButton(
+                text = "Agregar",
                 onClick = {
                     if (ingredientName.isBlank()) {
                         errorMessage = "El nombre no puede estar vacío."
-                        return@Button
+                        return@PrimaryButton
                     }
                     if (ingredientQuantity.toDoubleOrNull() == null) {
                         errorMessage = "La cantidad debe ser un número válido."
-                        return@Button
+                        return@PrimaryButton
                     }
 
-                    // Crear y guardar el ingrediente
                     val ingredient = Ingredient(
                         id = firestoreRepository.generateNewId("ingredients"),
                         name = ingredientName,
@@ -476,19 +501,21 @@ fun AddIngredientDialog(
                         unit = ingredientUnit
                     )
                     onAdd(ingredient)
-                }
-            ) {
-                Text("Agregar")
-            }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         },
         dismissButton = {
-            Button(onClick = onCancel) {
-                Text("Cancelar")
-            }
+            PrimaryButton(
+                text = "Cancelar",
+                onClick = onCancel,
+                backgroundColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     )
 }
-
 
 
 // Paso 3: Instrucciones
@@ -500,8 +527,11 @@ fun InstructionsStep(
     onNavigateToDashboard: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
             value = instructions,
@@ -509,56 +539,66 @@ fun InstructionsStep(
             label = {
                 Text(
                     text = "Instrucciones",
-                    color = MaterialTheme.colorScheme.primary // Label en Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.primary // Texto de entrada en Primary
-            )
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
-
-        Button(
-            onClick = {
-                onSave()
-                onNavigateToDashboard()
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Text("Guardar y Volver al Dashboard")
-        }
     }
 }
 
-
-// Navegación del Wizard
 @Composable
 fun WizardNavigation(
     currentStep: Int,
     stepsCount: Int,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    onComplete: () -> Unit,
-    onCancel: () -> Unit
+    onSave: () -> Unit,
+    onCancel: () -> Unit,
+    onNavigateToDashboard: () -> Unit // Agregar este parámetro
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        SharedButton(
-            onClick = onCancel,
-            text = "Cancelar",
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-        )
-        if (currentStep > 0) {
-            SharedButton(onClick = onBack, text = "Atrás")
+        // Botón de "Cancelar" solo en el primer paso
+        if (currentStep == 0) {
+            PrimaryButton(
+                text = "Cancelar",
+                onClick = onCancel,
+                backgroundColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+                modifier = Modifier.weight(1f).padding(4.dp)
+            )
         }
+
+        // Botón de "Atrás" en pasos posteriores al primero
+        if (currentStep > 0) {
+            PrimaryButton(
+                text = "Atrás",
+                onClick = onBack,
+                modifier = Modifier.weight(1f).padding(4.dp)
+            )
+        }
+
+        // Botón "Continuar" o "Guardar y Volver al Dashboard"
         if (currentStep < stepsCount - 1) {
-            SharedButton(onClick = onNext, text = "Siguiente")
+            PrimaryButton(
+                text = "Continuar",
+                onClick = onNext,
+                modifier = Modifier.weight(1f).padding(4.dp)
+            )
         } else {
-            SharedButton(onClick = onComplete, text = "Completar")
+            PrimaryButton(
+                text = "Guardar y Volver al Dashboard",
+                onClick = onSave,
+                modifier = Modifier.weight(1f).padding(4.dp)
+            )
         }
     }
 }
+
