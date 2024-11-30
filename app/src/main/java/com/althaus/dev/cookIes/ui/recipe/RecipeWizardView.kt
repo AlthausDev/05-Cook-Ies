@@ -278,21 +278,20 @@ fun IngredientsStep(
     var showDialog by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth(0.9f)
-            .padding(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, // Centra todo horizontalmente
+        modifier = Modifier.fillMaxSize()
     ) {
         Text(
             text = "Ingredientes",
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.primary
         )
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth(0.9f) // Ajusta el ancho al 90% de la pantalla
+                .padding(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(ingredients) { ingredient ->
                 Row(
@@ -302,9 +301,9 @@ fun IngredientsStep(
                     Text(
                         text = "${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f)
+                        color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = { onRemoveIngredient(ingredient) }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -315,11 +314,16 @@ fun IngredientsStep(
                 }
             }
         }
+
+        // Botón "Agregar Ingrediente" centrado y con un ancho del 90%
         PrimaryButton(
             text = "Agregar Ingrediente",
             onClick = { showDialog = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth(0.9f) // Ajusta el ancho al 90%
+                .padding(top = 16.dp) // Separación superior
         )
+
         if (showDialog) {
             AddIngredientDialog(
                 onAdd = { ingredient ->
@@ -332,7 +336,6 @@ fun IngredientsStep(
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -362,17 +365,23 @@ fun AddIngredientDialog(
         }
     }
 
-
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
             Text(
                 text = "Agregar Ingrediente",
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center // Centrar el título
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally, // Centrar horizontalmente los elementos
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 // Campo para el nombre del ingrediente
                 TextField(
                     value = ingredientName,
@@ -386,14 +395,14 @@ fun AddIngredientDialog(
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.primary
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(0.9f) // Reducir ancho al 90%
                 )
 
                 // Mostrar sugerencias dinámicas
                 if (suggestions.isNotEmpty()) {
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(0.9f)
                             .background(MaterialTheme.colorScheme.surface)
                     ) {
                         items(suggestions) { suggestion ->
@@ -427,13 +436,13 @@ fun AddIngredientDialog(
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.primary
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(0.9f)
                 )
 
                 // Menú desplegable para seleccionar la unidad
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterStart
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    contentAlignment = Alignment.Center
                 ) {
                     Button(
                         onClick = { isDropdownExpanded = true },
@@ -502,7 +511,7 @@ fun AddIngredientDialog(
                     )
                     onAdd(ingredient)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(0.9f)
             )
         },
         dismissButton = {
@@ -511,7 +520,7 @@ fun AddIngredientDialog(
                 onClick = onCancel,
                 backgroundColor = MaterialTheme.colorScheme.error,
                 contentColor = MaterialTheme.colorScheme.onError,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(0.9f)
             )
         }
     )
