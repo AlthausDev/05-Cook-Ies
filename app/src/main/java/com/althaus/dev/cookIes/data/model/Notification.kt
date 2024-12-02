@@ -5,23 +5,31 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
 import kotlinx.parcelize.Parcelize
 
+/**
+ * Representa una notificación en el sistema.
+ *
+ * Esta clase modela las propiedades y comportamientos asociados a una notificación,
+ * incluyendo detalles como el título, mensaje, tipo, marca temporal y el estado de lectura.
+ * También permite la conversión de y hacia estructuras compatibles con Firestore.
+ */
 @Parcelize
 @IgnoreExtraProperties
 data class Notification(
-    @DocumentId val id: String = "", // Identificador único del documento en Firestore
-    val title: String = "", // Campo 'title' en Firestore
-    val message: String = "", // Campo 'message' en Firestore
-    val type: String = "GENERAL", // Campo 'type' en Firestore como String
-    val timestamp: Long = System.currentTimeMillis(), // Campo 'timestamp' en Firestore (milisegundos)
-    val read: Boolean = false, // Campo 'read' en Firestore, booleano
-    val recipientId: String = "", // Campo 'recipientId' en Firestore
-    val relatedRecipeId: String? = null, // Campo 'relatedRecipeId' en Firestore
-    val readableTimestamp: String? = null // Campo 'readableTimestamp' en Firestore (opcional)
+    @DocumentId val id: String = "",
+    val title: String = "",
+    val message: String = "",
+    val type: String = "GENERAL",
+    val timestamp: Long = System.currentTimeMillis(),
+    val read: Boolean = false,
+    val recipientId: String = "",
+    val relatedRecipeId: String? = null,
+    val readableTimestamp: String? = null
 ) : Parcelable {
 
     /**
      * Marca esta notificación como leída.
-     * Retorna una nueva instancia de la notificación con el campo `read` establecido como `true`.
+     *
+     * @return Una nueva instancia de `Notification` con el campo `read` establecido como `true`.
      */
     fun markAsRead(): Notification {
         return this.copy(read = true)
@@ -29,6 +37,8 @@ data class Notification(
 
     /**
      * Convierte esta notificación a un mapa para ser almacenado en Firestore.
+     *
+     * @return Un mapa con las propiedades de la notificación.
      */
     fun toMap(): Map<String, Any?> {
         return mapOf(
@@ -46,7 +56,10 @@ data class Notification(
 
     companion object {
         /**
-         * Crea una instancia de `Notification` a partir de un mapa (usado para convertir datos de Firestore).
+         * Crea una instancia de `Notification` a partir de un mapa.
+         *
+         * @param map Mapa que contiene las propiedades de la notificación.
+         * @return Una instancia de `Notification` basada en los valores del mapa.
          */
         fun fromMap(map: Map<String, Any?>): Notification {
             return Notification(
@@ -64,11 +77,36 @@ data class Notification(
     }
 }
 
+/**
+ * Tipos de notificación disponibles en el sistema.
+ *
+ * Representa los posibles tipos de notificaciones que un usuario puede recibir,
+ * proporcionando una descripción legible para cada uno.
+ */
 @Parcelize
 enum class NotificationType(val description: String) : Parcelable {
+    /**
+     * Nueva receta disponible.
+     */
     NEW_RECIPE("Nueva receta"),
+
+    /**
+     * Nuevo comentario en una receta.
+     */
     COMMENT("Nuevo comentario"),
+
+    /**
+     * Receta agregada a favoritos.
+     */
     FAVORITE("Agregado a favoritos"),
+
+    /**
+     * Recordatorio.
+     */
     REMINDER("Recordatorio"),
+
+    /**
+     * Notificación general.
+     */
     GENERAL("Notificación general")
 }

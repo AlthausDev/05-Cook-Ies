@@ -4,19 +4,29 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.Timestamp
 
+/**
+ * Representa el perfil de un usuario en el sistema.
+ *
+ * Modela las propiedades y comportamientos asociados al perfil del usuario, incluyendo
+ * su nombre, correo, imagen de perfil, recetas favoritas, calificaciones y otros detalles.
+ */
 @IgnoreExtraProperties
 data class UserProfile(
-    @DocumentId val id: String = "",               // ID único del usuario en Firestore
-    val name: String = "",                         // Nombre del usuario
-    val email: String = "",                        // Correo electrónico del usuario
-    val profileImage: String? = null,              // URL de la imagen de perfil (opcional)
-    val favorites: List<String> = emptyList(),     // IDs de recetas favoritas
-    val ratings: Map<String, Double> = emptyMap(),  // Calificaciones de recetas (ID de receta -> Puntuación)
-    val bio: String = "",                          // Biografía del usuario
-    val creationDate: Timestamp = Timestamp.now(), // Fecha de creación
-    val isVerified: Boolean = false                // Si la cuenta está verificada
+    @DocumentId val id: String = "",
+    val name: String = "",
+    val email: String = "",
+    val profileImage: String? = null,
+    val favorites: List<String> = emptyList(),
+    val ratings: Map<String, Double> = emptyMap(),
+    val bio: String = "",
+    val creationDate: Timestamp = Timestamp.now(),
+    val isVerified: Boolean = false
 ) {
-    // Conversión a Map para Firestore
+    /**
+     * Convierte este perfil de usuario a un mapa compatible con Firestore.
+     *
+     * @return Un mapa con las propiedades del perfil del usuario.
+     */
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "name" to name,
@@ -31,7 +41,12 @@ data class UserProfile(
     }
 
     companion object {
-        // Conversión desde Map de Firestore
+        /**
+         * Crea una instancia de `UserProfile` a partir de un mapa.
+         *
+         * @param map Mapa que contiene las propiedades del perfil de usuario.
+         * @return Una instancia de `UserProfile` basada en los valores del mapa.
+         */
         fun fromMap(map: Map<String, Any?>): UserProfile {
             return UserProfile(
                 id = map["id"] as? String ?: "",
@@ -45,16 +60,5 @@ data class UserProfile(
                 isVerified = map["isVerified"] as? Boolean ?: false
             )
         }
-    }
-
-    // Actualizar una calificación de receta
-    fun updateRating(recipeId: String, rating: Double): UserProfile {
-        val updatedRatings = ratings.toMutableMap().apply { this[recipeId] = rating }
-        return this.copy(ratings = updatedRatings)
-    }
-
-    // Obtener la calificación de una receta
-    fun getRating(recipeId: String): Double? {
-        return ratings[recipeId]
     }
 }

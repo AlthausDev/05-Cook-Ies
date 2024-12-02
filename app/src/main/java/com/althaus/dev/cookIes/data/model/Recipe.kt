@@ -4,6 +4,12 @@ import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
 
+/**
+ * Representa una receta en el sistema.
+ *
+ * Modela las propiedades y comportamientos asociados a una receta, incluyendo ingredientes,
+ * instrucciones, tiempos de preparación y cocción, y detalles adicionales como autor y calificaciones.
+ */
 @IgnoreExtraProperties
 data class Recipe(
     @DocumentId val id: String = "",
@@ -21,8 +27,8 @@ data class Recipe(
     val videoUrl: String? = null,
     val tags: List<String> = emptyList(),
     val authorId: String? = null,
-    val averageRating: Double = 0.0,   // Calificación promedio
-    val ratingCount: Int = 0          // Número de calificaciones
+    val averageRating: Double = 0.0,
+    val ratingCount: Int = 0
 ) {
     init {
         require(name.isNotBlank()) { "El nombre de la receta no puede estar vacío." }
@@ -33,12 +39,29 @@ data class Recipe(
         require(servings > 0) { "Las porciones deben ser al menos 1." }
     }
 
+    /**
+     * Calcula el tiempo total de preparación y cocción.
+     *
+     * @return El tiempo total en minutos.
+     */
     val totalTimeMinutes: Int
         get() = prepTimeMinutes + cookTimeMinutes
 
+    /**
+     * Calcula el número de calorías por porción.
+     *
+     * @return Calorías por porción, o 0 si las porciones son inválidas.
+     */
     val caloriesPerServing: Int
         get() = if (servings > 0) totalCalories / servings else 0
 
+    /**
+     * Guarda la receta en Firestore.
+     *
+     * @param repository Repositorio de Firestore para manejar la operación.
+     * @param currentAuthorId ID del autor actual, necesario para el guardado.
+     * @throws Exception Si ocurre un error al guardar la receta.
+     */
     suspend fun saveToFirestore(repository: FirestoreRepository, currentAuthorId: String) {
         try {
             val recipeId = if (id.isBlank()) repository.generateNewId("recipes") else id
@@ -49,6 +72,11 @@ data class Recipe(
         }
     }
 
+    /**
+     * Convierte la receta en un mapa para ser almacenado en Firestore.
+     *
+     * @return Un mapa con las propiedades de la receta.
+     */
     fun toMap(): Map<String, Any> {
         return mapOf(
             "id" to id,
@@ -72,6 +100,12 @@ data class Recipe(
     }
 
     companion object {
+        /**
+         * Crea una instancia de `Recipe` a partir de un mapa.
+         *
+         * @param map Mapa que contiene las propiedades de la receta.
+         * @return Una instancia de `Recipe` basada en los valores del mapa.
+         */
         fun fromMap(map: Map<String, Any>): Recipe {
             return Recipe(
                 id = map["id"] as? String ?: "",
@@ -89,7 +123,7 @@ data class Recipe(
                 videoUrl = map["videoUrl"] as? String,
                 tags = map["tags"] as? List<String> ?: emptyList(),
                 authorId = map["authorId"] as? String,
-                averageRating = (map["averageRating"] as? Double)?: 0.0,
+                averageRating = (map["averageRating"] as? Double) ?: 0.0,
                 ratingCount = (map["ratingCount"] as? Number)?.toInt() ?: 0
             )
         }

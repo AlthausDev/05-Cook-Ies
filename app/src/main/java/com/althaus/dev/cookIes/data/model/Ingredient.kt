@@ -3,21 +3,25 @@ package com.althaus.dev.cookIes.data.model
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
+/**
+ * Representa un ingrediente en el sistema.
+ *
+ * Esta clase modela las propiedades y comportamientos asociados a un ingrediente,
+ * incluyendo detalles como su nombre, cantidad, unidad de medida, y si es un alérgeno.
+ * También incluye métodos para interactuar con Firebase Firestore.
+ */
 @IgnoreExtraProperties
 data class Ingredient(
-    @DocumentId val id: String = "", // ID del documento
-    val name: String = "", // Nombre del ingrediente
-    val quantity: Double = 1.0, // Cantidad
-    val unit: String = "unidad", // Unidad de medida (por ejemplo, gramos, litros)
-    val description: String = "", // Descripción opcional
-    val isAllergen: Boolean = false, // Indica si es un alérgeno
-    val substitutes: List<String> = emptyList(), // Lista de sustitutos
-    val category: String = "", // Categoría (por ejemplo, frutas, especias)
-    val calories: Double = 0.0 // Calorías (valor predeterminado de 0.0)
+    @DocumentId val id: String = "",
+    val name: String = "",
+    val quantity: Double = 1.0,
+    val unit: String = "unidad",
+    val description: String = "",
+    val isAllergen: Boolean = false,
+    val substitutes: List<String> = emptyList(),
+    val category: String = "",
+    val calories: Double = 1.0
 ) {
     init {
         // Validaciones para evitar datos inválidos
@@ -25,7 +29,11 @@ data class Ingredient(
         require(quantity >= 0) { "La cantidad no puede ser negativa." }
     }
 
-    // Conversión del objeto a un Map para Firestore
+    /**
+     * Convierte el objeto Ingredient en un mapa de valores clave.
+     *
+     * @return Un mapa con las propiedades del ingrediente.
+     */
     fun toMap(): Map<String, Any> {
         return mapOf(
             "id" to id,
@@ -40,28 +48,13 @@ data class Ingredient(
         )
     }
 
-    // Guardar ingrediente en Firestore
-    suspend fun saveToFirestore(repository: FirestoreRepository) {
-        try {
-            val ingredientId = if (id.isBlank()) repository.generateNewId("ingredients") else id
-            repository.saveIngredient(ingredientId, toMap())
-        } catch (e: Exception) {
-            throw Exception("Error al guardar el ingrediente en Firestore: ${e.localizedMessage}")
-        }
-    }
-
-    // Actualizar campos específicos en Firestore
-    suspend fun updateInFirestore(repository: FirestoreRepository, updates: Map<String, Any>) {
-        try {
-            if (id.isBlank()) throw IllegalArgumentException("No se puede actualizar un ingrediente sin ID.")
-            repository.updateIngredient(id, updates)
-        } catch (e: Exception) {
-            throw Exception("Error al actualizar el ingrediente en Firestore: ${e.localizedMessage}")
-        }
-    }
-
     companion object {
-        // Conversión de un Map a un objeto Ingredient
+        /**
+         * Crea una instancia de Ingredient a partir de un mapa de valores clave.
+         *
+         * @param map Mapa con las propiedades del ingrediente.
+         * @return Una instancia de Ingredient.
+         */
         fun fromMap(map: Map<String, Any?>): Ingredient {
             return Ingredient(
                 id = map["id"] as? String ?: "",
