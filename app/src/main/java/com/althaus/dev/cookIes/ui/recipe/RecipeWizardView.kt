@@ -52,6 +52,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Vista principal para el asistente de creación de recetas.
+ *
+ * Permite al usuario completar un proceso paso a paso para crear una nueva receta,
+ * ingresando información general, ingredientes e instrucciones.
+ *
+ * @param firestoreRepository Repositorio de Firestore para guardar la receta.
+ * @param navHostController Controlador de navegación para redirigir a otras vistas.
+ * @param currentAuthorId ID del autor actual que crea la receta.
+ * @param onComplete Callback que se ejecuta cuando se completa la receta.
+ * @param onCancel Callback que se ejecuta al cancelar el asistente.
+ */
+
 @Composable
 fun RecipeWizardView(
     firestoreRepository: FirestoreRepository,
@@ -208,6 +221,18 @@ fun RecipeWizardView(
     }
 }
 
+/**
+ * Valida los campos requeridos en cada paso del asistente.
+ *
+ * Este método asegura que los datos ingresados en cada paso sean válidos antes de continuar.
+ *
+ * @param step El número del paso actual.
+ * @param name El nombre de la receta.
+ * @param ingredients Lista de ingredientes agregados.
+ * @param instructions Las instrucciones de la receta.
+ * @return `true` si los datos del paso son válidos, `false` de lo contrario.
+ */
+
 // ==================== VALIDACIÓN DEL PASO ====================
 fun validateStep(step: Int, name: String, ingredients: List<Ingredient>, instructions: String): Boolean {
     return when (step) {
@@ -218,29 +243,19 @@ fun validateStep(step: Int, name: String, ingredients: List<Ingredient>, instruc
     }
 }
 
-// ==================== COMPONENTE SHAREDBUTTON ====================
-@Composable
-fun SharedButton(
-    onClick: () -> Unit,
-    text: String,
-    modifier: Modifier = Modifier,
-    colors: ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary
-    )
-) {
-    Button(
-        onClick = onClick,
-        colors = colors,
-        modifier = modifier
-    ) {
-        Text(text = text)
-    }
-}
 
 // ==================== COMPONENTES DEL WIZARD ====================
 
-// Paso 1: Información General
+/**
+ * Paso 1: Ingreso de información general de la receta.
+ *
+ * Permite al usuario ingresar el nombre y una descripción breve de la receta.
+ *
+ * @param recipeName Nombre de la receta.
+ * @param onNameChange Callback para actualizar el nombre de la receta.
+ * @param recipeDescription Descripción de la receta.
+ * @param onDescriptionChange Callback para actualizar la descripción de la receta.
+ */
 @Composable
 fun GeneralInfoStep(
     recipeName: String,
@@ -279,6 +294,17 @@ fun GeneralInfoStep(
         )
     }
 }
+
+/**
+ * Paso 2: Ingreso de ingredientes para la receta.
+ *
+ * Permite al usuario agregar, eliminar y gestionar ingredientes.
+ *
+ * @param ingredients Lista actual de ingredientes.
+ * @param onAddIngredient Callback para agregar un ingrediente.
+ * @param onRemoveIngredient Callback para eliminar un ingrediente.
+ * @param firestoreRepository Repositorio de Firestore para manejar sugerencias y validaciones.
+ */
 
 @Composable
 fun IngredientsStep(
@@ -356,6 +382,16 @@ fun IngredientsStep(
     }
 }
 
+/**
+ * Diálogo para agregar un nuevo ingrediente.
+ *
+ * Permite al usuario ingresar el nombre, cantidad y unidad de un ingrediente,
+ * con opciones de autocompletado basadas en datos de Firestore.
+ *
+ * @param onAdd Callback para agregar el ingrediente ingresado.
+ * @param onCancel Callback para cerrar el diálogo sin guardar.
+ * @param firestoreRepository Repositorio de Firestore para cargar sugerencias.
+ */
 
 @Composable
 fun AddIngredientDialog(
@@ -585,9 +621,17 @@ fun AddIngredientDialog(
     )
 }
 
+/**
+ * Paso 3: Ingreso de instrucciones para la receta.
+ *
+ * Permite al usuario escribir las instrucciones de preparación de la receta.
+ *
+ * @param instructions Las instrucciones actuales de la receta.
+ * @param onInstructionsChange Callback para actualizar las instrucciones.
+ * @param onSave Callback para guardar la receta.
+ * @param onNavigateToDashboard Callback para redirigir al Dashboard tras guardar.
+ */
 
-
-// Paso 3: Instrucciones
 @Composable
 fun InstructionsStep(
     instructions: String,
@@ -619,6 +663,20 @@ fun InstructionsStep(
         )
     }
 }
+
+/**
+ * Controles de navegación para el asistente de creación de recetas.
+ *
+ * Incluye botones para continuar, regresar, guardar y cancelar.
+ *
+ * @param currentStep El paso actual en el asistente.
+ * @param stepsCount El número total de pasos en el asistente.
+ * @param onNext Callback para avanzar al siguiente paso.
+ * @param onBack Callback para regresar al paso anterior.
+ * @param onSave Callback para guardar la receta y finalizar el asistente.
+ * @param onCancel Callback para cancelar el asistente.
+ * @param onNavigateToDashboard Callback para navegar al Dashboard.
+ */
 
 @Composable
 fun WizardNavigation(

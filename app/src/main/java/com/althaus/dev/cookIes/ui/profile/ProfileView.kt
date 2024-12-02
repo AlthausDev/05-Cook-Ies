@@ -18,12 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.model.Recipe
@@ -32,9 +29,19 @@ import com.althaus.dev.cookIes.ui.components.RecipeCard
 import com.althaus.dev.cookIes.ui.components.SharedErrorMessage
 import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
-//import com.althaus.dev.cookIes.ui.components.RecipeListView
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
+/**
+ * Pantalla de perfil de usuario.
+ *
+ * Muestra información del usuario, sus recetas y permite navegar a la configuración o a favoritos.
+ *
+ * @param profileViewModel [ProfileViewModel] que gestiona el estado y los datos del perfil del usuario.
+ * @param onSettings Acción que se ejecuta al presionar el botón de configuración.
+ * @param navigateToFavorites Acción que se ejecuta al presionar el botón de favoritos.
+ * @param onRecipeClick Acción que se ejecuta al seleccionar una receta.
+ * @param onBack Acción que se ejecuta al presionar el botón de retroceso en la barra superior.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileView(
@@ -55,6 +62,10 @@ fun ProfileView(
 
     Scaffold(
         topBar = {
+            /**
+             * Barra superior personalizada ([SharedTopAppBar]) con un título, iconos de favoritos y configuración,
+             * y un botón de retroceso.
+             */
             SharedTopAppBar(
                 title = "Mi Perfil",
                 actions = {
@@ -125,6 +136,13 @@ fun ProfileView(
     )
 }
 
+/**
+ * Componente que muestra la cabecera del perfil de usuario.
+ *
+ * Incluye la foto, el nombre y el correo electrónico del usuario.
+ *
+ * @param userProfile Datos del perfil del usuario ([UserProfile]).
+ */
 @Composable
 fun UserProfileHeader(userProfile: UserProfile?) {
     userProfile?.let { profile ->
@@ -192,7 +210,14 @@ fun UserProfileHeader(userProfile: UserProfile?) {
     }
 }
 
-
+/**
+ * Sección que muestra las recetas del usuario.
+ *
+ * Si no hay recetas, muestra un mensaje indicando que no tiene recetas aún.
+ *
+ * @param recipes Lista de recetas del usuario ([Recipe]).
+ * @param onRecipeClick Acción que se ejecuta al seleccionar una receta.
+ */
 @Composable
 fun UserRecipesSection(
     recipes: List<Recipe>,

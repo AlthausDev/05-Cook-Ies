@@ -12,17 +12,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.viewmodel.AuthViewModel
 
+/**
+ * Pantalla para el restablecimiento de contraseña.
+ *
+ * Esta pantalla permite al usuario introducir su correo electrónico para enviar un enlace de
+ * recuperación de contraseña.
+ *
+ * @param authViewModel [AuthViewModel] utilizado para gestionar la lógica de autenticación.
+ * @param onBack Callback que se ejecuta al presionar el botón de regresar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordView(
     authViewModel: AuthViewModel,
     onBack: () -> Unit
 ) {
-    var email by remember { mutableStateOf(TextFieldValue("")) }
-    var isLoading by remember { mutableStateOf(false) }
-    var successMessage by remember { mutableStateOf<String?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    // ---- Estados locales ----
+    var email by remember { mutableStateOf(TextFieldValue("")) } // Estado para el correo electrónico ingresado
+    var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se envía el correo
+    var successMessage by remember { mutableStateOf<String?>(null) } // Mensaje de éxito
+    var errorMessage by remember { mutableStateOf<String?>(null) } // Mensaje de error
 
+    // Estructura de la pantalla
     Scaffold(
         topBar = {
             TopAppBar(
@@ -46,6 +57,7 @@ fun ForgotPasswordView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Mensaje descriptivo
                 Text(
                     text = "Introduce tu correo electrónico para restablecer tu contraseña.",
                     textAlign = TextAlign.Center,
@@ -53,6 +65,7 @@ fun ForgotPasswordView(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Campo de texto para el correo electrónico
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -61,11 +74,12 @@ fun ForgotPasswordView(
                     singleLine = true
                 )
 
+                // Botón para enviar el correo de recuperación
                 Button(
                     onClick = {
-                        isLoading = true
+                        isLoading = true // Activar estado de carga
                         authViewModel.sendPasswordResetEmail(email.text) { success, error ->
-                            isLoading = false
+                            isLoading = false // Desactivar estado de carga
                             if (success) {
                                 successMessage = "Correo de recuperación enviado con éxito."
                                 errorMessage = null
@@ -76,11 +90,12 @@ fun ForgotPasswordView(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading && email.text.isNotBlank()
+                    enabled = !isLoading && email.text.isNotBlank() // Habilitar solo si hay texto y no está cargando
                 ) {
                     Text(if (isLoading) "Enviando..." else "Enviar Correo")
                 }
 
+                // Mostrar mensaje de éxito si existe
                 if (!successMessage.isNullOrEmpty()) {
                     Text(
                         text = successMessage!!,
@@ -90,6 +105,7 @@ fun ForgotPasswordView(
                     )
                 }
 
+                // Mostrar mensaje de error si existe
                 if (!errorMessage.isNullOrEmpty()) {
                     Text(
                         text = errorMessage!!,

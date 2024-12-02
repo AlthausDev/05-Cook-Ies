@@ -2,32 +2,50 @@ package com.althaus.dev.cookIes.ui.recipe
 
 import android.content.Context
 import android.content.Intent
-import android.widget.RatingBar
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import com.google.accompanist.flowlayout.FlowRow
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,9 +57,19 @@ import coil.compose.rememberAsyncImagePainter
 import com.althaus.dev.cookIes.data.model.Recipe
 import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
-
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
+/**
+ * Pantalla de detalle de la receta.
+ *
+ * Esta pantalla muestra información detallada sobre una receta, permitiendo al usuario
+ * ver los ingredientes, las instrucciones, la puntuación promedio, y su propia puntuación.
+ * También incluye acciones para marcar como favorito, compartir la receta y retroceder a la pantalla anterior.
+ *
+ * @param viewModel Instancia del [RecipeViewModel], que gestiona la lógica de estado de la receta.
+ * @param onBack Acción a ejecutar cuando el usuario presiona el botón de retroceso.
+ * @param onFavorite Acción a ejecutar al marcar o desmarcar la receta como favorita.
+ */
 @Composable
 fun RecipeDetailView(
     viewModel: RecipeViewModel,
@@ -106,14 +134,16 @@ fun RecipeDetailView(
                     IconButton(
                         onClick = {
                             recipe?.let {
+                                println("Favorito clicado: ${it.id}, Estado actual: $isFavorite")
                                 if (isFavorite) {
                                     viewModel.removeFromFavorites(it.id)
                                 } else {
                                     viewModel.addToFavorites(it.id)
                                 }
-                                isFavorite = !isFavorite // Cambiar el estado localmente
+                                isFavorite = !isFavorite
                             }
                         }
+
                     ) {
                         Icon(
                             imageVector = Icons.Default.Favorite,
@@ -169,6 +199,18 @@ fun RecipeDetailView(
 
     )
 }
+
+/**
+ * Componente que muestra el contenido detallado de una receta.
+ *
+ * Este componente incluye la imagen, el nombre, la descripción, los ingredientes, las instrucciones,
+ * el tiempo de preparación total y la puntuación del usuario.
+ *
+ * @param recipe La receta a mostrar con todos sus detalles.
+ * @param userRating La puntuación del usuario para esta receta.
+ * @param onUserRatingChange Callback que se llama cuando el usuario cambia su puntuación.
+ * @param modifier Modificador opcional para personalizar el estilo del componente.
+ */
 
 @Composable
 fun RecipeDetailContent(
@@ -323,6 +365,15 @@ fun RecipeDetailContent(
     }
 }
 
+/**
+ * Componente que representa un tag individual para una receta.
+ *
+ * Este componente muestra un texto estilizado como una etiqueta (#tag), comúnmente utilizado
+ * para clasificar recetas por categorías, ingredientes, entre otros.
+ *
+ * @param tag El texto del tag a mostrar.
+ */
+
 @Composable
 fun TagItem(tag: String) {
     Text(
@@ -338,7 +389,16 @@ fun TagItem(tag: String) {
     )
 }
 
-// Función para compartir una receta
+/**
+ * Comparte una receta mediante un Intent en Android.
+ *
+ * Este método permite al usuario compartir una receta a través de otras aplicaciones,
+ * como mensajería o redes sociales.
+ *
+ * @param context El contexto actual necesario para lanzar el Intent.
+ * @param recipe La receta a compartir con sus detalles principales.
+ */
+
 fun shareRecipe(context: Context, recipe: Recipe) {
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
@@ -359,6 +419,17 @@ fun shareRecipe(context: Context, recipe: Recipe) {
     }
     context.startActivity(Intent.createChooser(shareIntent, "Compartir receta vía"))
 }
+
+/**
+ * Barra de puntuación personalizada que permite al usuario calificar una receta.
+ *
+ * Este componente muestra un conjunto de estrellas que los usuarios pueden seleccionar para
+ * asignar una puntuación. Incluye animaciones para mejorar la experiencia visual.
+ *
+ * @param rating La puntuación actual asignada.
+ * @param onRatingChanged Callback que se llama cuando el usuario cambia la puntuación.
+ * @param isEnabled Define si el usuario puede interactuar con la barra de puntuación.
+ */
 
 @Composable
 fun RatingBar(

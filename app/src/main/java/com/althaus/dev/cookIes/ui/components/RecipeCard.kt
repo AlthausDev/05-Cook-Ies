@@ -33,6 +33,16 @@ import coil.compose.rememberAsyncImagePainter
 import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.model.Recipe
 
+/**
+ * Composable que representa una tarjeta para mostrar información de una receta.
+ *
+ * La tarjeta incluye una imagen, el nombre de la receta, una descripción breve y detalles
+ * adicionales como el tiempo de preparación y el tipo de cocina. La tarjeta es interactiva
+ * y permite al usuario hacer clic para realizar una acción personalizada.
+ *
+ * @param recipe Objeto [Recipe] que contiene los detalles de la receta que se mostrará.
+ * @param onClick Lambda que se ejecuta cuando el usuario hace clic en la tarjeta.
+ */
 @Composable
 fun RecipeCard(
     recipe: Recipe,
@@ -40,83 +50,85 @@ fun RecipeCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp)
-            .border(2.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp), // Esquinas más suaves
-        elevation = CardDefaults.cardElevation(6.dp), // Elevación ajustada
+            .fillMaxWidth() // La tarjeta ocupa todo el ancho disponible
+            .clickable { onClick() } // Acción al hacer clic en la tarjeta
+            .padding(vertical = 8.dp) // Espaciado vertical alrededor de la tarjeta
+            .border(
+                width = 2.dp, // Borde alrededor de la tarjeta
+                color = MaterialTheme.colorScheme.secondary, // Color del borde
+                shape = RoundedCornerShape(12.dp) // Esquinas redondeadas
+            ),
+        shape = RoundedCornerShape(12.dp), // Forma redondeada de la tarjeta
+        elevation = CardDefaults.cardElevation(6.dp), // Elevación para efecto de sombra
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1.0f), // Fondo sólido
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1.0f), // Color de fondo
+            contentColor = MaterialTheme.colorScheme.onSurface // Color del contenido
         )
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .padding(12.dp)
+                .fillMaxWidth() // El contenido ocupa todo el ancho de la tarjeta
+                .height(120.dp) // Altura fija de la tarjeta
+                .padding(12.dp) // Espaciado interno
         ) {
-            // Imagen de la receta (si existe)
+            // Imagen de la receta
             Image(
                 painter = if (recipe.imageUrl.isNullOrEmpty()) {
-                    painterResource(id = R.drawable.default_profile) // Usar imagen predeterminada
+                    painterResource(id = R.drawable.default_profile) // Imagen predeterminada si no hay URL
                 } else {
-                    rememberAsyncImagePainter(recipe.imageUrl) // Usar la imagen proporcionada
+                    rememberAsyncImagePainter(recipe.imageUrl) // Imagen cargada desde la URL
                 },
-                contentDescription = "Imagen de ${recipe.name}",
-                contentScale = ContentScale.Crop,
+                contentDescription = "Imagen de ${recipe.name}", // Descripción de accesibilidad
+                contentScale = ContentScale.Crop, // Ajuste de la imagen
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(100.dp) // Tamaño de la imagen
+                    .clip(RoundedCornerShape(8.dp)) // Esquinas redondeadas para la imagen
             )
 
-
-
-            Spacer(modifier = Modifier.width(12.dp)) // Espaciado ajustado
+            Spacer(modifier = Modifier.width(12.dp)) // Espaciado entre la imagen y el texto
 
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxHeight() // La columna ocupa toda la altura disponible
+                    .weight(1f), // La columna ocupa el espacio restante
+                verticalArrangement = Arrangement.SpaceBetween // Espaciado uniforme entre elementos
             ) {
-                // Título de la receta
+                // Nombre de la receta
                 Text(
-                    text = recipe.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    text = recipe.name, // Título de la receta
+                    style = MaterialTheme.typography.titleMedium, // Estilo del texto
+                    color = MaterialTheme.colorScheme.primary, // Color del texto
+                    maxLines = 1, // Limitar a una línea
+                    overflow = TextOverflow.Ellipsis // Mostrar puntos suspensivos si excede el espacio
                 )
 
                 // Descripción de la receta
                 Text(
-                    text = recipe.description.takeIf { it.isNotBlank() } ?: "Sin descripción",
+                    text = recipe.description.takeIf { it.isNotBlank() } ?: "Sin descripción", // Texto predeterminado si está vacío
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    maxLines = 2, // Limitar a dos líneas
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Detalles adicionales (preparación y tipo de cocina)
+                // Detalles adicionales: tiempo de preparación y tipo de cocina
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically, // Alinear al centro vertical
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Espaciado entre íconos y texto
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Tiempo de preparación",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                        imageVector = Icons.Default.Info, // Ícono de información
+                        contentDescription = "Tiempo de preparación", // Descripción para accesibilidad
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant, // Color del ícono
+                        modifier = Modifier.size(16.dp) // Tamaño del ícono
                     )
                     Text(
-                        text = "${recipe.prepTimeMinutes ?: 0} min",
+                        text = "${recipe.prepTimeMinutes ?: 0} min", // Tiempo de preparación en minutos
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = recipe.cuisineType.takeIf { it.isNotBlank() } ?: "Desconocido",
+                        text = recipe.cuisineType.takeIf { it.isNotBlank() } ?: "Desconocido", // Tipo de cocina o texto predeterminado
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

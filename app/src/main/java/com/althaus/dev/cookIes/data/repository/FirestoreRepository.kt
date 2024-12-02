@@ -2,7 +2,6 @@ package com.althaus.dev.cookIes.data.repository
 
 import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.UserProfile
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -11,6 +10,13 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+/**
+ * Repositorio que proporciona métodos para interactuar con Firestore.
+ *
+ * Maneja operaciones relacionadas con recetas, usuarios, ingredientes y notificaciones.
+ *
+ * @property db Instancia de [FirebaseFirestore].
+ */
 class FirestoreRepository @Inject constructor(
     private val db: FirebaseFirestore
 ) {
@@ -18,11 +24,14 @@ class FirestoreRepository @Inject constructor(
     private val notificationsCollection = db.collection("notifications")
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown-user"
 
-
     // ---- Métodos de Recetas ----
 
-
-    // Obtener todas las recetas
+    /**
+     * Obtiene todas las recetas almacenadas en Firestore.
+     *
+     * @return Lista de mapas que representan las recetas.
+     * @throws Exception Si ocurre un error durante la consulta.
+     */
     suspend fun getAllRecipes(): List<Map<String, Any>> {
         return try {
             val snapshot = db.collection("recipes").get().await()
@@ -32,7 +41,13 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    // Obtener recetas de un usuario específico
+    /**
+     * Obtiene las recetas creadas por un usuario específico.
+     *
+     * @param userId ID del usuario.
+     * @return Lista de mapas que representan las recetas del usuario.
+     * @throws Exception Si ocurre un error durante la consulta.
+     */
     suspend fun getUserRecipes(userId: String): List<Map<String, Any>> {
         return try {
             val snapshot = db.collection("recipes")
@@ -44,7 +59,12 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    // Obtener una receta por su ID (tiempo real)
+    /**
+     * Obtiene una receta en tiempo real por su ID.
+     *
+     * @param recipeId ID de la receta.
+     * @return Flujo que emite el mapa de datos de la receta o `null` si no se encuentra.
+     */
     fun getRecipe(recipeId: String): Flow<Map<String, Any>?> {
         return callbackFlow {
             val documentRef = db.collection("recipes").document(recipeId)
@@ -54,38 +74,44 @@ class FirestoreRepository @Inject constructor(
                     return@addSnapshotListener
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    trySend(snapshot.data) // Mapa devuelto por Firestore
+                    trySend(snapshot.data)
                 } else {
-                    trySend(null) // Documento no encontrado
+                    trySend(null)
                 }
             }
             awaitClose { listener.remove() }
         }
     }
 
-
-
+    /**
+     * Guarda o actualiza una receta en Firestore.
+     *
+     * @param recipeId ID de la receta. Si está vacío, se generará un nuevo ID.
+     * @param recipeData Datos de la receta como mapa.
+     * @param currentAuthorId ID del autor de la receta.
+     * @throws Exception Si ocurre un error al guardar los datos.
+     */
     suspend fun saveRecipe(recipeId: String, recipeData: Map<String, Any>, currentAuthorId: String) {
         try {
-            // Determinar si necesitamos generar un nuevo ID
             val finalId = if (recipeId.isBlank()) generateNewId("recipes") else recipeId
-
-            // Preparar los datos con el ID y el autor
             val updatedData = recipeData.toMutableMap().apply {
-                put("id", finalId) // Asegurar que el ID está incluido en los datos
+                put("id", finalId)
                 if (!containsKey("authorId")) {
-                    put("authorId", currentAuthorId) // Agregar el authorId si no está presente
+                    put("authorId", currentAuthorId)
                 }
             }
-
-            // Guardar en Firestore
             db.collection("recipes").document(finalId).set(updatedData).await()
         } catch (e: Exception) {
             throw Exception("Error al guardar la receta: ${e.localizedMessage}")
         }
     }
 
-    // Eliminar una receta
+    /**
+     * Elimina una receta de Firestore.
+     *
+     * @param recipeId ID de la receta.
+     * @throws Exception Si ocurre un error al eliminar la receta.
+     */
     suspend fun deleteRecipe(recipeId: String) {
         try {
             db.collection("recipes").document(recipeId).delete().await()
@@ -94,6 +120,13 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    /**
+     * Actualiza campos específicos de una receta.
+     *
+     * @param recipeId ID de la receta.
+     * @param updates Mapa con los campos a actualizar y sus nuevos valores.
+     * @throws Exception Si ocurre un error al actualizar la receta.
+     */
     suspend fun updateRecipe(recipeId: String, updates: Map<String, Any>) {
         try {
             db.collection("recipes").document(recipeId).update(updates).await()
@@ -151,7 +184,15 @@ class FirestoreRepository @Inject constructor(
 
     // ---- Métodos de Usuarios ----
 
-    // Guardar un usuario
+    /**
+     * Guarda un nuevo usuario en Firestore.
+     *
+     * @param userId ID del usuario.
+     * @param name Nombre del usuario.
+     * @param email Correo electrónico del usuario.
+     * @param profileImage URL de la imagen de perfil del usuario (opcional).
+     * @throws Exception Si ocurre un error al guardar el usuario.
+     */
     suspend fun saveUser(userId: String, name: String, email: String, profileImage: String?) {
         try {
             val user = mapOf(
@@ -248,11 +289,16 @@ class FirestoreRepository @Inject constructor(
 
     /**
      * Guarda una nueva notificación en Firestore.
+     *
+     * @param notification Objeto [Notification] que se desea guardar.
+     * @throws Exception Si ocurre un error al guardar la notificación.
      */
     suspend fun saveNotification(notification: Notification) {
         try {
             db.collection("notifications").document(notification.id).set(notification).await()
+            println("Notificación guardada correctamente: ${notification.id}")
         } catch (e: Exception) {
+            println("Error al guardar la notificación: ${e.localizedMessage}")
             throw Exception("Error al guardar la notificación: ${e.localizedMessage}")
         }
     }
@@ -270,10 +316,13 @@ class FirestoreRepository @Inject constructor(
 
     /**
      * Obtiene todas las notificaciones para un usuario específico.
+     *
+     * @param recipientId ID del usuario receptor de las notificaciones.
+     * @return Lista de objetos [Notification].
+     * @throws Exception Si ocurre un error al obtener las notificaciones.
      */
     suspend fun getNotifications(recipientId: String): List<Notification> {
         return try {
-            // Obtiene los documentos de la colección "notifications" filtrados por el recipientId
             val snapshot = db.collection("notifications")
                 .whereEqualTo("recipientId", recipientId)
                 .get()
@@ -292,7 +341,6 @@ class FirestoreRepository @Inject constructor(
 
             notifications
         } catch (e: Exception) {
-            e.printStackTrace() // Registro detallado del error
             throw Exception("Error al obtener notificaciones: ${e.localizedMessage}")
         }
     }
@@ -309,6 +357,18 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    /**
+     * Obtiene una notificación específica por ID.
+     */
+    suspend fun getNotification(notificationId: String): Notification? {
+        return try {
+            val snapshot = notificationsCollection.document(notificationId).get().await()
+            snapshot.toObject(Notification::class.java)?.copy(id = snapshot.id)
+        } catch (e: Exception) {
+            throw Exception("Error al obtener la notificación: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun getUserSync(userId: String): UserProfile? {
         return try {
             val userData = getUser(userId)
@@ -318,7 +378,6 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-
     suspend fun getRecipeOnce(recipeId: String): Map<String, Any>? {
         return try {
             val snapshot = db.collection("recipes").document(recipeId).get().await()
@@ -327,5 +386,4 @@ class FirestoreRepository @Inject constructor(
             throw Exception("Error al obtener receta: ${e.localizedMessage}")
         }
     }
-
 }

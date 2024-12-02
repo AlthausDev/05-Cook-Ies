@@ -27,6 +27,15 @@ import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
+/**
+ * Composable principal que representa la vista del panel de control (Dashboard).
+ *
+ * @param recipeViewModel [RecipeViewModel] para gestionar el estado y la lógica de las recetas.
+ * @param navigateToRecipeDetail Navegación a la vista de detalles de una receta específica. Se proporciona el ID de la receta como parámetro.
+ * @param navigateToProfile Navegación a la vista de perfil del usuario.
+ * @param navigateToNotifications Navegación a la vista de notificaciones.
+ * @param navigateToRecipeWizard Navegación al asistente para crear recetas.
+ */
 @Composable
 fun DashboardView(
     recipeViewModel: RecipeViewModel,
@@ -34,7 +43,8 @@ fun DashboardView(
     navigateToProfile: () -> Unit,
     navigateToNotifications: () -> Unit,
     navigateToRecipeWizard: () -> Unit
-) {
+)
+ {
     val uiState by recipeViewModel.uiState.collectAsState()
 
     // Refrescar recetas al cargar la vista
@@ -42,9 +52,14 @@ fun DashboardView(
         recipeViewModel.refreshRecipes()
     }
 
-    GradientBackground { // Aplica el fondo de gradiente a toda la vista
+    GradientBackground {
         Scaffold(
             topBar = {
+                /**
+                 * Barra superior compartida que incluye un título y dos iconos:
+                 * - Icono de notificaciones: Permite navegar a la vista de notificaciones.
+                 * - Imagen de perfil: Permite navegar a la vista de perfil del usuario.
+                 */
                 SharedTopAppBar(
                     title = "Dashboard",
                     actions = {
@@ -72,11 +87,25 @@ fun DashboardView(
                 )
             },
             floatingActionButton = {
+                /**
+                 * Botón flotante de acción (FAB) que permite al usuario crear una nueva receta.
+                 *
+                 * Utiliza el icono de "Añadir" ([Icons.Default.Add]) y llama a `navigateToRecipeWizard` al hacer clic.
+                 */
                 SharedFloatingActionButton(
                     onClick = navigateToRecipeWizard,
                     icon = Icons.Default.Add
                 )
+
             },
+            /**
+             * Cuerpo del Dashboard que muestra diferentes estados dependiendo del estado de `uiState`:
+             *
+             * - Cargando: Se muestra un indicador de carga.
+             * - Error: Se muestra un mensaje de error usando [SharedErrorMessage].
+             * - Lista de recetas: Se renderiza una lista de recetas disponibles con [LazyColumn].
+             * - Sin recetas: Se muestra un mensaje indicando que no hay recetas disponibles.
+             */
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -86,14 +115,32 @@ fun DashboardView(
                 ) {
                     when {
                         uiState.isLoading -> {
+                            /**
+                             * Indicador de carga ([SharedLoadingIndicator]) que se muestra cuando `uiState.isLoading` es verdadero.
+                             */
                             SharedLoadingIndicator()
+
                         }
                         uiState.errorMessage != null -> {
+                            /**
+                             * Mensaje de error ([SharedErrorMessage]) que se muestra si `uiState.errorMessage` no es nulo.
+                             *
+                             * @param uiState.errorMessage Mensaje de error obtenido del ViewModel.
+                             */
                             SharedErrorMessage(
                                 message = uiState.errorMessage ?: "Error desconocido"
                             )
+
                         }
                         uiState.recipes.isNotEmpty() -> {
+                            /**
+                             * Lista perezosa ([LazyColumn]) que muestra las recetas disponibles.
+                             *
+                             * - Cada receta se representa con un [RecipeCard].
+                             * - Al hacer clic en una receta, se navega a su vista de detalles utilizando `navigateToRecipeDetail`.
+                             *
+                             * @param uiState.recipes Lista de recetas obtenida del ViewModel.
+                             */
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -116,11 +163,15 @@ fun DashboardView(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
+                                /**
+                                 * Mensaje centrado indicando que no hay recetas disponibles si `uiState.recipes` está vacío.
+                                 */
                                 Text(
                                     text = "No hay recetas disponibles",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
+
                             }
                         }
                     }

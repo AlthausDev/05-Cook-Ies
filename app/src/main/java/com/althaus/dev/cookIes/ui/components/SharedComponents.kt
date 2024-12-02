@@ -24,6 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.althaus.dev.cookIes.R
 
+
+/**
+ * Composable para mostrar el logotipo de la aplicación.
+ *
+ * Este componente muestra una imagen del logotipo, centrada y con un tamaño fijo.
+ */
 @Composable
 fun AppLogo() {
     Image(
@@ -33,6 +39,12 @@ fun AppLogo() {
     )
 }
 
+/**
+ * Composable que muestra un título principal y un subtítulo.
+ *
+ * @param title Título principal que se muestra en la parte superior.
+ * @param subtitle Subtítulo que se muestra debajo del título.
+ */
 @Composable
 fun TitleAndSubtitle(title: String, subtitle: String) {
     Text(
@@ -51,6 +63,12 @@ fun TitleAndSubtitle(title: String, subtitle: String) {
     )
 }
 
+/**
+ * Composable que muestra un texto clicable.
+ *
+ * @param text Texto que se mostrará.
+ * @param onClick Lambda que se ejecuta cuando el texto es clicado.
+ */
 @Composable
 fun ClickableText(
     text: String,
@@ -66,6 +84,11 @@ fun ClickableText(
     )
 }
 
+/**
+ * Composable para mostrar un mensaje de error.
+ *
+ * @param message Mensaje que describe el error.
+ */
 @Composable
 fun SharedErrorMessage(message: String) {
     Box(
@@ -80,6 +103,17 @@ fun SharedErrorMessage(message: String) {
     }
 }
 
+/**
+ * Composable para un botón primario con opciones de personalización.
+ *
+ * @param text Texto del botón.
+ * @param onClick Lambda que se ejecuta al hacer clic en el botón.
+ * @param modifier Modificador para el diseño del botón.
+ * @param icon Ícono opcional que se muestra junto al texto.
+ * @param backgroundColor Color de fondo del botón.
+ * @param contentColor Color del texto y los íconos dentro del botón.
+ * @param borderColor Color del borde del botón.
+ */
 @Composable
 fun PrimaryButton(
     text: String,
@@ -119,6 +153,24 @@ fun PrimaryButton(
     }
 }
 
+/**
+ * Composable para un campo de texto personalizado.
+ *
+ * Este campo admite entrada de texto simple o contraseñas, con opciones de personalización
+ * para colores, bordes, transformaciones de texto y más.
+ *
+ * @param value Texto actual del campo.
+ * @param onValueChange Lambda que se ejecuta cuando el texto cambia.
+ * @param placeholder Texto que se muestra cuando el campo está vacío.
+ * @param isPassword Indica si el campo es para entrada de contraseñas.
+ * @param fieldWidth Ancho del campo de texto como un porcentaje del ancho total.
+ * @param paddingValues Espaciado interno del campo.
+ * @param textColor Color del texto.
+ * @param placeholderColor Color del texto del placeholder.
+ * @param backgroundColor Color de fondo del campo.
+ * @param borderColor Color del borde del campo.
+ * @param visualTransformation Transformación visual del texto (por ejemplo, contraseñas).
+ */
 @Composable
 fun CustomTextField(
     value: String,
@@ -163,6 +215,16 @@ fun CustomTextField(
     )
 }
 
+
+/**
+ * Composable para una barra superior compartida.
+ *
+ * @param title Título que se muestra en la barra.
+ * @param actions Composables adicionales que se colocan como acciones en la barra.
+ * @param navigationIcon Icono opcional para navegación en la barra.
+ * @param backgroundColor Color de fondo de la barra.
+ * @param contentColor Color del contenido de la barra (título y acciones).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SharedTopAppBar(
@@ -188,6 +250,12 @@ fun SharedTopAppBar(
     )
 }
 
+/**
+ * Composable para un botón de acción flotante compartido.
+ *
+ * @param onClick Lambda que se ejecuta al hacer clic en el botón.
+ * @param icon Vector gráfico que se muestra dentro del botón.
+ */
 @Composable
 fun SharedFloatingActionButton(
     onClick: () -> Unit,
@@ -206,7 +274,11 @@ fun SharedFloatingActionButton(
     }
 }
 
-
+/**
+ * Composable para un indicador de carga compartido.
+ *
+ * @param size Tamaño del indicador de carga en píxeles.
+ */
 @Composable
 fun SharedLoadingIndicator(size: Int = 48) {
     Box(

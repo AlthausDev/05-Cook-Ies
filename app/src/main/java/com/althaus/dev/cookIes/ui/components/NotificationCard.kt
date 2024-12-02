@@ -17,6 +17,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.althaus.dev.cookIes.data.model.Notification
 
+/**
+ * Composable que representa una tarjeta de notificación.
+ *
+ * Esta tarjeta muestra el título, mensaje y fecha/hora de una notificación.
+ * Permite al usuario marcar la notificación como leída si no lo está.
+ * El estilo visual de la tarjeta varía dependiendo del estado de lectura de la notificación.
+ *
+ * @param notification Objeto [Notification] que contiene los datos de la notificación.
+ * @param onMarkAsRead Callback que se ejecuta cuando el usuario marca la notificación como leída.
+ */
 @Composable
 fun NotificationCard(
     notification: Notification,
@@ -25,82 +35,84 @@ fun NotificationCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp) // Mantiene el padding externo siempre
+            .padding(vertical = 8.dp) // Espaciado vertical entre las tarjetas
             .border(
-                width = if (notification.read) 1.dp else 2.dp,
-                color = if (notification.read) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary,
+                width = if (notification.read) 1.dp else 2.dp, // Borde más grueso para no leídas
+                color = if (notification.read)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                else
+                    MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
         elevation = if (notification.read) {
-            CardDefaults.cardElevation(0.dp)
+            CardDefaults.cardElevation(0.dp) // Sin elevación para leídas
         } else {
-            CardDefaults.cardElevation(6.dp)
+            CardDefaults.cardElevation(6.dp) // Elevación para destacar las no leídas
         },
         colors = CardDefaults.cardColors(
             containerColor = if (notification.read) {
-                MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f) // Color para notificaciones leídas
+                MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f) // Color de fondo para leídas
             } else {
-                MaterialTheme.colorScheme.surface // Color para no leídas
+                MaterialTheme.colorScheme.surface // Color de fondo para no leídas
             }
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), // Siempre tiene padding interno
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(16.dp), // Margen interno de la tarjeta
+            verticalArrangement = Arrangement.spacedBy(8.dp) // Espaciado entre elementos
         ) {
-            // Título de la notificación
+            // ---- Título ----
             Text(
                 text = notification.title,
                 style = MaterialTheme.typography.titleMedium,
                 color = if (notification.read) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Texto de color primary con alpha aumentado
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Color apagado para leídas
                 } else {
-                    MaterialTheme.colorScheme.primary
+                    MaterialTheme.colorScheme.primary // Color destacado para no leídas
                 },
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2, // Limitar a 2 líneas
+                overflow = TextOverflow.Ellipsis // Mostrar puntos suspensivos si excede el espacio
             )
 
-            // Mensaje de la notificación
+            // ---- Mensaje ----
             Text(
                 text = notification.message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (notification.read) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Texto del mensaje con alpha aumentado
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Color apagado para leídas
                 } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    MaterialTheme.colorScheme.onSurfaceVariant // Color para no leídas
                 },
-                maxLines = 4,
-                overflow = TextOverflow.Clip
+                maxLines = 4, // Limitar a 4 líneas
+                overflow = TextOverflow.Clip // No mostrar puntos suspensivos
             )
 
-            // Fecha/hora de la notificación
+            // ---- Fecha/hora ----
             notification.readableTimestamp?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = if (notification.read) {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Fecha/hora con alpha aumentado
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) // Color apagado para leídas
                     } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        MaterialTheme.colorScheme.onSurfaceVariant // Color para no leídas
                     }
                 )
             }
 
-            // Botón de acción, ubicado al final
-            if (!notification.read) { // Ocultar el botón si la notificación ya está leída
+            // ---- Botón de acción ----
+            if (!notification.read) { // Mostrar solo si no está leída
                 PrimaryButton(
-                    onClick = { onMarkAsRead(notification) },
+                    onClick = { onMarkAsRead(notification) }, // Marcar como leída
                     text = "Marcar como leída",
                     modifier = Modifier
-                        .align(Alignment.End) // Alineado a la derecha
-                        .padding(top = 8.dp)
+                        .align(Alignment.End) // Alineación a la derecha
+                        .padding(top = 8.dp) // Espaciado superior
                 )
             }
         }
     }
-
 }

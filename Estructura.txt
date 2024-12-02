@@ -1,0 +1,74 @@
+src
+├── main
+│   ├── java
+│   │   └── com
+│   │       └── althaus
+│   │           └── dev
+│   │               └── cookIes
+│   │                   ├── data
+│   │                   │   ├── model
+│   │                   │   │   ├── UserProfile.kt          # Modelo de datos para perfil de usuario
+│   │                   │   │   ├── Recipe.kt               # Modelo de datos para la receta
+│   │                   │   │   └── Notification.kt         # Modelo de datos para notificaciones personalizadas
+│   │                   │   ├── repository
+│   │                   │   │   ├── AuthRepository.kt       # Manejo de autenticación usando Firebase
+│   │                   │   │   ├── RecipeRepository.kt     # Interacción con Firestore y Firebase Storage para recetas
+│   │                   │   │   ├── UserRepository.kt       # Manejo del perfil de usuario en Firestore
+│   │                   │   │   └── NotificationRepository.kt # Lógica para notificaciones personalizadas
+│   │                   │   ├── firebase
+│   │                   │   │   ├── FirebaseService.kt      # Proveedor de instancias para Firebase (Auth, Firestore, Storage)
+│   │                   │   │   └── FirebaseSource.kt       # Funciones comunes para interactuar con Firebase
+│   │                   │   └── di
+│   │                   │       └── FirebaseModule.kt       # Proveedor de dependencias Firebase para Hilt
+│   │                   ├── ui
+│   │                   │   ├── authentication
+│   │                   │   │   ├── LoginView.kt            # Vista para inicio de sesión
+│   │                   │   │   ├── SignUpView.kt           # Vista para registro
+│   │                   │   │   └── ForgotPasswordView.kt   # Vista para recuperación de contraseña
+│   │                   │   ├── dashboard
+│   │                   │   │   ├── DashboardView.kt        # Vista del dashboard principal
+│   │                   │   │   └── StartUpView.kt          # Pantalla inicial con opciones de inicio de sesión o registro
+│   │                   │   ├── recipe
+│   │                   │   │   ├── RecipeDetailView.kt     # Vista de detalles de una receta
+│   │                   │   │   ├── RecipeWizardView.kt     # Vista para crear o editar recetas paso a paso
+│   │                   │   │   └── RecipeListView.kt       # Vista de lista de recetas
+│   │                   │   ├── profile
+│   │                   │   │   ├── ProfileView.kt          # Vista del perfil del usuario
+│   │                   │   │   └── SettingsView.kt         # Vista de configuración del usuario
+│   │                   │   ├── notifications
+│   │                   │   │   └── NotificationsView.kt    # Lista de notificaciones
+│   │                   │   ├── favorites
+│   │                   │   │   └── FavoritesView.kt        # Vista de recetas favoritas del usuario
+│   │                   │   └── components
+│   │                   │       ├── NotificationCard.kt     # Componente para mostrar una notificación
+│   │                   │       ├── RecipeCard.kt           # Componente para mostrar una receta
+│   │                   │       ├── PrimaryButton.kt        # Botón principal reutilizable
+│   │                   │       ├── RatingBar.kt            # Componente de barra de valoración
+│   │                   │       └── CustomTextField.kt      # Campo de texto reutilizable
+│   │                   ├── utils
+│   │                   │   ├── DateUtils.kt                # Funciones de manejo de fechas
+│   │                   │   ├── ImageUtils.kt               # Funciones para manejar imágenes
+│   │                   │   └── NetworkUtils.kt             # Utilidades para verificar conectividad
+│   │                   ├── navigation
+│   │                   │   ├── NavigationWrapper.kt        # Configuración de navegación
+│   │                   │   ├── Routes.kt                   # Definición de rutas de la aplicación
+│   │                   │   └── AppNavHost.kt               # Host principal de navegación
+│   │                   ├── theme
+│   │                   │   ├── Color.kt                    # Configuración de colores
+│   │                   │   ├── Typography.kt               # Configuración de fuentes
+│   │                   │   └── Theme.kt                    # Configuración del tema
+│   │                   └── viewmodel
+│   │                       ├── AuthViewModel.kt            # ViewModel para autenticación
+│   │                       ├── ProfileViewModel.kt         # ViewModel para manejar datos del perfil
+│   │                       ├── RecipeViewModel.kt          # ViewModel para manejar datos de recetas
+│   │                       └── NotificationsViewModel.kt   # ViewModel para notificaciones
+│   └── res
+│       ├── drawable                                         # Recursos gráficos
+│       ├── layout                                           # Layouts en XML (opcional)
+│       ├── values
+│       │   ├── colors.xml                                   # Definición de colores
+│       │   ├── strings.xml                                  # Definición de cadenas de texto
+│       │   └── themes.xml                                   # Temas de la app
+│       └── font                                             # Fuentes personalizadas
+├── AndroidManifest.xml                                      # Manifest de la app
+└── build.gradle.kts                                         # Configuración de compilación y dependencias

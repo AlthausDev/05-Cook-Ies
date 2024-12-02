@@ -18,17 +18,33 @@ import com.althaus.dev.cookIes.ui.components.NotificationCard
 import com.althaus.dev.cookIes.ui.components.PrimaryButton
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 
+/**
+ * Vista de notificaciones que muestra una lista de las notificaciones del usuario.
+ *
+ * Muestra el estado de carga, mensajes de error y una lista de notificaciones.
+ * También permite marcar las notificaciones como leídas y recargar la lista en caso de error.
+ *
+ * @param notificationsViewModel [NotificationsViewModel] que proporciona el estado y las acciones relacionadas con las notificaciones.
+ * @param onBack Acción que se ejecuta al presionar el botón de retroceso en la barra superior.
+ */
 @Composable
 fun NotificationsView(
     notificationsViewModel: NotificationsViewModel,
     onBack: () -> Unit
 ) {
+    // Estado de las notificaciones, carga y mensajes de error
     val notificationsState = notificationsViewModel.notifications.collectAsState()
     val isLoading = notificationsViewModel.isLoading.collectAsState()
     val errorMessage = notificationsViewModel.errorMessage.collectAsState()
 
     Scaffold(
         topBar = {
+            /**
+             * Barra superior personalizada ([SharedTopAppBar]) con un título y un botón de retroceso.
+             *
+             * - Título: "Notificaciones".
+             * - Icono de navegación: Flecha hacia atrás ([Icons.Default.ArrowBack]) que ejecuta la acción `onBack`.
+             */
             SharedTopAppBar(
                 title = "Notificaciones",
                 navigationIcon = {
@@ -47,9 +63,17 @@ fun NotificationsView(
             contentAlignment = Alignment.Center
         ) {
             when {
+                /**
+                 * Estado de carga:
+                 * Muestra un indicador de progreso circular mientras se cargan las notificaciones.
+                 */
                 isLoading.value -> {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
+                /**
+                 * Estado de error:
+                 * Muestra un mensaje de error y un botón para reintentar cargar las notificaciones.
+                 */
                 errorMessage.value != null -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,6 +90,10 @@ fun NotificationsView(
                         )
                     }
                 }
+                /**
+                 * Estado vacío:
+                 * Muestra un mensaje indicando que no hay notificaciones disponibles.
+                 */
                 notificationsState.value.isNullOrEmpty() -> {
                     Text(
                         text = "No hay notificaciones disponibles",
@@ -73,6 +101,11 @@ fun NotificationsView(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                /**
+                 * Estado con datos:
+                 * Muestra una lista de notificaciones utilizando [LazyColumn].
+                 * Cada notificación se representa mediante [NotificationCard].
+                 */
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),

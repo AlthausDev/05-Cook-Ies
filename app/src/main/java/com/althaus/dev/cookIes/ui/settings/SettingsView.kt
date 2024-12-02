@@ -5,11 +5,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,8 +20,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,10 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -55,7 +48,18 @@ import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Vista principal de configuración del usuario.
+ *
+ * Permite al usuario actualizar información de perfil como nombre, correo, contraseña,
+ * y foto de perfil. También incluye opciones para cerrar sesión y alternar el tema de la aplicación.
+ *
+ * @param profileViewModel ViewModel para manejar la lógica de la configuración.
+ * @param onCancel Callback que se ejecuta al regresar a la pantalla anterior.
+ * @param onLogout Callback que se ejecuta al cerrar sesión.
+ * @param onToggleTheme Callback para alternar entre tema claro y oscuro.
+ */
+
 @Composable
 fun SettingsView(
     profileViewModel: ProfileViewModel,
@@ -271,6 +275,20 @@ fun SettingsView(
     }
 }
 
+/**
+ * Diálogo para editar información del usuario, como el correo electrónico.
+ *
+ * Presenta dos campos de entrada: uno para el nuevo valor y otro para la contraseña actual,
+ * asegurando la autenticación antes de realizar cambios sensibles.
+ *
+ * @param title Título del diálogo.
+ * @param value1 Valor actual o nuevo a actualizar.
+ * @param onValue1Change Callback para actualizar el valor del primer campo.
+ * @param value2 Contraseña actual para autenticar cambios.
+ * @param onValue2Change Callback para actualizar el valor del segundo campo.
+ * @param onSave Callback que se ejecuta al guardar los cambios.
+ * @param onCancel Callback que se ejecuta al cerrar el diálogo sin guardar.
+ */
 
 @Composable
 fun EditDialog(
@@ -317,6 +335,15 @@ fun EditDialog(
     )
 }
 
+/**
+ * Diálogo para editar el nombre del usuario.
+ *
+ * Permite al usuario ingresar un nuevo nombre y guardarlo.
+ *
+ * @param currentName Nombre actual del usuario.
+ * @param onSave Callback que se ejecuta al guardar el nuevo nombre.
+ * @param onCancel Callback que se ejecuta al cerrar el diálogo sin guardar.
+ */
 
 @Composable
 fun EditNameDialog(
@@ -357,6 +384,16 @@ fun EditNameDialog(
         }
     )
 }
+
+/**
+ * Diálogo para cambiar la contraseña del usuario.
+ *
+ * Permite al usuario ingresar su contraseña actual y una nueva contraseña,
+ * validando ambos campos antes de guardar los cambios.
+ *
+ * @param onSave Callback que se ejecuta al guardar la nueva contraseña.
+ * @param onCancel Callback que se ejecuta al cerrar el diálogo sin guardar.
+ */
 
 @Composable
 fun EditPasswordDialog(

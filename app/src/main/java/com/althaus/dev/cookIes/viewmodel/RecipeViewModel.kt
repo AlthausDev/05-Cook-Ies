@@ -113,14 +113,14 @@ class RecipeViewModel @Inject constructor(
 
                 // Crear y guardar la notificación
                 val notification = Notification(
-                    id = repository.generateNewId("notifications"), // Generar un ID único
+                    id = repository.generateNewId("notifications"),
                     title = "¡Tu receta ha sido marcada como favorita!",
                     message = "Un usuario ha añadido tu receta a sus favoritos.",
                     type = NotificationType.FAVORITE.toString(),
                     recipientId = authorId,
                     relatedRecipeId = recipeId
                 )
-                repository.saveNotification(notification) // Usar directamente el objeto Notification
+                repository.saveNotification(notification)
 
                 // Refrescar favoritos localmente
                 refreshFavorites()
