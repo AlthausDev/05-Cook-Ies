@@ -71,23 +71,26 @@ fun RecipeWizardView(
     var recipeInstructions by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-
-        GradientBackground { // Fondo con gradiente
-            Scaffold(
-                topBar = {
-                    SharedTopAppBar(
-                        title = "Creación de Receta - Paso ${currentStep + 1}/${steps.size}"
-                    )
-                },
-                content = { innerPadding ->
-                    Column(
+    // Fondo con gradiente
+    GradientBackground {
+        Scaffold(
+            topBar = {
+                SharedTopAppBar(
+                    title = "Creación de Receta - Paso ${currentStep + 1}/${steps.size}"
+                )
+            },
+            content = { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    // Contenido principal (Pasos del wizard)
+                    Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                            .weight(1f)
+                            .padding(16.dp)
                     ) {
-                        // Renderizar el contenido según el paso actual
                         when (currentStep) {
                             0 -> GeneralInfoStep(
                                 recipeName = recipeName,
@@ -138,63 +141,72 @@ fun RecipeWizardView(
                             )
                         }
 
-                        // Mensaje de error
+                        // Mensaje de error en el centro
                         errorMessage?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center // Centrar el mensaje
+                            ) {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center, // Asegura que el texto esté centrado
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                         }
+                    }
 
-                        // Navegación del wizard
-                        WizardNavigation(
-                            currentStep = currentStep,
-                            stepsCount = steps.size,
-                            onNext = {
-                                if (validateStep(currentStep, recipeName, recipeIngredients, recipeInstructions)) {
-                                    currentStep++
-                                    errorMessage = null
-                                } else {
-                                    errorMessage = "Por favor, completa todos los campos requeridos antes de continuar."
-                                }
-                            },
-                            onBack = {
-                                currentStep--
-                                errorMessage = null // Limpia el mensaje de error
-                            },
-                            onSave = {
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    try {
-                                        val recipe = Recipe(
-                                            name = recipeName,
-                                            description = recipeDescription,
-                                            ingredients = recipeIngredients,
-                                            instructions = recipeInstructions
-                                        )
-                                        recipe.saveToFirestore(firestoreRepository, currentAuthorId) // Guardar receta
-                                        onComplete(recipe)
-                                        navHostController.navigate(Screen.Dashboard.route) { // Navega al Dashboard
-                                            popUpTo(Screen.Dashboard.route) { inclusive = true }
-                                        }
-                                    } catch (e: Exception) {
-                                        errorMessage = "Error al guardar la receta: ${e.localizedMessage}"
+
+                    // Botones de navegación (siempre visibles)
+                    WizardNavigation(
+                        currentStep = currentStep,
+                        stepsCount = steps.size,
+                        onNext = {
+                            if (validateStep(currentStep, recipeName, recipeIngredients, recipeInstructions)) {
+                                currentStep++
+                                errorMessage = null
+                            } else {
+                                errorMessage = "Por favor, completa todos los campos requeridos antes de continuar."
+                            }
+                        },
+                        onBack = {
+                            currentStep--
+                            errorMessage = null
+                        },
+                        onSave = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    val recipe = Recipe(
+                                        name = recipeName,
+                                        description = recipeDescription,
+                                        ingredients = recipeIngredients,
+                                        instructions = recipeInstructions
+                                    )
+                                    recipe.saveToFirestore(firestoreRepository, currentAuthorId) // Guardar receta
+                                    onComplete(recipe)
+                                    navHostController.navigate(Screen.Dashboard.route) { // Navega al Dashboard
+                                        popUpTo(Screen.Dashboard.route) { inclusive = true }
                                     }
-                                }
-                            },
-                            onCancel = onCancel,
-                            onNavigateToDashboard = { // Agregar esta función para usarla
-                                navHostController.navigate(Screen.Dashboard.route) {
-                                    popUpTo(Screen.Dashboard.route) { inclusive = true }
+                                } catch (e: Exception) {
+                                    errorMessage = "Error al guardar la receta: ${e.localizedMessage}"
                                 }
                             }
-                        )
-                    }
+                        },
+                        onCancel = onCancel,
+                        onNavigateToDashboard = {
+                            navHostController.navigate(Screen.Dashboard.route) {
+                                popUpTo(Screen.Dashboard.route) { inclusive = true }
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.weight(0.1f))
                 }
-            )
-        }
+            }
+        )
     }
-
+}
 
 // ==================== VALIDACIÓN DEL PASO ====================
 fun validateStep(step: Int, name: String, ingredients: List<Ingredient>, instructions: String): Boolean {
@@ -268,7 +280,6 @@ fun GeneralInfoStep(
     }
 }
 
-// Paso 2: Ingredientes
 @Composable
 fun IngredientsStep(
     ingredients: List<Ingredient>,
@@ -279,18 +290,24 @@ fun IngredientsStep(
     var showDialog by remember { mutableStateOf(false) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, // Centra todo horizontalmente
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), // Margen general
+        verticalArrangement = Arrangement.Top, // Contenido en la parte superior
+        horizontalAlignment = Alignment.CenterHorizontally // Centrar horizontalmente
     ) {
+        // Título
         Text(
             text = "Ingredientes",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary
         )
+
+        // Lista de ingredientes
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth(0.9f) // Ajusta el ancho al 90% de la pantalla
+                .fillMaxWidth(0.9f)
+                .weight(1f) // Toma espacio disponible sin interferir con botones de navegación
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -316,15 +333,16 @@ fun IngredientsStep(
             }
         }
 
-        // Botón "Agregar Ingrediente" centrado y con un ancho del 90%
+        // Botón "Agregar Ingrediente"
         PrimaryButton(
             text = "Agregar Ingrediente",
             onClick = { showDialog = true },
             modifier = Modifier
                 .fillMaxWidth(0.9f) // Ajusta el ancho al 90%
-                .padding(top = 16.dp) // Separación superior
+                .padding(top = 16.dp)
         )
 
+        // Mostrar el diálogo para agregar ingredientes
         if (showDialog) {
             AddIngredientDialog(
                 onAdd = { ingredient ->
@@ -337,6 +355,7 @@ fun IngredientsStep(
         }
     }
 }
+
 
 @Composable
 fun AddIngredientDialog(
@@ -461,7 +480,7 @@ fun AddIngredientDialog(
                 ) {
                     Button(
                         onClick = { isDropdownExpanded = true },
-                        shape = MaterialTheme.shapes.small, // Esquinas cuadradas
+                        shape = MaterialTheme.shapes.medium, // Esquinas cuadradas
                         modifier = Modifier
                             .height(40.dp)
                             .width(150.dp),
@@ -518,16 +537,41 @@ fun AddIngredientDialog(
                         return@PrimaryButton
                     }
 
-                    val ingredient = Ingredient(
-                        id = firestoreRepository.generateNewId("ingredients"),
-                        name = ingredientName,
-                        quantity = ingredientQuantity.toDouble(),
-                        unit = ingredientUnit
-                    )
-                    onAdd(ingredient)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val ingredientId = firestoreRepository.generateNewId("ingredients")
+                            val ingredient = Ingredient(
+                                id = ingredientId,
+                                name = ingredientName,
+                                quantity = ingredientQuantity.toDouble(),
+                                unit = ingredientUnit
+                            )
+
+                            // Guardar en Firebase
+                            firestoreRepository.saveIngredient(
+                                ingredientId,
+                                mapOf(
+                                    "id" to ingredient.id,
+                                    "name" to ingredient.name,
+                                    "quantity" to ingredient.quantity,
+                                    "unit" to ingredient.unit
+                                )
+                            )
+
+                            // Actualizar UI en el hilo principal
+                            withContext(Dispatchers.Main) {
+                                onAdd(ingredient) // Notificar al padre que se agregó el ingrediente
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                errorMessage = "Error al guardar el ingrediente: ${e.localizedMessage}"
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(0.9f)
             )
+
         },
         dismissButton = {
             PrimaryButton(

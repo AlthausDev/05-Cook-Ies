@@ -259,28 +259,7 @@ fun RecipeDetailContent(
 
         Spacer(modifier = Modifier.height(sectionSpacing))
         Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
-        Spacer(modifier = Modifier.height(sectionSpacing))
 
-        // Etiquetas
-//        if (recipe.tags.isNotEmpty()) {
-//            Text(
-//                text = "Etiquetas:",
-//                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-//                color = MaterialTheme.colorScheme.onBackground
-//            )
-//            FlowRow(
-//                mainAxisSpacing = 8.dp,
-//                crossAxisSpacing = 8.dp
-//            ) {
-//                recipe.tags.forEach { tag ->
-//                    TagItem(tag)
-//                }
-//            }
-//        }
-//
-//        Spacer(modifier = Modifier.height(sectionSpacing))
-//        Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
-//        Spacer(modifier = Modifier.height(sectionSpacing))
 
         // Tiempo total de preparación
         Text(
@@ -290,27 +269,6 @@ fun RecipeDetailContent(
         )
 
         Spacer(modifier = Modifier.height(sectionSpacing))
-
-        // Botón de video
-//        recipe.videoUrl?.let { url ->
-//            Button(
-//                onClick = { /* Navegar o abrir video en un reproductor */ },
-//                modifier = Modifier.fillMaxWidth(),
-//                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-//                contentPadding = PaddingValues(vertical = 12.dp)
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.PlayArrow,
-//                    contentDescription = null,
-//                    tint = MaterialTheme.colorScheme.onPrimary
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(
-//                    text = "Ver video",
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
-//            }
-//        }
 
         Spacer(modifier = Modifier.height(sectionSpacing))
 
