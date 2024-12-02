@@ -5,18 +5,22 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Color
 
-// Definición de la tipografía global
+/**
+ * Tipografía global utilizada en la aplicación.
+ *
+ * Contiene estilos para diferentes niveles de encabezados, títulos, cuerpos de texto y etiquetas,
+ * con configuraciones de tamaño, peso y color.
+ */
 val Typography = Typography(
-    // Estilo de texto para títulos y encabezados principales
+    /** Estilo para títulos grandes y encabezados principales. */
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 30.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
-        color = DarkOnPrimary // Asignar color global
+        color = DarkOnPrimary
     ),
     displayMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -35,7 +39,7 @@ val Typography = Typography(
         color = DarkOnPrimary
     ),
 
-    // Estilo para encabezados secundarios
+    /** Estilo para encabezados secundarios. */
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
@@ -61,7 +65,7 @@ val Typography = Typography(
         color = DarkOnPrimary
     ),
 
-    // Estilo de título para secciones o subtítulos destacados
+    /** Estilo para títulos destacados y subtítulos. */
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
@@ -87,7 +91,7 @@ val Typography = Typography(
         color = DarkOnPrimary
     ),
 
-    // Estilo para el cuerpo de texto
+    /** Estilo para texto principal en el cuerpo de la aplicación. */
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -113,7 +117,7 @@ val Typography = Typography(
         color = DarkOnPrimary
     ),
 
-    // Estilo para etiquetas o textos pequeños
+    /** Estilo para etiquetas y textos pequeños. */
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,

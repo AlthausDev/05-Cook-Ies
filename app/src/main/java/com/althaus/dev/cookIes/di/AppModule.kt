@@ -5,7 +5,6 @@ import com.althaus.dev.cookIes.R
 import com.althaus.dev.cookIes.data.repository.AuthRepository
 import com.althaus.dev.cookIes.data.repository.FirestoreRepository
 import com.althaus.dev.cookIes.data.repository.NotificationRepository
-import com.althaus.dev.cookIes.data.repository.RecipeRepository
 import com.althaus.dev.cookIes.data.repository.UserRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -19,21 +18,42 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
+/**
+ * Módulo de inyección de dependencias para proporcionar instancias compartidas en toda la aplicación.
+ *
+ * Este módulo define cómo se crean y gestionan las dependencias clave, como FirebaseAuth,
+ * FirebaseFirestore, y los repositorios personalizados.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // Provisión de FirebaseAuth
+    /**
+     * Proporciona una instancia única de FirebaseAuth.
+     *
+     * @return Una instancia de [FirebaseAuth].
+     */
     @Singleton
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // Provisión de Firestore
+    /**
+     * Proporciona una instancia única de FirebaseFirestore.
+     *
+     * @return Una instancia de [FirebaseFirestore].
+     */
     @Provides
     @Singleton
     fun provideFirestoreInstance(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // Provisión de AuthRepository
+    /**
+     * Proporciona una instancia única de AuthRepository.
+     *
+     * @param firebaseAuth La instancia de FirebaseAuth inyectada.
+     * @param firestoreRepository La instancia de FirestoreRepository inyectada.
+     * @param context El contexto de la aplicación.
+     * @return Una instancia de [AuthRepository].
+     */
     @Singleton
     @Provides
     fun provideAuthRepository(
@@ -42,14 +62,24 @@ object AppModule {
         @ApplicationContext context: Context
     ): AuthRepository = AuthRepository(firebaseAuth, firestoreRepository, context)
 
-
-    // Provisión de FirestoreRepository
+    /**
+     * Proporciona una instancia única de FirestoreRepository.
+     *
+     * @param firestore La instancia de FirebaseFirestore inyectada.
+     * @return Una instancia de [FirestoreRepository].
+     */
     @Provides
     @Singleton
     fun provideFirestoreRepository(firestore: FirebaseFirestore): FirestoreRepository =
         FirestoreRepository(firestore)
 
-    // Configuración y provisión de GoogleSignInClient
+    /**
+     * Configura y proporciona una instancia única de GoogleSignInClient.
+     *
+     * @param context El contexto de la aplicación.
+     * @return Una instancia de [GoogleSignInClient].
+     * @throws IllegalStateException Si el `default_web_client_id` no está configurado correctamente.
+     */
     @Singleton
     @Provides
     fun provideGoogleSignInClient(@ApplicationContext context: Context): GoogleSignInClient {
@@ -63,7 +93,13 @@ object AppModule {
         return GoogleSignIn.getClient(context, gso)
     }
 
-    // Provisión de UserRepository
+    /**
+     * Proporciona una instancia única de UserRepository.
+     *
+     * @param firebaseAuth La instancia de FirebaseAuth inyectada.
+     * @param firestore La instancia de FirebaseFirestore inyectada.
+     * @return Una instancia de [UserRepository].
+     */
     @Provides
     @Singleton
     fun provideUserRepository(
@@ -71,7 +107,12 @@ object AppModule {
         firestore: FirebaseFirestore
     ): UserRepository = UserRepository(firebaseAuth, firestore)
 
-    // Provisión de NotificationRepository
+    /**
+     * Proporciona una instancia única de NotificationRepository.
+     *
+     * @param firestore La instancia de FirebaseFirestore inyectada.
+     * @return Una instancia de [NotificationRepository].
+     */
     @Provides
     @Singleton
     fun provideNotificationRepository(firestore: FirebaseFirestore): NotificationRepository =
