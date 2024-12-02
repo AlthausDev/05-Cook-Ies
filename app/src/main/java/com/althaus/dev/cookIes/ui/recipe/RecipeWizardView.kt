@@ -50,6 +50,7 @@ import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RecipeWizardView(
@@ -337,7 +338,6 @@ fun IngredientsStep(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddIngredientDialog(
     onAdd: (Ingredient) -> Unit,
@@ -345,7 +345,7 @@ fun AddIngredientDialog(
     firestoreRepository: FirestoreRepository
 ) {
     var ingredientName by remember { mutableStateOf("") }
-    var ingredientQuantity by remember { mutableStateOf("1") } // Valor predeterminado
+    var ingredientQuantity by remember { mutableStateOf("1") }
     var ingredientUnit by remember { mutableStateOf("Unidad/es") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -358,8 +358,23 @@ fun AddIngredientDialog(
     // Cargar sugerencias de ingredientes desde Firestore
     LaunchedEffect(ingredientName) {
         if (ingredientName.isNotBlank()) {
-            suggestions = firestoreRepository.getIngredientNames()
-                .filter { it.contains(ingredientName, ignoreCase = true) }
+            try {
+                // Acceso a Firebase en un hilo seguro
+                val fetchedSuggestions = withContext(Dispatchers.IO) {
+                    firestoreRepository.getIngredientNames()
+                        .filter { it.contains(ingredientName, ignoreCase = true) }
+                }
+                // Actualizar estado en el hilo principal
+                withContext(Dispatchers.Main) {
+                    suggestions = fetchedSuggestions
+                }
+            } catch (e: Exception) {
+                // Manejar errores de Firebase
+                withContext(Dispatchers.Main) {
+                    suggestions = emptyList()
+                    errorMessage = "Error al cargar sugerencias: ${e.localizedMessage}"
+                }
+            }
         } else {
             suggestions = emptyList()
         }
@@ -525,6 +540,7 @@ fun AddIngredientDialog(
         }
     )
 }
+
 
 
 // Paso 3: Instrucciones
