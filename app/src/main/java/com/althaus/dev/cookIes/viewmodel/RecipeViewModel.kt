@@ -102,9 +102,9 @@ class RecipeViewModel @Inject constructor(
                 repository.updateUser(currentUserId, mapOf("favorites" to newFavorites))
 
                 // Refrescar favoritos localmente
-                _uiState.update {
-                    it.copy(favorites = it.favorites + Recipe(id = recipeId)) // Agregar receta al estado local
-                }
+//                _uiState.update {
+//                    it.copy(favorites = it.favorites + Recipe(id = recipeId)) // Agregar receta al estado local
+//                }
 
                 // Obtener el autor de la receta
                 val recipeData = repository.getRecipeOnce(recipeId)

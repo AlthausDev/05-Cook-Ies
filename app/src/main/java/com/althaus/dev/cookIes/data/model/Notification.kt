@@ -22,8 +22,8 @@ data class Notification(
     val timestamp: Long = System.currentTimeMillis(),
     val read: Boolean = false,
     val recipientId: String = "",
-    val relatedRecipeId: String? = null,
-    val readableTimestamp: String? = null
+    val relatedRecipeId: String? = "",
+    val readableTimestamp: String? = ""
 ) : Parcelable {
 
     /**
@@ -70,8 +70,8 @@ data class Notification(
                 timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis(),
                 read = map["read"] as? Boolean ?: false,
                 recipientId = map["recipientId"] as? String ?: "",
-                relatedRecipeId = map["relatedRecipeId"] as? String,
-                readableTimestamp = map["readableTimestamp"] as? String
+                relatedRecipeId = map["relatedRecipeId"] as? String ?: "",
+                readableTimestamp = map["readableTimestamp"] as? String ?: ""
             )
         }
     }

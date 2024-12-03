@@ -4,6 +4,7 @@ import com.althaus.dev.cookIes.data.model.Notification
 import com.althaus.dev.cookIes.data.model.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -207,14 +208,20 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    // Actualizar un usuario
-    suspend fun updateUser(userId: String, updates: Map<String, Any>) {
-        try {
+    suspend fun updateUser(userId: String, updates: Map<String, Any>): Boolean {
+        return try {
             usersCollection.document(userId).update(updates).await()
+            println("Usuario $userId actualizado correctamente con $updates")
+            true
+        } catch (e: FirebaseFirestoreException) {
+            println("Error específico de Firestore: ${e.code}, ${e.localizedMessage}")
+            false
         } catch (e: Exception) {
-            throw Exception("Error al actualizar el usuario: ${e.localizedMessage}")
+            println("Error genérico al actualizar usuario $userId: ${e.localizedMessage}")
+            false
         }
     }
+
 
     // Obtener un usuario por su ID
     suspend fun getUser(userId: String): Map<String, Any>? {
@@ -357,17 +364,6 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
-    /**
-     * Obtiene una notificación específica por ID.
-     */
-    suspend fun getNotification(notificationId: String): Notification? {
-        return try {
-            val snapshot = notificationsCollection.document(notificationId).get().await()
-            snapshot.toObject(Notification::class.java)?.copy(id = snapshot.id)
-        } catch (e: Exception) {
-            throw Exception("Error al obtener la notificación: ${e.localizedMessage}")
-        }
-    }
 
     suspend fun getUserSync(userId: String): UserProfile? {
         return try {
