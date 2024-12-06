@@ -30,6 +30,7 @@ import com.althaus.dev.cookIes.ui.components.SharedErrorMessage
 import com.althaus.dev.cookIes.ui.components.SharedLoadingIndicator
 import com.althaus.dev.cookIes.ui.components.SharedTopAppBar
 import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
+import com.althaus.dev.cookIes.viewmodel.RecipeViewModel
 
 /**
  * Pantalla de perfil de usuario.
@@ -46,19 +47,31 @@ import com.althaus.dev.cookIes.viewmodel.ProfileViewModel
 @Composable
 fun ProfileView(
     profileViewModel: ProfileViewModel,
+    recipeViewModel: RecipeViewModel,
     onSettings: () -> Unit,
     navigateToFavorites: () -> Unit,
     onRecipeClick: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isAuthenticated: () -> Boolean
 ) {
-    LaunchedEffect(Unit) {
-        profileViewModel.clearError()
-    }
-
+    // Estados observados desde el ViewModel
     val userProfile = profileViewModel.userProfile.collectAsState()
     val userRecipes = profileViewModel.userRecipes.collectAsState()
+    val favorites = profileViewModel.favorites.collectAsState()
     val isLoading = profileViewModel.isLoading.collectAsState()
     val errorMessage = profileViewModel.errorMessage.collectAsState()
+
+
+    // Recarga de datos al montar la vista
+    LaunchedEffect(Unit) {
+        println("Montando ProfileView. Recargando datos del usuario y recetas...")
+        profileViewModel.loadUserProfile()
+        profileViewModel.loadUserRecipes()
+        recipeViewModel.refreshRecipes()
+        recipeViewModel.refreshFavorites()
+
+    }
+
 
     Scaffold(
         topBar = {

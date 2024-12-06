@@ -71,7 +71,10 @@ class ProfileViewModel @Inject constructor(
     init {
         loadUserProfile()
         loadUserRecipes()
+        userProfile.value?.id?.let { loadFavorites(it) }
+
     }
+
 
     // ---- Funciones principales ----
 
@@ -81,21 +84,35 @@ class ProfileViewModel @Inject constructor(
     fun loadUserProfile() {
         viewModelScope.launch {
             try {
+                println("Intentando cargar el perfil del usuario...")
                 val userId = authRepository.currentUser?.uid ?: throw Exception("Usuario no autenticado")
                 val userData = firestoreRepository.getUser(userId)
-                _userProfile.value = userData?.let {
+                println("Datos del usuario obtenidos de Firestore: $userData")
+
+                // Mapeo completo de datos del usuario
+                val newUserProfile = userData?.let {
                     UserProfile(
                         id = userId,
                         name = it["name"] as? String ?: "Usuario",
                         email = it["email"] as? String ?: "Sin correo",
-                        profileImage = it["profileImage"] as? String
+                        profileImage = it["profileImage"] as? String,
+                        favorites = it["favorites"] as? List<String> ?: emptyList(),
+                        ratings = it["ratings"] as? Map<String, Double> ?: emptyMap()
                     )
                 }
+                if (_userProfile.value != newUserProfile) {
+                    _userProfile.value = newUserProfile // Notifica cambios si hay diferencias
+                }
+                println("Perfil del usuario asignado: ${_userProfile.value}")
+                loadFavorites(userId)
             } catch (e: Exception) {
-                showError("Error al cargar el perfil del usuario: ${e.localizedMessage}")
+                println("Error al cargar el perfil: ${e.localizedMessage}")
+               // showError("Error al cargar el perfil del usuario: ${e.localizedMessage}")
             }
         }
     }
+
+
 
     /**
      * Carga las recetas creadas por el usuario desde Firestore.
@@ -108,7 +125,7 @@ class ProfileViewModel @Inject constructor(
                 val recipes = firestoreRepository.getUserRecipes(currentUserId).map { Recipe.fromMap(it) }
                 _userRecipes.value = recipes
             } catch (e: Exception) {
-                showError("Error al cargar recetas: ${e.localizedMessage}")
+                //showError("Error al cargar recetas: ${e.localizedMessage}")
             } finally {
                 _isLoading.value = false
             }

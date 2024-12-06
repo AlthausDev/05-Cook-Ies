@@ -69,6 +69,9 @@ class AuthViewModel @Inject constructor(
         handleAuthResult(authRepository.login(email, password))
     }
 
+
+
+
     /**
      * Registra un nuevo usuario con el correo electrónico, contraseña y nombre opcional.
      *

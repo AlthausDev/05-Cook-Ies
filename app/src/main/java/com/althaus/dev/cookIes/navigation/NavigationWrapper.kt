@@ -110,8 +110,11 @@ fun NavigationWrapper(
 
     // Efecto para redirigir automáticamente si el estado del usuario cambia
     LaunchedEffect(currentUser) {
-        val destination = if (currentUser != null) Screen.Dashboard.route else Screen.StartUp.route
-        navigateWithClearBackStack(navHostController, destination)
+        if (currentUser != null) {
+            navigateWithClearBackStack(navHostController, Screen.Dashboard.route)
+        } else {
+            navigateWithClearBackStack(navHostController, Screen.StartUp.route)
+        }
     }
 
     // Configuración del host de navegación con las rutas definidas
@@ -185,11 +188,26 @@ fun NavigationWrapper(
         }
 
         composable(Screen.Profile.route) {
+            LaunchedEffect(Unit) {
+                println("Accediendo a la pantalla de perfil, recargando datos...")
+                profileViewModel.loadUserProfile() // Recargar perfil del usuario
+
+                // Recargar recetas del usuario cuando el perfil esté disponible
+                profileViewModel.userProfile.collect { userProfile ->
+                    userProfile?.id?.let { userId ->
+                        println("Cargando recetas del usuario: $userId")
+                        recipeViewModel.refreshFavorites()
+                        recipeViewModel.refreshRecipes()
+                    }
+                }
+            }
+
             ProfileView(
                 onSettings = {
                     navHostController.navigate(Screen.Settings.route)
                 },
                 profileViewModel = profileViewModel,
+                recipeViewModel = recipeViewModel, // Pasar RecipeViewModel a la vista
                 onRecipeClick = { recipeId ->
                     navHostController.navigate(Screen.RecipeDetail.createRoute(recipeId))
                 },
@@ -198,7 +216,8 @@ fun NavigationWrapper(
                 },
                 onBack = {
                     navHostController.popBackStack()
-                }
+                },
+                isAuthenticated = { authViewModel.isAuthenticated }
             )
         }
 

@@ -74,7 +74,7 @@ class RecipeViewModel @Inject constructor(
             val recipes = repository.getAllRecipes().mapNotNull { Recipe.fromMap(it) }
             updateRecipes(recipes)
         } catch (e: Exception) {
-            showError("Error al cargar recetas: ${e.localizedMessage}")
+            //showError("Error al cargar recetas: ${e.localizedMessage}")
         } finally {
             _uiState.update { it.copy(isLoading = false) }
         }
@@ -259,7 +259,7 @@ class RecipeViewModel @Inject constructor(
     /**
      * Actualiza el estado de la UI con una nueva lista de recetas.
      *
-     * Este método actualiza la propiedad `recipes` del estado actual, reemplazándola con
+     * Este método actualiza la propiedad recipes del estado actual, reemplazándola con
      * la lista proporcionada y eliminando cualquier mensaje de error previo.
      *
      * @param recipes Lista de [Recipe] que se asignará al estado de la UI.
@@ -271,7 +271,7 @@ class RecipeViewModel @Inject constructor(
     /**
      * Actualiza el estado de la UI con una nueva lista de recetas favoritas.
      *
-     * Este método actualiza la propiedad `favorites` del estado actual, reemplazándola con
+     * Este método actualiza la propiedad favorites del estado actual, reemplazándola con
      * la lista proporcionada y eliminando cualquier mensaje de error previo.
      *
      * @param favorites Lista de [Recipe] favoritas que se asignará al estado de la UI.
@@ -283,7 +283,7 @@ class RecipeViewModel @Inject constructor(
     /**
      * Establece un mensaje de error en el estado de la UI y emite el mensaje a través del flujo de errores.
      *
-     * Este método actualiza la propiedad `errorMessage` del estado de la UI con el mensaje
+     * Este método actualiza la propiedad errorMessage del estado de la UI con el mensaje
      * proporcionado y también emite el mensaje mediante [_errorMessages] para que pueda ser
      * observado externamente.
      *
@@ -317,7 +317,7 @@ class RecipeViewModel @Inject constructor(
      * y retorna la calificación correspondiente al ID de la receta proporcionado, si existe.
      *
      * @param recipeId ID de la receta para la cual se busca la calificación.
-     * @return La calificación asignada a la receta, o `null` si no se ha calificado.
+     * @return La calificación asignada a la receta, o null si no se ha calificado.
      * @throws IllegalStateException Si no hay un usuario autenticado.
      */
     suspend fun getUserRatingForRecipe(recipeId: String): Double? {

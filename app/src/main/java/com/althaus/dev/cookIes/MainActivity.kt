@@ -95,7 +95,6 @@ class MainActivity : AppCompatActivity() {
                         firestoreRepository = firestoreRepository,
                         onToggleTheme = {
                             scope.launch {
-                                // Alterna entre modo claro y oscuro
                                 isDarkTheme.value = !isDarkTheme.value
                             }
                         }
