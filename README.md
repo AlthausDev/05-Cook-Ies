@@ -24,9 +24,11 @@ Aplicación Android para descubrir, guardar, crear y compartir recetas, desarrol
 - Cloud Firestore
 - Firebase Storage
 
-## Estructura
+## Arquitectura
 
-La aplicación separa datos, UI, componentes reutilizables y tema visual. Los repositorios encapsulan acceso a Firebase y los `ViewModel` mantienen el estado que consume la interfaz Compose.
+La aplicación separa datos, UI, componentes reutilizables y tema visual. Los repositorios encapsulan el acceso a Firebase y los `ViewModel` mantienen el estado que consume la interfaz Compose.
+
+El proyecto sirve especialmente como referencia de un flujo Android moderno basado en estado observable, inyección de dependencias y servicios cloud.
 
 ## Desarrollo
 
@@ -43,12 +45,14 @@ Clona el repositorio y ábrelo desde Android Studio:
 git clone https://github.com/AlthausDev/05-Cook-Ies.git
 ```
 
+Las credenciales y archivos de configuración privados de Firebase no deben compartirse fuera del entorno de desarrollo correspondiente.
+
 ## Estado
 
 Proyecto de formación conservado como referencia de arquitectura Android moderna y servicios Firebase.
 
 ## Licencia
 
-Publicado bajo **Creative Commons Attribution-NonCommercial 4.0 International**. Consulta [`LICENSE-CC-BY-NC-4.0.md`](LICENSE-CC-BY-NC-4.0.md).
+Publicado bajo **Creative Commons Attribution-NonCommercial 4.0 International**. Consulta [`LICENSE.md`](LICENSE.md).
 
 Si reutilizas contenido original del proyecto, conserva la atribución a **Sam Althaus / AlthausDev** conforme a los términos de la licencia.
