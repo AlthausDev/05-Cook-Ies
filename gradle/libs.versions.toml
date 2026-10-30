@@ -27,7 +27,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 
 # Inyección de Dependencias
-daggerHilt = "2.51"
+daggerHilt = "2.60.1"
 
 # Otros
 material = "1.12.0"
