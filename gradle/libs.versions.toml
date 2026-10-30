@@ -40,7 +40,7 @@ ksp = "1.9.0-1.0.12"
 
 # Navegación
 navigationCompose = "2.8.4"
-navigationFragmentKtx = "2.8.4"
+navigationFragmentKtx = "2.10.2"
 uiTestAndroid = "1.7.5"
 
 [plugins]
