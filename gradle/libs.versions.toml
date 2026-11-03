@@ -18,7 +18,7 @@ firebaseCrashlytics = "3.0.8"
 
 # Servicios de Google
 googleServices = "4.4.2"
-googleid = "1.1.1"
+googleid = "1.2.1"
 playServicesLocation = "21.3.0"
 
 # Testing
