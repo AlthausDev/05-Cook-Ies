@@ -39,7 +39,7 @@ kotlin = "1.9.21"
 ksp = "1.9.0-1.0.12"
 
 # Navegación
-navigationCompose = "2.8.4"
+navigationCompose = "2.10.2"
 navigationFragmentKtx = "2.8.4"
 uiTestAndroid = "1.7.5"
 
